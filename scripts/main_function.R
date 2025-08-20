@@ -19,7 +19,7 @@ mcmc_step6 <- function(y, t, n_iter, init, sigma_proposals,
   
   for (iter in 1:total_iter) {
     g <- theta[1]; h0 <- theta[2]; sigma_sq_err <- theta[3]
-    alpha_param <- theta[4]; psi_delta <- theta[5]; k <- theta[6]#; alpha_prime <- theta[7]
+    alpha_param <- theta[4]; psi_delta <- theta[5]; k <- theta[6]; alpha_prime <- theta[7]
     sigma_sq_delta <- sigma_sq_err / k
     
     Sigma_delta <- GP_covariance(t, sigma_sq_delta, psi_delta)
@@ -39,91 +39,23 @@ mcmc_step6 <- function(y, t, n_iter, init, sigma_proposals,
     # Log-sum-exp of the denominator
     log_den <- log_sum_exp(log_w1, log_w2)
     
-    # log-sum-exp denominator
-    #mxy <- pmax(log_w1, log_w2)
-    #log_den <- mxy + log(exp(log_w1 - mxy) + exp(log_w2 - mxy))
-    
     if (seuil) {
-      # === ORIGINAL "SEUIL" BEHAVIOR ===
-      # P(zeta=2 | y) with gate |delta|>s
-      prob_zeta_base <- exp(log_w1 - log_den)      # P(zeta=1|y)
+      prob_zeta_base <- exp(log_w1 - log_den)
       prob_zeta <- prob_zeta_base * (abs(delta) > s)
-      #zeta <- ifelse(runif(n) < prob_zeta, 1L, 2L)
       zeta <- ifelse(runif(length(y)) < prob_zeta, 1, 2)
       #zeta <- 1 + (runif(length(y)) < prob_zeta)
     } else {
-      # === MATCH SECOND CODE EXACTLY ===
-      # Use P(zeta=2|y), no gate, and map 2 with that prob
-      prob_zeta <- exp(log_w2 - log_den)           # P(zeta=2|y)
-      #zeta <- 1L + (runif(n) < prob_zeta)          # 2 w.p. prob_zeta, else 1
+      prob_zeta <- exp(log_w2 - log_den)
       #zeta <- 1 + (runif(length(y)) < prob_zeta)
-      zeta <- ifelse(runif(length(y)) < prob_zeta, 1, 2)
+      zeta <- ifelse(runif(length(y)) < prob_zeta, 2, 1)
     }
     
     chain_zeta[iter, ] <- zeta
     
-    #if(seuil){
-    #  # Log-sum-exp of the denominator
-    #  log_den <- pmax(log_w1, log_w2) + log(exp(log_w1 - pmax(log_w1, log_w2)) +
-    #                                          exp(log_w2 - pmax(log_w1, log_w2)))
-    #  
-    #  # Posterior probability P(zeta=1|y) in log space, then exponentiate
-    #  prob_zeta <- exp(log_w2 - log_den)
-    #  
-    #  #zeta <- 1 + (runif(length(y)) < prob_zeta)
-    #  zeta <- 1 + (runif(length(y)) < prob_zeta)
-    #  
-    #  chain_zeta[iter, ] = zeta
-    #  
-    #  log_likelihood <- sum(log(ifelse(zeta == 1,
-    #                                   alpha_param * dnorm(y, mean1, sqrt(sigma_sq_err)),
-    #                                   (1 - alpha_param) * dnorm(y, mean2, sqrt(sigma_sq_err)))))
-    #  loglik_chain[iter] <- log_likelihood
-    #  
-    #  zeta_2_indices <- which(zeta == 2)
-    #  if (length(zeta_2_indices) > 0) {
-    #    y_m <- y[zeta_2_indices]
-    #    Sigma_delta_ymym <- sigma_sq_err * diag(length(zeta_2_indices)) +
-    #      Sigma_delta[zeta_2_indices, zeta_2_indices, drop = FALSE]
-    #    Sigma_delta_ym <- Sigma_delta[, zeta_2_indices, drop = FALSE]
-    #    Sigma_inv <- tryCatch(solve(Sigma_delta_ymym), error = function(e) diag(1, nrow(Sigma_delta_ymym)))
-    #    mu_delta_hat <- rep(0, n) + Sigma_delta_ym %*% Sigma_inv %*% (y_m - f_theta[zeta_2_indices])
-    #    Sigma_delta_hat <- Sigma_delta - Sigma_delta_ym %*% Sigma_inv %*% t(Sigma_delta_ym)
-    #    delta <- as.vector(rmvnorm(1, mean = mu_delta_hat, sigma = Sigma_delta_hat))
-    #  }}else{s <- 0.3
-    #  
-    #  # Log-sum-exp of the denominator
-    #  log_denominator <- log_sum_exp(log_w1, log_w2)
-    #  
-    #  # Posterior probability P(zeta=1|y) in log space, then exponentiate
-    #  prob_zeta_base <- exp(log_w1 - log_denominator)
-    #  
-    #  # Add (abs(delta) > s)
-    #  prob_zeta <- prob_zeta_base * (abs(delta) > s)
-    #  
-    #  zeta <- ifelse(runif(length(y)) < prob_zeta, 1, 2)
-    #  chain_zeta[iter, ] <- zeta
-    # 
     log_likelihood <- sum(log(ifelse(zeta == 1,
                                      alpha_param * dnorm(y, mean1, sqrt(sigma_sq_err)),
                                      (1 - alpha_param) * dnorm(y, mean2, sqrt(sigma_sq_err)))))
     loglik_chain[iter] <- log_likelihood
-    
-    
-    # 
-    # zeta_2_indices <- which(zeta == 2)
-    # if (length(zeta_2_indices) > 0) {
-    #   y_m <- y[zeta_2_indices]
-    #   Sigma_delta_ymym <- sigma_sq_err * diag(length(zeta_2_indices)) +
-    #     Sigma_delta[zeta_2_indices, zeta_2_indices, drop = FALSE]
-    #   Sigma_delta_ym <- Sigma_delta[, zeta_2_indices, drop = FALSE]
-    #   Sigma_inv <- tryCatch(solve(Sigma_delta_ymym), error = function(e) diag(1, nrow(Sigma_delta_ymym)))
-    #   mu_delta_hat <- rep(0, n) + Sigma_delta_ym %*% Sigma_inv %*% (y_m - f_theta[zeta_2_indices])
-    #   Sigma_delta_hat <- Sigma_delta - Sigma_delta_ym %*% Sigma_inv %*% t(Sigma_delta_ym)
-    #   delta <- as.vector(rmvnorm(1, mean = mu_delta_hat, sigma = Sigma_delta_hat))
-    # }
-    # else {delta = as.vector(rmvnorm(1, rep(0, n), sigma = Sigma_delta))}
-    # }
     
     
     # ---- Update delta ----
@@ -176,8 +108,8 @@ mcmc_step6 <- function(y, t, n_iter, init, sigma_proposals,
     Mupost_theta <- Sigmapost_theta %*% B
     theta_sample <- rmvnorm(1, mean = Mupost_theta, sigma = Sigmapost_theta)
     h0 <- theta_sample[1];  g <- theta_sample[2]
-    theta[1] <- g
-    theta[2] <- h0
+    #theta[1] <- g
+    #theta[2] <- h0
     
     if(g_init){
       g <- init[1]
@@ -247,7 +179,7 @@ mcmc_step6 <- function(y, t, n_iter, init, sigma_proposals,
       log_ratio <- (log_like_prop + log_prior_prop) - (log_like_current + log_prior_current) + log_prop_current - log_prop_prop
       if (!is.na(log_ratio) && log(runif(1)) < log_ratio) {
         psi_delta <- psi_prop
-        theta[5] <- psi_delta
+        #theta[5] <- psi_delta
         accept_psi <- accept_psi + 1
       }}
     
@@ -264,24 +196,11 @@ mcmc_step6 <- function(y, t, n_iter, init, sigma_proposals,
         #if (k_prop >= 0.1 && k_prop <= 0.9) {
         if (k_prop > 0 && k_prop < 1) {
           k <- k_prop
-          theta[6] <- k
+          #theta[6] <- k
           break
         }
       }}
     
-    
-    # if(alpha_init){
-    #   alpha_param <- init[4]
-    # }else{
-    #   if(seuil){
-    #     alpha_param <- rbeta(1, sum(zeta == 1) + 0.5, sum(zeta == 2) + 0.5)
-    #   }else{zetabis <- zeta
-    #   zetabis[abs(delta)<s] <- 0
-    #   alpha_prime <- rbeta(1, sum(zetabis == 1) + 0.5, sum(zetabis == 2) + 0.5)
-    #   alpha_param <- rbeta(1,sum(zeta == 1) + 0.5, sum(zeta == 2) + 0.5)
-    #   }
-    #   theta[4] <- alpha_param
-    # }
     
     if (alpha_init) {
       alpha_param <- init[4]
