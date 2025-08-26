@@ -2,8 +2,7 @@ mcmc_step6 <- function(y, t, n_iter, init, sigma_proposals,
                        g_init=TRUE, h0_init= TRUE, sig2er_init = TRUE,
                        alpha_init = TRUE, psi_init = TRUE, k_init = TRUE, Sigma_theta, n_burnin=1000,
                        a_psi, b_psi, seuil = TRUE, s = 0.3) {
-  # mcmc_parameters : c(theta(g, h0) = "TRUE", sigma_sq_err = "T", psi_delta = "T", k = "T", alpha = "T")
-  
+
   # Total iterations = burn-in + desired samples
   total_iter <- n_burnin + n_iter
   

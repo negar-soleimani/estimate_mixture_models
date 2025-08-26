@@ -7,7 +7,7 @@ Sigma_theta <- matrix(c(0.1,0,0,0.1), nrow = 2)
 init <- c(9.8, 48, 0.08, 0.7, 0.5, 0.2)
 sigma_proposals <- c(NA, NA, NA, NA, 0.5, NA)
 n_samples       <- 3
-burn_in         <- 100
+burn_in         <- 1000
 n_iter          <- 1000
 # FALSE= fixed parameter
 # mcmc parameter (g,h), sig2err, psidelta, k, alpha
