@@ -11,14 +11,11 @@ don <- read_xlsx("/Users/negarsoleimani/Documents/phd/paper1/Ball_drops_data.xls
 names(don) <- c("drop", "time", "Height", "Velocity")
 don$drop <- as.factor(don$drop); don <- don[don$drop == 1, ]
 
-
-# psi_delta <- 0.1
-# sigma_sq_err <- 0.1
-# k <- 0.2
-# sigma_sq_delta <- sigma_sq_err / k
-# t <- seq(0,1,0.25)
-# t_range <- max(t) - min(t)
-# a <- t_range
+GP_covariance <- function(t, sigma_sq_delta, psi_delta) {
+  n <- length(t)
+  Sigma <- outer(t, t, function(ti, tj) sigma_sq_delta * exp(-abs(ti - tj) / psi_delta))
+  return(Sigma)
+}
 
 t <- don$time
 y <- don$Height
@@ -38,68 +35,58 @@ balldropg <- function(t, theta) {
   return(as.vector(h))
 }
 
-GP_covariance <- function(t, sigma_sq_delta, psi_delta) {
-  n <- length(t)
-  Sigma <- outer(t, t, function(ti, tj) sigma_sq_delta * exp(-abs(ti - tj) / psi_delta))
-  return(Sigma)
-}
-
-erf <- function(z) 2 * pnorm(z * sqrt(2)) - 1
-
 J_x <- function(x, psi_delta) {
   psi <- psi_delta
-  (sqrt(pi) * sqrt(psi) / 2) * (erf((1 - x) / sqrt(psi)) + erf(x / sqrt(psi)))
+  psi * ( 2 - exp(-x/psi) - exp(-(1 - x)/psi) )
 }
 
 I_x <- function(x, psi_delta) {
   psi <- psi_delta
-  Sx <- erf((1 - x) / sqrt(psi)) + erf(x / sqrt(psi))
-  (sqrt(pi) * sqrt(psi) / 2) * (x^2 + psi / 2) * Sx +
-    (psi / 2) * ( x * exp(-x^2 / psi) - (x + 1) * exp(- (1 - x)^2 / psi) )
+  A1 <- function(b) { psi * (1 - exp(-b/psi)) }
+  A2 <- function(b) { psi^2 * (1 - exp(-b/psi)) - psi * b * exp(-b/psi) }
+  A3 <- function(b) { 2*psi^3 - exp(-b/psi) * (b^2*psi + 2*b*psi^2 + 2*psi^3) }
+  
+  term1 <- x^2 * ( A1(x) + A1(1 - x) )
+  term2 <- 2*x * ( -A2(x) + A2(1 - x) )
+  term3 <- A3(x) + A3(1 - x)
+  
+  term1 + term2 + term3
 }
 
+# I_x <- function(x, psi_delta){
+#   psi <- psi_delta
+#   p1 <- (psi * (1 - exp(-x/psi)) + psi * (1 - exp(-(1-x)/psi))) 
+#   p2 <- (((psi^2) * (1 - exp(-x/psi))) + (psi * x * exp(-x/psi)) + ((psi^2) * (1 - exp((1-x)/psi))) - (psi * (1-x) * exp(-(1-x)/psi)))
+#   p3 <- ((2 * psi^3) - exp(-x/psi) * (((x^2) * psi) + (2 * x * psi^2)) + (2 * psi^3)) + (2 * psi^3) - (exp((1-x)/psi) * ((((1-x)^2) * psi) + (2 * (1-x) * psi^2) + (2 * psi^3)))
+#   term1 <- ((x^2) * p1)
+#   term2 <- ((2*x) * p2)
+#   term1 + term2 + p3
+# }
 
 A_scalar <- function(psi_delta) {
   psi <- psi_delta
-  sqrt(pi) * sqrt(psi) * erf(1 / sqrt(psi)) + (psi * exp(-1 / psi)) - psi
+  2*psi - ((2*psi^2) * (1 - exp(-1/psi)))
 }
 
 B_scalar <- function(psi_delta) {
   psi <- psi_delta
-  sqrt(pi) * sqrt(psi) * (1/3 + psi/4) * erf(1 / sqrt(psi)) +
-    (psi * (1 + psi) / 3) * exp(-1 / psi) -
-    psi / 2 - psi^2 / 3
+  E <- exp(-1/psi)
+  ((2/3)*psi) - (psi^2) + (2*psi^3) - (4*psi^4) + E*(psi^2 + 2*psi^3 + 4*psi^4)
 }
 
 D_scalar <- function(psi_delta) {
   psi <- psi_delta
-  (sqrt(pi) * sqrt(psi) / 30) * (5 * psi + 6) * erf(1 / sqrt(psi)) +
-    ((psi^3 + psi^2) / 15 + psi / 5) * exp(-1 / psi) -
-    psi^3 / 15 - psi / 2
+  E <- exp(-1/psi)
+  ((2/5)*psi) - (psi^2) + ((4/3)*psi^3) - (8*(psi^6)) + E*(4*(psi^4) + 8*(psi^5) + 8*(psi^6))
 }
 
 h_vec_x <- function(x, psi_delta) {
   psi <- psi_delta
-  a <- t_range
-  
+  a   <- t_range 
   J <- J_x(x, psi)
   I <- I_x(x, psi)
-  
-  H <- rbind(J, -0.5 * (a^2) * I)
-  return(H)
+  rbind(J, -0.5 * (a^2) * I)
 }
-
-# h_vec_x_full <- function(x, psi_delta) {
-#   psi <- psi_delta
-#   a <- t_range
-#   
-#   J <- J_x(x, psi)
-#   I <- I_x(x, psi)
-#   
-#   h <- rbind(J, -0.5 * (a^2) * I)
-#   h <- (sigma_sq_err/k) * h
-#   return(h)
-# }
 
 H_matrix <- function(psi_delta) {
   A <- A_scalar(psi_delta)
@@ -108,57 +95,18 @@ H_matrix <- function(psi_delta) {
   matrix(c(A, -((a^2)*B)/2, -((a^2)*B)/2, ((a^4)*D)/4), nrow = 2, byrow = TRUE)
 }
 
-# H_matrix_full <- function(psi_delta) {
-#   A <- A_scalar(psi_delta)
-#   B <- B_scalar(psi_delta)
-#   D <- D_scalar(psi_delta)
-#   H <- matrix(c(A, -((a^2)*B)/2, -((a^2)*B)/2, ((a^4)*D)/4), nrow = 2, byrow = TRUE)
-#   H <- (sigma_sq_err/k) * H
-# }
-
-# J_x(t, psi_delta)
-# I_x(t, psi_delta)
-# 
-# H_matrix(psi_delta)
-# GP_covariance(t, sigma_sq_delta, psi_delta)
-# GP_correlation(t, psi_delta)
-# GP_covariance(t, 1, psi_delta)-t(h_vec_x(t, psi_delta))%*%solve(H_matrix(psi_delta))%*%h_vec_x(t, psi_delta)
-# GP_covariance_star_complete(t, 1, 1, psi_delta)
-# GP_covariance_star_complete(t, sigma_sq_err, k, psi_delta)
-
 GP_correlation <- function(t, psi_delta) {
-  R_se <- outer(t, t, function(ti, tj) exp(-abs(ti - tj) / psi_delta)) 
+  R_se <- outer(t, t, function(ti, tj) exp(-abs(ti - tj) / psi_delta))
   
   h_mat <- t(sapply(t, function(x) h_vec_x(x, psi_delta)))
-  #h_mat <- t(h_vec_x(t, psi_delta))
   H <- H_matrix(psi_delta)
-  H_inv <- solve(H)
-  
-  if (is.null(H_inv)) {
-    return(NULL)
-  }
+  H_inv <- tryCatch(solve(H), error = function(e) NULL)
+  if (is.null(H_inv)) return(NULL)
   
   K_star <- R_se - h_mat %*% H_inv %*% t(h_mat)
-  
-  return(K_star)
+  #K_star <- 0.5 * (K_star + t(K_star))  # symmetrize
+  K_star
 }
-
-# GP_covariance_star_complete_1 <- function(t, psi_delta) {
-#   R_se_full <- outer(t, t, function(ti, tj) (sigma_sq_err/k)*exp(-abs(ti - tj) / psi_delta)) 
-#   
-#   h_mat_full <- t(sapply(t, function(x) h_vec_x_full(x, psi_delta)))
-#   #h_mat <- t(h_vec_x(t, psi_delta))
-#   H <- H_matrix_full(psi_delta)
-#   H_inv_full <- solve(H)
-#   
-#   if (is.null(H_inv_full)) {
-#     return(NULL)
-#   }
-#   
-#   C_star <- R_se_full - h_mat_full %*% H_inv_full %*% t(h_mat_full)
-#   
-#   return(C_star)
-# }
 
 GP_covariance_star_complete <- function(t, sigma_sq_err, k, psi_delta) {
   K_star <- GP_correlation(t, psi_delta)
@@ -167,7 +115,23 @@ GP_covariance_star_complete <- function(t, sigma_sq_err, k, psi_delta) {
   }
   (sigma_sq_err / k) * K_star
 }
-# GP_covariance_star_complete_1(t, psi_delta)
+
+# psi_delta <- 0.1
+# sigma_sq_err <- 0.1
+# k <- 0.2
+# sigma_sq_delta <- sigma_sq_err / k
+# t <- seq(0,1,0.25)
+# t_range <- max(t) - min(t)
+# a <- t_range
+# 
+# J_x(t, psi_delta)
+# I_x(t, psi_delta)
+# #
+# H_matrix(psi_delta)
+# GP_covariance(t, sigma_sq_delta, psi_delta)
+# GP_correlation(t, psi_delta)
+# GP_covariance(t, 1, psi_delta)-t(h_vec_x(t, psi_delta))%*%solve(H_matrix(psi_delta))%*%h_vec_x(t, psi_delta)
+# GP_covariance_star_complete(t, 1, 1, psi_delta)
 # GP_covariance_star_complete(t, sigma_sq_err, k, psi_delta)
 
 
@@ -388,7 +352,6 @@ mcmc_step6 <- function(y, t, n_iter, init, sigma_proposals, mcmc_parameters, Sig
     chain_zeta <- chain_zeta[keep, , drop = FALSE]
     loglik_chain <- loglik_chain[keep]
     
-    # Adjust acceptance rate calculation for post-burn-in period only
     cat("Acceptance rate for psi_delta:", round(accept_psi / total_iter, 4), "\n")
   } else {
     cat("Acceptance rate for psi_delta:", round(accept_psi / n_iter, 4), "\n")
@@ -404,10 +367,10 @@ sim_psi_delta <- 0.1
 sigma_sq_err <- 0.1
 sigma_sq_delta <- sigma_sq_err / k
 n_samples <- 1
-n_iter <- 5000
+n_iter <- 10000
 burn_in <- 1000
 
-sigma_props <- c(NA, NA, NA, NA, 0.01, NA) 
+sigma_props <- c(NA, NA, NA, NA, 0.05, NA) 
 mcmc_parameters <- c(TRUE, TRUE, TRUE, TRUE, TRUE)
 Sigma_theta <- matrix(c(0.5, 0, 0, 0.5), nrow = 2)
 init <- c(9.8, 46.45, 0.1, 0.5, sim_psi_delta, 0.2)
@@ -466,215 +429,3 @@ plot(sigma_chain, type = "l",main=expression(sigma[err]^2))
 plot(alpha_chain, type = "l",main=expression(alpha))
 plot(psi_chain, type = "l",main=expression(psi[delta]))
 plot(k_chain,type = "l",main="k")
-
-
-#########################################
-#########################################
-#example:
-psi_delta <- 0.1
-sigma_sq_err <- 0.1
-k <- 0.2
-sigma_sq_delta <- sigma_sq_err / k
-t <- seq(0,1,0.25)
-t_range <- max(t) - min(t)
-a <- t_range
-
-GP_covariance <- function(t, sigma_sq_delta, psi_delta) {
-  n <- length(t)
-  Sigma <- outer(t, t, function(ti, tj) sigma_sq_delta * exp(-abs(ti - tj) / psi_delta))
-  return(Sigma)
-}
-
-erf <- function(z) 2 * pnorm(z * sqrt(2)) - 1
-
-J_x <- function(x, psi_delta) {
-  psi <- psi_delta
-  (sqrt(pi) * sqrt(psi) / 2) * (erf((1 - x) / sqrt(psi)) + erf(x / sqrt(psi)))
-}
-
-I_x <- function(x, psi_delta) {
-  psi <- psi_delta
-  Sx <- erf((1 - x) / sqrt(psi)) + erf(x / sqrt(psi))
-  (sqrt(pi) * sqrt(psi) / 2) * (x^2 + psi / 2) * Sx +
-    (psi / 2) * ( x * exp(-x^2 / psi) - (x + 1) * exp(- (1 - x)^2 / psi) )
-}
-
-
-A_scalar <- function(psi_delta) {
-  psi <- psi_delta
-  sqrt(pi) * sqrt(psi) * erf(1 / sqrt(psi)) + (psi * exp(-1 / psi)) - psi
-}
-
-B_scalar <- function(psi_delta) {
-  psi <- psi_delta
-  sqrt(pi) * sqrt(psi) * (1/3 + psi/4) * erf(1 / sqrt(psi)) +
-    (psi * (1 + psi) / 3) * exp(-1 / psi) -
-    psi / 2 - psi^2 / 3
-}
-
-D_scalar <- function(psi_delta) {
-  psi <- psi_delta
-  (sqrt(pi) * sqrt(psi) / 30) * (5 * psi + 6) * erf(1 / sqrt(psi)) +
-    ((psi^3 + psi^2) / 15 + psi / 5) * exp(-1 / psi) -
-    psi^3 / 15 - psi / 2
-}
-
-h_vec_x <- function(x, psi_delta) {
-  psi <- psi_delta
-  a <- t_range
-  
-  J <- J_x(x, psi)
-  I <- I_x(x, psi)
-  
-  H <- rbind(J, -0.5 * (a^2) * I)
-  return(H)
-}
-
-# h_vec_x_full <- function(x, psi_delta) {
-#   psi <- psi_delta
-#   a <- t_range
-#   
-#   J <- J_x(x, psi)
-#   I <- I_x(x, psi)
-#   
-#   h <- rbind(J, -0.5 * (a^2) * I)
-#   h <- (sigma_sq_err/k) * h
-#   return(h)
-# }
-
-H_matrix <- function(psi_delta) {
-  A <- A_scalar(psi_delta)
-  B <- B_scalar(psi_delta)
-  D <- D_scalar(psi_delta)
-  matrix(c(A, -((a^2)*B)/2, -((a^2)*B)/2, ((a^4)*D)/4), nrow = 2, byrow = TRUE)
-}
-
-# H_matrix_full <- function(psi_delta) {
-#   A <- A_scalar(psi_delta)
-#   B <- B_scalar(psi_delta)
-#   D <- D_scalar(psi_delta)
-#   H <- matrix(c(A, -((a^2)*B)/2, -((a^2)*B)/2, ((a^4)*D)/4), nrow = 2, byrow = TRUE)
-#   H <- (sigma_sq_err/k) * H
-# }
-
-GP_correlation <- function(t, psi_delta) {
-  R_se <- outer(t, t, function(ti, tj) exp(-abs(ti - tj) / psi_delta)) 
-  
-  h_mat <- t(sapply(t, function(x) h_vec_x(x, psi_delta)))
-  #h_mat <- t(h_vec_x(t, psi_delta))
-  H <- H_matrix(psi_delta)
-  H_inv <- solve(H)
-  
-  if (is.null(H_inv)) {
-    return(NULL)
-  }
-  
-  K_star <- R_se - h_mat %*% H_inv %*% t(h_mat)
-  
-  return(K_star)
-}
-
-# GP_covariance_star_complete_1 <- function(t, psi_delta) {
-#   R_se_full <- outer(t, t, function(ti, tj) (sigma_sq_err/k)*exp(-abs(ti - tj) / psi_delta)) 
-#   
-#   h_mat_full <- t(sapply(t, function(x) h_vec_x_full(x, psi_delta)))
-#   #h_mat <- t(h_vec_x(t, psi_delta))
-#   H <- H_matrix_full(psi_delta)
-#   H_inv_full <- solve(H)
-#   
-#   if (is.null(H_inv_full)) {
-#     return(NULL)
-#   }
-#   
-#   C_star <- R_se_full - h_mat_full %*% H_inv_full %*% t(h_mat_full)
-#   
-#   return(C_star)
-# }
-
-GP_covariance_star_complete <- function(t, sigma_sq_err, k, psi_delta) {
-  K_star <- GP_correlation(t, psi_delta)
-  if (is.null(K_star)) {
-    return(NULL)
-  }
-  (sigma_sq_err / k) * K_star
-}
-
-J_x(t, psi_delta)
-I_x(t, psi_delta)
-
-H_matrix(psi_delta)
-h_vec_x(t, psi_delta)
-
-GP_covariance(t, sigma_sq_delta, psi_delta)
-GP_correlation(t, psi_delta)
-GP_covariance(t, 1, psi_delta)-t(h_vec_x(t, psi_delta))%*%solve(H_matrix(psi_delta))%*%h_vec_x(t, psi_delta)
-GP_covariance_star_complete(t, 1, 1, psi_delta)
-GP_covariance_star_complete(t, sigma_sq_err, k, psi_delta)
-
-GP_covariance_star_complete_1(t, psi_delta)
-GP_covariance_star_complete(t, sigma_sq_err, k, psi_delta)
-
-#########################################
-#########################################
-# petit example:
-library(MASS)
-library(Matrix)
-psi_delta <- 0.1
-sigma_sq_err <- 0.1
-k <- 0.2
-sigma_sq_delta <- sigma_sq_err / k
-t <- seq(0,1,0.25)
-n <- length(t)
-
-Sigma_delta <- GP_covariance_star_complete(t, sigma_sq_err, k, psi_delta)
-
-zeta <- c(1,2,1,2,1)
-
-
-f_theta <- rep(0, n)
-zeta_2_indices <- which(zeta == 2)
-y <- rnorm(n, 0, 1)
-
-y_m <- y[zeta_2_indices]
-
-Sigma_delta_ymym <- sigma_sq_err * diag(length(zeta_2_indices)) +
-  Sigma_delta[zeta_2_indices, zeta_2_indices, drop = FALSE]
-eps_reg <- 1e-10
-Sigma_delta_ymym_reg <- Sigma_delta_ymym + diag(eps_reg, nrow(Sigma_delta_ymym))
-inv_Sigma_delta_ymym <- tryCatch(
-  solve(Sigma_delta_ymym_reg),
-  error = function(e) {
-    warning("solve failed, using ginv")
-    ginv(Sigma_delta_ymym_reg)
-  }
-)
-Sigma_delta_ym <- Sigma_delta[, zeta_2_indices, drop = FALSE]
-
-#Sigma_inv <- solve(Sigma_delta_ymym)
-
-mu_delta_hat <- rep(0, n) + Sigma_delta_ym %*% inv_Sigma_delta_ymym %*% (y_m - f_theta[zeta_2_indices])
-
-Sigma_delta_hat <- Sigma_delta - Sigma_delta_ym %*% inv_Sigma_delta_ymym %*% t(Sigma_delta_ym)
-#######
-#Sigma_delta_hat <- 0.5 * (Sigma_delta_hat + t(Sigma_delta_hat))  # symmetric
-#Sigma_delta_hat <- (Sigma_delta_hat + t(Sigma_delta_hat)) / 2
-#######
-jitter <- 1e-8
-eig <- eigen(Sigma_delta_hat, symmetric = TRUE)
-min_eig <- min(eig$values)
-if (min_eig < 0) {
-  Sigma_delta_hat <- Sigma_delta_hat + diag(abs(min_eig) + jitter, nrow(Sigma_delta_hat))
-}
-Sigma_delta_hat <- Sigma_delta_hat + diag(jitter, nrow(Sigma_delta_hat))
-######
-
-library(mvtnorm)
-delta <- as.vector(rmvnorm(1, mean = mu_delta_hat, sigma = Sigma_delta_hat))
-
-
-print(mu_delta_hat)
-print(Sigma_delta_hat)
-print(delta)
-plot(delta, type = "l")
-eg <- eigen(Sigma_delta_hat, symmetric = TRUE)
-min_eig <- min(eg$values)
