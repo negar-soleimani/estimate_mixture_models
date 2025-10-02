@@ -209,7 +209,9 @@ mcmc_step6 <- function(y, t, n_iter, init, sigma_proposals, mcmc_parameters, Sig
     #}
     
     K_star_psi <- GP_correlation(t, psi_delta)
-    inv_Kstar_psi <- tryCatch(solve(K_star_psi), error = function(e) NULL)
+    #inv_Kstar_psi <- tryCatch(solve(K_star_psi), error = function(e) NULL)
+    inv_Kstar_psi <- tryCatch(chol2inv(chol(K_star_psi)), error = function(e) NULL)
+    
     if (is.null(inv_Kstar_psi)) {
       quad_form_delta <- -Inf
     } else {
@@ -253,11 +255,11 @@ mcmc_step6 <- function(y, t, n_iter, init, sigma_proposals, mcmc_parameters, Sig
     }
     
     ## g = fixer
-    #if (mcmc_parameters[1] == FALSE) {
+    # if (mcmc_parameters[1] == FALSE) {
     #  g <- init[1]
     #  h0 <- theta_sample[1]
-    #}
-    
+    # }
+    # 
     ## h0 = fixed
     #if (mcmc_parameters[1] == FALSE) {
     #  h0 <- init[2] 
@@ -338,7 +340,7 @@ mcmc_step6 <- function(y, t, n_iter, init, sigma_proposals, mcmc_parameters, Sig
     #if (is.null(inv_Kstar)) {
     #  beta_k <- Inf
     #} else {
-      beta_k <- (1 / (2 * sigma_sq_err)) * as.numeric(t(delta) %*% inv_Kstar %*% delta)
+      beta_k <- (1 / (2 * sigma_sq_err)) * sum(t(delta) %*% inv_Kstar %*% delta)
     #}
     
     alpha_k <- (n / 2) + 1
@@ -349,6 +351,9 @@ mcmc_step6 <- function(y, t, n_iter, init, sigma_proposals, mcmc_parameters, Sig
         theta[6] <- k
         break 
       }
+    }
+    if(mcmc_parameters[4] == FALSE){
+      k <- init[6]
     }
     
     # Gibbs step for alpha
@@ -393,6 +398,7 @@ n_iter <- 10000
 burn_in <- 1000
 
 sigma_props <- c(NA, NA, NA, NA, 0.1, NA) 
+#(g,h0), sigma, psi, k, alpha
 mcmc_parameters <- c(TRUE, TRUE, TRUE, TRUE, TRUE)
 Sigma_theta <- matrix(c(0.5, 0, 0, 0.5), nrow = 2)
 init <- c(9.8, 46.45, 0.1, 0.5, sim_psi_delta, 0.2)
@@ -431,120 +437,28 @@ for (v in 1:n_samples) {
   accept_rate[v]   <- res$accept_rate_psi
 }
 
-# par(mfrow=c(2,3))
-# boxplot(g_chain, main="g")
-# abline(h=9.8)
-# boxplot(h0_chain, main="h0")
-# abline(h=46.45)
-# boxplot(sigma_chain, main=expression(sigma[err]^2))
-# abline(h=0.1)
-# boxplot(alpha_chain, main=expression(alpha))
-# boxplot(psi_chain,   main=expression(psi[delta]))
-# abline(h=0.1)
-# boxplot(k_chain,main="k")
-# abline(h=k)
+par(mfrow=c(2,3))
+boxplot(g_chain, main="g")
+abline(h=9.8)
+boxplot(h0_chain, main="h0")
+abline(h=46.45)
+boxplot(sigma_chain, main=expression(sigma[err]^2))
+abline(h=0.1)
+boxplot(alpha_chain, main=expression(alpha))
+boxplot(psi_chain,   main=expression(psi[delta]))
+abline(h=0.1)
+boxplot(k_chain,main="k")
+abline(h=0.2)
 
 par(mfrow=c(2,3))
 plot(g_chain, type = "l", main="g")
+abline(h=9.8)
 plot(h0_chain, type = "l", main="h0")
+abline(h=46.45)
 plot(sigma_chain, type = "l",main=expression(sigma[err]^2))
+abline(h=0.1)
 plot(alpha_chain, type = "l",main=expression(alpha))
 plot(psi_chain, type = "l",main=expression(psi[delta]))
+abline(h=0.1)
 plot(k_chain,type = "l",main="k")
-
-
-
-
-
-## ---------------------- Toy example: visualize delta update ----------------------
-set.seed(777)
-
-## Use a tiny grid (n=8) on [0,1]
-t_min <- 0
-t_max <- 1
-t_range <- t_max - t_min
-t     <- seq(0, 1, length.out = 8)
-a     <- t_range
-n     <- length(t)
-
-## Parameters (you can tweak)
-g_true       <- 9.8
-h0_true      <- 46.45
-sigma_sq_err <- 0.05
-psi_delta    <- 0.12
-k            <- 0.2
-sigma_sq_delta <- sigma_sq_err / k
-
-## Mean function (your notation)
-balldropg <- function(t, theta) {
-  g <- theta[1]; h0 <- theta[2]
-  theta_vec <- rbind(h0, g)
-  x_vec <- cbind(1, -0.5 * (t * t_range + t_min)^2)
-  h <- x_vec %*% theta_vec
-  h[h < 0] <- 0
-  as.vector(h)
-}
-
-f_theta <- balldropg(t, c(g_true, h0_true))
-
-## Build orthogonalized covariance for delta: C_* = (sigma_err^2/k) * (R - W H^{-1} W^T)
-Sigma_delta <- GP_covariance_star_complete(t, sigma_sq_err, k, psi_delta)
-
-## Simulate a "true" delta (latent GP)
-library(mvtnorm)
-delta_true <- as.vector(rmvnorm(1, mean = rep(0, n), sigma = Sigma_delta))
-
-## Choose some "outlier" / mixture-2 indices (where zeta_i = 2)
-zeta <- rep(1L, n)
-zeta[c(3, 6)] <- 2L  # pick two indices as component 2
-
-## Generate observed y using your mixture structure:
-## zeta==1: y_i = f_theta_i + epsilon_i
-## zeta==2: y_i = f_theta_i + delta_i + epsilon_i
-eps <- rnorm(n, mean = 0, sd = sqrt(sigma_sq_err))
-y   <- f_theta + ifelse(zeta == 2L, delta_true, 0) + eps
-
-## -------------- Your conditional GP update block (verbatim structure) --------------
-zeta_2_indices <- which(zeta == 2)
-if (length(zeta_2_indices) > 0) {
-  y_m <- y[zeta_2_indices]
-  Sigma_delta_ymym <- sigma_sq_err * diag(length(zeta_2_indices)) +
-    Sigma_delta[zeta_2_indices, zeta_2_indices, drop = FALSE]
-  Sigma_delta_ym <- Sigma_delta[, zeta_2_indices, drop = FALSE]
-  Sigma_inv <- tryCatch(solve(Sigma_delta_ymym), error = function(e) diag(1, nrow(Sigma_delta_ymym)))
-  mu_delta_hat <- rep(0, n) + Sigma_delta_ym %*% Sigma_inv %*% (y_m - f_theta[zeta_2_indices])
-  Sigma_delta_hat <- Sigma_delta - Sigma_delta_ym %*% Sigma_inv %*% t(Sigma_delta_ym)
-  
-  ## (Optional, but recommended) tiny numerical hygiene:
-  # jitter <- 1e-10
-  # Sigma_delta_hat <- 0.5 * (Sigma_delta_hat + t(Sigma_delta_hat)) + diag(jitter, n)
-  
-  delta_draw <- as.vector(rmvnorm(1, mean = mu_delta_hat, sigma = Sigma_delta_hat))
-} else {
-  mu_delta_hat    <- rep(0, n)
-  Sigma_delta_hat <- Sigma_delta
-  delta_draw      <- as.vector(rmvnorm(1, mean = rep(0, n), sigma = Sigma_delta))
-}
-
-## -------------- Print & quick checks --------------
-cat("zeta = ", zeta, "\n")
-cat("indices with zeta == 2: ", zeta_2_indices, "\n\n")
-
-cat("Posterior mean mu_delta_hat (rounded):\n")
-print(round(as.numeric(mu_delta_hat), 4))
-
-cat("\nOne posterior draw of delta (rounded):\n")
-print(round(as.numeric(delta_draw), 4))
-
-cat("\nTrue delta used to generate y (rounded):\n")
-print(round(as.numeric(delta_true), 4))
-
-cat("\nmin eigen(Sigma_delta_hat): ",
-    min(eigen(0.5*(Sigma_delta_hat + t(Sigma_delta_hat)), symmetric=TRUE)$values), "\n")
-
-## For intuition, compare y - f_theta to posterior mean at observed zeta==2 indices
-cat("\ny - f_theta at zeta==2:\n")
-print(round(as.numeric(y - f_theta)[zeta_2_indices], 4))
-
-cat("\nmu_delta_hat at zeta==2 (should be close to y - f_theta when noise small):\n")
-print(round(as.numeric(mu_delta_hat)[zeta_2_indices], 4))
+abline(h=0.2)
