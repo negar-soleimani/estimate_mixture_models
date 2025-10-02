@@ -330,12 +330,11 @@ mcmc_step6 <- function(y, t, n_iter, init, sigma_proposals, mcmc_parameters, Sig
     # if(mcmc_parameters[4] == FALSE){
     #   k <- init[6]
     # }
-    
-    # Gibbs for k  (use K_* not R)
+
     K_star_psi <- GP_correlation(t, psi_delta)
-    #K_star_psi <- 0.5 * (K_star_psi + t(K_star_psi))       # numerical hygiene
+    #K_star_psi <- 0.5 * (K_star_psi + t(K_star_psi))
     
-    inv_Kstar <- tryCatch(chol2inv(chol(K_star_psi)),       # more stable than solve()
+    inv_Kstar <- tryCatch(chol2inv(chol(K_star_psi)), 
                           error = function(e) NULL)
     #if (is.null(inv_Kstar)) {
     #  beta_k <- Inf
