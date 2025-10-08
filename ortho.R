@@ -31,7 +31,7 @@ balldropg <- function(t, theta) {
   theta_vec <- rbind(h0, g)
   x_vec <- cbind(1, -0.5 * (t * t_range + t_min)^2)
   h <- x_vec %*% theta_vec
-  h[h < 0] <- 0
+  #h[h < 0] <- 0
   return(as.vector(h))
 }
 
@@ -451,13 +451,13 @@ abline(h=0.2)
 
 par(mfrow=c(2,3))
 plot(g_chain, type = "l", main="g")
-abline(h=9.8)
+abline(h=9.8, col = "red")
 plot(h0_chain, type = "l", main="h0")
-abline(h=46.45)
+abline(h=46.45, col = "red")
 plot(sigma_chain, type = "l",main=expression(sigma[err]^2))
-abline(h=0.1)
+abline(h=0.1, col = "red")
 plot(alpha_chain, type = "l",main=expression(alpha))
 plot(psi_chain, type = "l",main=expression(psi[delta]))
-abline(h=0.1)
+abline(h=0.1, col = "red")
 plot(k_chain,type = "l",main="k")
-abline(h=0.2)
+abline(h=0.2, col = "red")
