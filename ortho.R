@@ -212,19 +212,23 @@ mcmc_step6 <- function(y, t, n_iter, init, sigma_proposals, mcmc_parameters, Sig
     #inv_Kstar_psi <- tryCatch(solve(K_star_psi), error = function(e) NULL)
     inv_Kstar_psi <- tryCatch(chol2inv(chol(K_star_psi)), error = function(e) NULL)
     
+    # if (is.null(inv_Kstar_psi)) {
+    #   quad_form_delta <- -Inf
+    # } else {
+    #   #quad_form_delta <- as.numeric(t(delta) %*% inv_Kstar_psi %*% delta)
+    #   quad_form_delta <- sum(delta * (inv_Kstar_psi %*% delta))
+    # }
+    idx1 <- which(zeta == 1)
+    idx2 <- which(zeta == 2)
+    
     if (is.null(inv_Kstar_psi)) {
       quad_form_delta <- -Inf
     } else {
-      #quad_form_delta <- as.numeric(t(delta) %*% inv_Kstar_psi %*% delta)
-      quad_form_delta <- sum(delta * (inv_Kstar_psi %*% delta))
+      quad_form_delta <- t(delta[idx2] - rep(0, length(delta[idx2]))) %*% inv_Kstar_psi %*% delta[idx2] - rep(0, length(delta[idx2]))
     }
-    
-    #if (is.null(K_star_psi)) {
-    #  quad_form_delta <- -Inf
-    #} else {
-    #  quad_form_delta <- as.numeric(t(delta) %*% solve(K_star_psi) %*% delta)
-    #}
+
     if (quad_form_delta == -Inf) next
+    ss3=k[t]*t(delta[t+1,z==2]-Delta_info[z==2])%*%solve_corr%*%(delta[t+1,z==2]-Delta_info[z==2])
     
     # Gibbs for theta
     zeta_1_indices <- which(zeta == 1)
@@ -270,17 +274,22 @@ mcmc_step6 <- function(y, t, n_iter, init, sigma_proposals, mcmc_parameters, Sig
     f_theta <- balldropg(t, c(g, h0))
     idx1 <- which(zeta == 1)
     idx2 <- which(zeta == 2)
+    n2 <- length(idx2)
     residual1 <- y[idx1] - f_theta[idx1]
-    rss1 <- sum(residual1^2)
+    #rss1 <- sum(residual1^2)
+    #rss1 <- t(y[idx1] - f_theta[idx1]) %*% y[idx1] - f_theta[idx1]
+    rss1 <- crossprod(y[idx1] - f_theta[idx1])
     residual2 <- y[idx2] - f_theta[idx2] - delta[idx2]
-    rss2 <- sum(residual2^2)
+    #rss2 <- sum(residual2^2)
+    #rss2 <- t(y[idx2] - f_theta[idx2] - delta[idx2]) %*% y[idx2] - f_theta[idx2] - delta[idx2]
+    rss2 <- crossprod(y[idx2] - f_theta[idx2] - delta[idx2])
     
+    rate_err <- (0.5 * ( rss1 + rss2 + (theta[6] * quad_form_delta)))
+    shape_err <- (n + n2 - 1)/2
     #rate_err <- 0.5 * (rss1 + rss2 + (k * quad_form_delta))
-    #rate_err <- 0.5 + (0.5 * ( rss1 + rss2 + (theta[6] * quad_form_delta)))
     #shape_err <- 4 + n
-    rate_err <- 0.5 + (0.5 * ( rss1 + rss2 + (theta[6] * quad_form_delta)))
-    shape_err <- 0.5 + n
     sigma_sq_err <- rinvgamma(1, shape = shape_err, rate = rate_err)
+    #sigma_sq_err <- sqrt(sigma_sq_err)
     theta[3] <- sigma_sq_err
     if (mcmc_parameters[2] == FALSE) {
       sigma_sq_err <- init[3]
@@ -392,10 +401,10 @@ set.seed(12345)
 k = 0.2
 #sigma_sq_delta <- 0.1 
 sim_psi_delta <- 0.8 
-sigma_sq_err <- 0.1
+sigma_sq_err <- (0.1)^2
 sigma_sq_delta <- sigma_sq_err / k
 n_samples <- 1
-n_iter <- 20000
+n_iter <- 10000
 burn_in <- 5000
 
 sigma_props <- c(NA, NA, NA, NA, 0.4, NA) 
