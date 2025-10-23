@@ -280,7 +280,7 @@ mcmc_step6 <- function(y, t, n_iter, init, sigma_proposals, mcmc_parameters, Sig
     #rate_err <- 0.5 + (0.5 * ( rss1 + rss2 + (theta[6] * quad_form_delta)))
     #shape_err <- 4 + n
     rate_err <- (0.5 * ( rss1 + rss2 + (theta[6] * quad_form_delta)))
-    shape_err <- n + (1/2)
+    shape_err <- 0.5 + n
     sigma_sq_err <- rinvgamma(1, shape = shape_err, rate = rate_err)
     theta[3] <- sigma_sq_err
     if (mcmc_parameters[2] == FALSE) {
@@ -288,30 +288,53 @@ mcmc_step6 <- function(y, t, n_iter, init, sigma_proposals, mcmc_parameters, Sig
     }
     
     # MH for psi_delta
-    psi_prop <- rtruncnorm(1, a = 0, b = 1, mean = psi_delta, sd = sigma_proposals[5])
+    # psi_prop <- rtruncnorm(1, a = 0, b = 1, mean = psi_delta, sd = sigma_proposals[5])
+    # 
+    # K_star_prop <- GP_correlation(t, psi_prop)
+    # 
+    # # if (is.null(K_star_prop)) {
+    # #   log_acc <- -Inf
+    # # } else {
+    # Sigma_delta_cur <- (sigma_sq_err / k) * K_star_psi
+    # Sigma_delta_prop <- (sigma_sq_err / k) * K_star_prop
+    # Sigma_delta_prop <- GP_covariance_star_complete(t, sigma_sq_err, k, psi_delta = psi_prop)
+    # Sigma_delta_cur <- GP_covariance_star_complete(t, sigma_sq_err, k, psi_delta)
+    # log_prop_current <- log(dtruncnorm(psi_delta, a = 0, b = 1, mean = psi_prop, sd = sigma_proposals[5]))
+    # log_prop_prop <- log(dtruncnorm(psi_prop, a = 0, b = 1, mean = psi_delta, sd = sigma_proposals[5]))
+    # log_prior_current <- dbeta(psi_delta, shape1 = a_psi, shape2 = b_psi, log=TRUE)
+    # log_prior_prop <- dbeta(psi_prop, shape1 = a_psi, shape2 = b_psi, log=TRUE)
+    # log_like_current <- tryCatch(dmvnorm(delta, rep(0, n), Sigma_delta_cur, log = TRUE), error = function(e) -Inf)
+    # log_like_prop <- tryCatch(dmvnorm(delta, rep(0, n), Sigma_delta_prop, log = TRUE), error = function(e) -Inf)
+    # log_ratio <- (log_like_prop + log_prior_prop) - (log_like_current + log_prior_current) + log_prop_current - log_prop_prop
+    # # }
+    # if (!is.na(log_ratio) && log(runif(1)) < log_ratio) {
+    #   psi_delta <- psi_prop
+    #   theta[5] <- psi_delta
+    #   accept_psi <- accept_psi + 1
+    # }
+    
+    ## ---- MH for psi_delta (Uniform(0.1, 1) prior) ----
+    psi_prop <- rtruncnorm(1, a = 0.1, b = 1, mean = psi_delta, sd = sigma_proposals[5])
     
     K_star_prop <- GP_correlation(t, psi_prop)
+    Sigma_delta_cur  <- GP_covariance_star_complete(t, sigma_sq_err, k, psi_delta)
+    Sigma_delta_prop <- GP_covariance_star_complete(t, sigma_sq_err, k, psi_prop)
+    log_prop_current <- log(dtruncnorm(psi_delta, a = 0.1, b = 1, mean = psi_prop,  sd = sigma_proposals[5]))
+    log_prop_prop    <- log(dtruncnorm(psi_prop,  a = 0.1, b = 1, mean = psi_delta, sd = sigma_proposals[5]))
+    log_prior_current <- dunif(psi_delta, min = 0.1, max = 1, log = TRUE)
+    log_prior_prop    <- dunif(psi_prop,  min = 0.1, max = 1, log = TRUE)
+    log_like_current <- tryCatch(dmvnorm(delta, rep(0, n), Sigma_delta_cur,  log = TRUE), error = function(e) -Inf)
+    log_like_prop    <- tryCatch(dmvnorm(delta, rep(0, n), Sigma_delta_prop, log = TRUE), error = function(e) -Inf)
+
+    log_ratio <- (log_like_prop + log_prior_prop) - (log_like_current + log_prior_current) +
+      (log_prop_current - log_prop_prop)
     
-    # if (is.null(K_star_prop)) {
-    #   log_acc <- -Inf
-    # } else {
-    Sigma_delta_cur <- (sigma_sq_err / k) * K_star_psi
-    Sigma_delta_prop <- (sigma_sq_err / k) * K_star_prop
-    Sigma_delta_prop <- GP_covariance_star_complete(t, sigma_sq_err, k, psi_delta = psi_prop)
-    Sigma_delta_cur <- GP_covariance_star_complete(t, sigma_sq_err, k, psi_delta)
-    log_prop_current <- log(dtruncnorm(psi_delta, a = 0, b = 1, mean = psi_prop, sd = sigma_proposals[5]))
-    log_prop_prop <- log(dtruncnorm(psi_prop, a = 0, b = 1, mean = psi_delta, sd = sigma_proposals[5]))
-    log_prior_current <- dbeta(psi_delta, shape1 = a_psi, shape2 = b_psi, log=TRUE)
-    log_prior_prop <- dbeta(psi_prop, shape1 = a_psi, shape2 = b_psi, log=TRUE)
-    log_like_current <- tryCatch(dmvnorm(delta, rep(0, n), Sigma_delta_cur, log = TRUE), error = function(e) -Inf)
-    log_like_prop <- tryCatch(dmvnorm(delta, rep(0, n), Sigma_delta_prop, log = TRUE), error = function(e) -Inf)
-    log_ratio <- (log_like_prop + log_prior_prop) - (log_like_current + log_prior_current) + log_prop_current - log_prop_prop
-    # }
     if (!is.na(log_ratio) && log(runif(1)) < log_ratio) {
       psi_delta <- psi_prop
-      theta[5] <- psi_delta
+      theta[5]  <- psi_delta
       accept_psi <- accept_psi + 1
     }
+    
     
     if(mcmc_parameters[3] == FALSE){
       psi_delta <- init[5]
@@ -372,7 +395,7 @@ mcmc_step6 <- function(y, t, n_iter, init, sigma_proposals, mcmc_parameters, Sig
     
   }
   
-  # Remove burn-in samples if n_burnin > 0
+  # Remove burn-in 
   if (n_burnin > 0) {
     
     keep <- (n_burnin + 1):total_iter
@@ -401,7 +424,7 @@ burn_in <- 5000
 
 sigma_props <- c(NA, NA, NA, NA, 0.4, NA) 
 #(g,h0), sigma, psi, k, alpha
-mcmc_parameters <- c(TRUE, TRUE, TRUE, TRUE, TRUE)
+mcmc_parameters <- c(TRUE, FALSE, FALSE, TRUE, TRUE)
 Sigma_theta <- matrix(c(0.5, 0, 0, 0.5), nrow = 2)
 init <- c(9.8, 46.45, 0.1, 0.5, sim_psi_delta, 0.2)
 
