@@ -424,7 +424,7 @@ burn_in <- 5000
 
 sigma_props <- c(NA, NA, NA, NA, 0.4, NA) 
 #(g,h0), sigma, psi, k, alpha
-mcmc_parameters <- c(TRUE, FALSE, FALSE, TRUE, TRUE)
+mcmc_parameters <- c(TRUE, TRUE, TRUE, TRUE, TRUE)
 Sigma_theta <- matrix(c(0.5, 0, 0, 0.5), nrow = 2)
 init <- c(9.8, 46.45, 0.1, 0.5, sim_psi_delta, 0.2)
 
@@ -474,12 +474,17 @@ alpha <- res[[4]]
 psi <- res[[5]]
 k <- res[[6]]
 
+par(mfrow = c(2,3))
 plot(g, type = "l")
+abline(h = 9.8, col = "red")
 plot(h, type = "l")
+abline(h = 46.45, col = "red")
 plot(sig, type = "l")
+abline(h = 0.1, col = "red")
 plot(alpha, type = "l")
 plot(psi, type = "l")
 plot(k, type = "l")
+abline(h = 0.2, col = "red")
 hist(k)
 hist(sig)
 hist(psi)
