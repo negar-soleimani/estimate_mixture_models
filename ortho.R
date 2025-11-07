@@ -8,7 +8,7 @@ library(MASS)
 library(mvtnorm)
 library(invgamma)
 
-don <- read_xlsx("/Users/negarsoleimani/Documents/phd/paper1/Ball_drops_data.xlsx", sheet = 2)
+don <- read_xlsx("/Users/negarsoleimani/Documents/phd/paper1/Ball_drops_data.xlsx", sheet = 5)
 names(don) <- c("drop", "time", "Height", "Velocity")
 don$drop <- as.factor(don$drop); don <- don[don$drop == 1, ]
 
@@ -26,13 +26,14 @@ t <- (t - t_min) / t_range
 a <- t_range
 n <- length(y)
 
+
 balldropg <- function(t, theta) {
   g <- theta[1]
   h0 <- theta[2]
   theta_vec <- rbind(h0, g)
-  x_vec <- cbind(1, -0.5 * (t * t_range + t_min)^2)
+  x_vec <- cbind(1, -0.5 * (t * t_range)^2) #cbind(1, -0.5 * (t * t_range + t_min)^2)
   h <- x_vec %*% theta_vec
-  h[h < 0] <- 0
+  #h[h < 0] <- 0
   return(as.vector(h))
 }
 
@@ -89,25 +90,49 @@ h_vec_x <- function(x, psi_delta) {
   rbind(J, -0.5 * (a^2) * I)
 }
 
+# H_matrix <- function(psi_delta) {
+#   A <- A_scalar(psi_delta)
+#   B <- B_scalar(psi_delta)
+#   D <- D_scalar(psi_delta)
+#   matrix(c(A, -((a^2)*B)/2, -((a^2)*B)/2, ((a^4)*D)/4), nrow = 2, byrow = TRUE)
+# }
+
 H_matrix <- function(psi_delta) {
-  A <- A_scalar(psi_delta)
-  B <- B_scalar(psi_delta)
-  D <- D_scalar(psi_delta)
-  matrix(c(A, -((a^2)*B)/2, -((a^2)*B)/2, ((a^4)*D)/4), nrow = 2, byrow = TRUE)
+  A <- A_scalar(psi_delta); B <- B_scalar(psi_delta); D <- D_scalar(psi_delta)
+  H <- matrix(c(A, -((a^2)*B)/2, -((a^2)*B)/2, ((a^4)*D)/4), nrow = 2, byrow = TRUE)
+  H <- 0.5 * (H + t(H))
+  H + diag(1e-10, 2)
 }
 
+
+# GP_correlation <- function(t, psi_delta) {
+#   R_se <- outer(t, t, function(ti, tj) exp(-abs(ti - tj) / psi_delta))
+#   
+#   h_mat <- t(sapply(t, function(x) h_vec_x(x, psi_delta)))
+#   H <- H_matrix(psi_delta)
+#   H_inv <- tryCatch(solve(H), error = function(e) NULL)
+#   if (is.null(H_inv)) return(NULL)
+#   
+#   K_star <- R_se - h_mat %*% H_inv %*% t(h_mat)
+#   #K_star <- 0.5 * (K_star + t(K_star))  # symmetrize
+#   K_star
+# }
+
 GP_correlation <- function(t, psi_delta) {
-  R_se <- outer(t, t, function(ti, tj) exp(-abs(ti - tj) / psi_delta))
-  
+  R_se  <- outer(t, t, function(ti, tj) exp(-abs(ti - tj) / psi_delta))
   h_mat <- t(sapply(t, function(x) h_vec_x(x, psi_delta)))
-  H <- H_matrix(psi_delta)
-  H_inv <- tryCatch(solve(H), error = function(e) NULL)
+  H     <- H_matrix(psi_delta)
+  H_inv <- tryCatch(chol2inv(chol(H)), error = function(e) NULL)
   if (is.null(H_inv)) return(NULL)
-  
   K_star <- R_se - h_mat %*% H_inv %*% t(h_mat)
-  #K_star <- 0.5 * (K_star + t(K_star))  # symmetrize
+  K_star <- 0.5 * (K_star + t(K_star))   
+  eig <- eigen(K_star, symmetric = TRUE, only.values = TRUE)$values
+  if (min(eig) < 1e-10) {                 
+    K_star <- K_star + diag(1e-8 - min(0, min(eig)) + 1e-12, nrow(K_star))
+  }
   K_star
 }
+
 
 GP_covariance_star_complete <- function(t, sigma_sq_err, k, psi_delta) {
   K_star <- GP_correlation(t, psi_delta)
@@ -160,6 +185,8 @@ mcmc_step6 <- function(y, t, n_iter, init, sigma_proposals, mcmc_parameters, Sig
     sigma_sq_delta <- sigma_sq_err / k
     
     Sigma_delta <- GP_covariance_star_complete(t, sigma_sq_err, k, psi_delta) #c*(x,x')
+    Sigma_delta <- 0.5 * (Sigma_delta + t(Sigma_delta)) + diag(1e-10, n)
+    
     
     # if (is.null(Sigma_delta)) {
     #   log_likelihood <- -Inf
@@ -227,29 +254,29 @@ mcmc_step6 <- function(y, t, n_iter, init, sigma_proposals, mcmc_parameters, Sig
     #}
     if (quad_form_delta == -Inf) next
     
-    # Gibbs for theta
+    # # Gibbs for theta
     zeta_1_indices <- which(zeta == 1)
     zeta_2_indices <- which(zeta == 2)
-    X <- cbind(1, -0.5 * (t * t_range + t_min)^2)
-    x1 <- X[zeta_1_indices, , drop = FALSE]  
+    X <- cbind(1, -0.5 * (t * t_range)^2) #cbind(1, -0.5 * (t * t_range + t_min)^2)
+    x1 <- X[zeta_1_indices, , drop = FALSE]
     x2 <- X[zeta_2_indices, , drop = FALSE]
-    theta_hat     <- matrix(c(46.45, 9.8), ncol = 1)
+    theta_hat     <- matrix(c(46.14, 9.8), ncol = 1)
     inv_sigma_theta <- solve(Sigma_theta)
     A <- ((t(x1) %*% x1) / theta[3]) + ((t(x2) %*% x2) / theta[3]) + inv_sigma_theta
     Sigmapost_theta <- solve(A)
     y1 <- matrix(y[zeta_1_indices], ncol = 1)
     y2 <- matrix(y[zeta_2_indices], ncol = 1)
     d2 <- matrix(delta[zeta_2_indices], ncol = 1)
-    B <- (t(x1) %*% y1) / theta[3] + 
-      (t(x2) %*% y2) / theta[3] -
-      (t(x2) %*% d2) / theta[3] +
+    B <- (t(x1) %*% y1) / theta[3] +
+         (t(x2) %*% y2) / theta[3] -
+         (t(x2) %*% d2) / theta[3] +
       inv_sigma_theta %*% theta_hat
     Mupost_theta <- Sigmapost_theta %*% B
     theta_sample <- rmvnorm(1, mean = Mupost_theta, sigma = Sigmapost_theta)
     h0 <- theta_sample[1];  g <- theta_sample[2]
     theta[1] <- g
     theta[2] <- h0
-    
+
     if(mcmc_parameters[1] == FALSE){
       g <- init[1]
       h0 <- init[2]
@@ -276,18 +303,20 @@ mcmc_step6 <- function(y, t, n_iter, init, sigma_proposals, mcmc_parameters, Sig
     residual2 <- y[idx2] - f_theta[idx2] - delta[idx2]
     rss2 <- sum(residual2^2)
     
-    #rate_err <- 0.5 * (rss1 + rss2 + (k * quad_form_delta))
-    #rate_err <- 0.5 + (0.5 * ( rss1 + rss2 + (theta[6] * quad_form_delta)))
-    #shape_err <- 4 + n
-    rate_err <- (0.5 * ( rss1 + rss2 + (theta[6] * quad_form_delta)))
-    shape_err <- 0.5 + n
+    # rate_err <- 2 + (0.5 * ( rss1 + rss2 + (theta[6] * quad_form_delta)))
+    # shape_err <- 1 + n
+    rate_err <- (0.5 * ( rss1 + rss2 + (k * quad_form_delta)))
+    shape_err <- n + 1/2
+    ##sigma_sq_err <- rinvgamma(1, shape = shape_err, rate = rate_err)
+    #sigma_sq_err <- 1/rgamma(1, shape = shape_err, rate = rate_err)
     sigma_sq_err <- rinvgamma(1, shape = shape_err, rate = rate_err)
+
     theta[3] <- sigma_sq_err
     if (mcmc_parameters[2] == FALSE) {
       sigma_sq_err <- init[3]
     }
     
-    # MH for psi_delta
+    # # # MH for psi_delta
     # psi_prop <- rtruncnorm(1, a = 0, b = 1, mean = psi_delta, sd = sigma_proposals[5])
     # 
     # K_star_prop <- GP_correlation(t, psi_prop)
@@ -313,9 +342,9 @@ mcmc_step6 <- function(y, t, n_iter, init, sigma_proposals, mcmc_parameters, Sig
     #   accept_psi <- accept_psi + 1
     # }
     
-    ## ---- MH for psi_delta (Uniform(0.1, 1) prior) ----
+    # ## ---- MH for psi_delta (Uniform(0.1, 1) prior) ----
     psi_prop <- rtruncnorm(1, a = 0.1, b = 1, mean = psi_delta, sd = sigma_proposals[5])
-    
+
     K_star_prop <- GP_correlation(t, psi_prop)
     Sigma_delta_cur  <- GP_covariance_star_complete(t, sigma_sq_err, k, psi_delta)
     Sigma_delta_prop <- GP_covariance_star_complete(t, sigma_sq_err, k, psi_prop)
@@ -328,13 +357,13 @@ mcmc_step6 <- function(y, t, n_iter, init, sigma_proposals, mcmc_parameters, Sig
 
     log_ratio <- (log_like_prop + log_prior_prop) - (log_like_current + log_prior_current) +
       (log_prop_current - log_prop_prop)
-    
+
     if (!is.na(log_ratio) && log(runif(1)) < log_ratio) {
       psi_delta <- psi_prop
       theta[5]  <- psi_delta
       accept_psi <- accept_psi + 1
     }
-    
+
     
     if(mcmc_parameters[3] == FALSE){
       psi_delta <- init[5]
@@ -415,8 +444,8 @@ mcmc_step6 <- function(y, t, n_iter, init, sigma_proposals, mcmc_parameters, Sig
 set.seed(12345)
 k = 0.2
 #sigma_sq_delta <- 0.1 
-sim_psi_delta <- 0.8 
-sigma_sq_err <- 0.1
+sim_psi_delta <- 0.01 
+sigma_sq_err <- (0.1)^2
 sigma_sq_delta <- sigma_sq_err / k
 n_samples <- 1
 n_iter <- 20000
@@ -424,9 +453,9 @@ burn_in <- 5000
 
 sigma_props <- c(NA, NA, NA, NA, 0.4, NA) 
 #(g,h0), sigma, psi, k, alpha
-mcmc_parameters <- c(TRUE, TRUE, TRUE, TRUE, TRUE)
+mcmc_parameters <- c(TRUE, FALSE, FALSE, FALSE, TRUE)
 Sigma_theta <- matrix(c(0.5, 0, 0, 0.5), nrow = 2)
-init <- c(9.8, 46.45, 0.1, 0.5, sim_psi_delta, 0.2)
+init <- c(9.8, 46.14, 0.01, 0.5, sim_psi_delta, 0.2)
 
 g_chain     <- matrix(NA, n_iter, n_samples)
 h0_chain    <- matrix(NA, n_iter, n_samples)
@@ -445,8 +474,8 @@ for (v in 1:n_samples) {
   
   delta <- as.vector(rmvnorm(1, rep(0, n), Sigma_delta))
   
-  y_1 <- balldropg(t, c(9.8, 46.45)) + rnorm(n, 0, sqrt(sigma_sq_err)) + delta
-  #y_1 <- balldropg(t, c(9.8, 46.45)) + rnorm(n, 0, sqrt(sigma_sq_err)*(1+1/k))
+  #y_1 <- balldropg(t, c(9.8, 46.14)) + rnorm(n, 0, sqrt(sigma_sq_err)) + delta
+  y_1 <- balldropg(t, c(9.8, 46.14)) + rnorm(n, 0, sqrt(sigma_sq_err)*(1+1/k))
   
   y_obs[, v] <- y_1
   a_psi = 1
@@ -465,6 +494,7 @@ for (v in 1:n_samples) {
   loglik_mat[, v]  <- res$loglik
   accept_rate[v]   <- res$accept_rate_psi
 }
+
 res <- list(g_chain, h0_chain, sigma_chain, alpha_chain, psi_chain, k_chain, delta_list, zeta_list, loglik_mat, accept_rate)
 
 g <- res[[1]]
@@ -478,9 +508,9 @@ par(mfrow = c(2,3))
 plot(g, type = "l")
 abline(h = 9.8, col = "red")
 plot(h, type = "l")
-abline(h = 46.45, col = "red")
+abline(h = 46.14, col = "red")
 plot(sig, type = "l")
-abline(h = 0.1, col = "red")
+abline(h = 0.01, col = "red")
 plot(alpha, type = "l")
 plot(psi, type = "l")
 plot(k, type = "l")
@@ -491,10 +521,17 @@ hist(psi)
 hist(alpha)
 
 
+GP_covariance <- function(t, sigma_sq_delta, psi_delta) {
+  n <- length(t)
+  Sigma <- outer(t, t, function(ti, tj) sigma_sq_delta * exp(-abs(ti - tj) / psi_delta))
+  return(Sigma)
+}
+GP_covariance(t, 0.05, 0.3)
+
 boxplot(colMeans(g))
 abline(h = 9.8)
 boxplot(colMeans(h))
-abline(h = 46.45)
+abline(h = 46.14)
 boxplot(colMeans(sig))
 abline(h = 0.1)
 boxplot(colMeans(alpha))
@@ -517,6 +554,58 @@ plot(t, delta_mean, type="l", main="Posterior mean of delta")
 
 #result_m2_sh2_psi1_ortho <- list(g_chain, h0_chain, sigma_chain, alpha_chain, psi_chain, k_chain, delta_list, zeta_list, loglik_mat, accept_rate)
 #save(result_m2_sh2_psi1_ortho,file = "/Users/negarsoleimani/Documents/phd/paper1/Orthogonality/result_m2_sh2_psi1_ortho.RData")
+
+########################
+set.seed(12345)
+
+init_base       <- c(9.8, 46.14, 0.01, 0.7, 0.5, 0.2)
+sigma_proposals <- c(NA,NA,NA,NA,0.5,NA)
+mcmc_parameters <- c(TRUE, TRUE, TRUE, TRUE, TRUE)
+#Sigma_theta     <- matrix(c(0.1,0,0,0.1),2)
+Sigma_theta     <- matrix(c(0.5,0,0,0.5),2)
+n_iter          <- 20000
+burn_in         <- 1000
+
+results_real_sh2 <- mcmc_step6(
+  y = y, t = t,
+  n_iter = n_iter,
+  init   = init_base,
+  sigma_proposals = sigma_proposals,
+  mcmc_parameters = mcmc_parameters,
+  Sigma_theta     = Sigma_theta,
+  n_burnin        = burn_in
+)
+g_chain <- results_real_sh2$theta[,1]
+h0_chain <- results_real_sh2$theta[,2]
+sigma_sq_err_chain <- results_real_sh2$theta[,3]
+alpha_chain <- results_real_sh2$theta[,4]
+psi_delta_chain <- results_real_sh2$theta[,5]
+k_chain <- results_real_sh2$theta[,6]
+delta_chain <- results_real_sh2$delta
+zeta_chain <- results_real_sh2$zeta
+loglik_chain <- results_real_sh2$loglik
+accept_rate_psi <- results_real_sh2$accept_rate_psi
+
+par(mfrow = c(1, 1))
+boxplot(results_real_sh2$delta, ylab = expression(delta))
+
+par(mfrow = c(2, 3))
+plot(results_real_sh2$theta[,1], type = "l",
+     xlab = "Blue Basketball", ylab = "g")
+abline(h = 9.8, col = "red")
+plot(results_real_sh2$theta[,2], type = "l",
+     xlab = "Blue Basketball", ylab = "h0")
+abline(h = 46.14, col = "red")
+plot(results_real_sh2$theta[,3], type = "l",
+     xlab = "Blue Basketball", ylab = expression(sigma[err]^2))
+abline(h = 0.01, col = "red")
+plot(results_real_sh2$theta[,4], type = "l",
+     xlab = "Blue Basketball", ylab = expression(alpha))
+plot(results_real_sh2$theta[,5], type = "l",
+     xlab = "Blue Basketball", ylab = expression(psi[delta]))
+plot(results_real_sh2$theta[,6], type = "l",
+     xlab = "Blue Basketball", ylab = "k")
+######################
 
 
 ## Psi2 ############################################
