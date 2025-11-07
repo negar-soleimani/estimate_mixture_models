@@ -8,7 +8,7 @@ library(MASS)
 library(mvtnorm)
 library(invgamma)
 
-don <- read_xlsx("/Users/negarsoleimani/Documents/phd/paper1/Ball_drops_data.xlsx", sheet = 5)
+don <- read_xlsx("/Users/negarsoleimani/Documents/phd/paper1/Ball_drops_data.xlsx", sheet = 2)
 names(don) <- c("drop", "time", "Height", "Velocity")
 don$drop <- as.factor(don$drop); don <- don[don$drop == 1, ]
 
@@ -143,7 +143,7 @@ GP_covariance_star_complete <- function(t, sigma_sq_err, k, psi_delta) {
 }
 
 # psi_delta <- 0.1
-# sigma_sq_err <- 0.1
+# sigma_sq_err <- 0.01
 # k <- 0.2
 # sigma_sq_delta <- sigma_sq_err / k
 # t <- seq(0,1,0.25)
@@ -185,7 +185,7 @@ mcmc_step6 <- function(y, t, n_iter, init, sigma_proposals, mcmc_parameters, Sig
     sigma_sq_delta <- sigma_sq_err / k
     
     Sigma_delta <- GP_covariance_star_complete(t, sigma_sq_err, k, psi_delta) #c*(x,x')
-    Sigma_delta <- 0.5 * (Sigma_delta + t(Sigma_delta)) + diag(1e-10, n)
+    #Sigma_delta <- 0.5 * (Sigma_delta + t(Sigma_delta)) + diag(1e-10, n)
     
     
     # if (is.null(Sigma_delta)) {
@@ -195,12 +195,31 @@ mcmc_step6 <- function(y, t, n_iter, init, sigma_proposals, mcmc_parameters, Sig
     mean1 <- f_theta
     mean2 <- f_theta + delta
     
-    ###s <- 0.3
-    prob_zeta <- 1 / (1 + (alpha_param * dnorm(y, mean1, sqrt(sigma_sq_err))) /
-                        ((1 - alpha_param) * dnorm(y, mean2, sqrt(sigma_sq_err))))
-    ##*(abs(delta) > s)
-    zeta <- 1 + (runif(length(y)) < prob_zeta)
+    # ##s <- 0.3
+    # prob_zeta <- 1 / (1 + (alpha_param * dnorm(y, mean1, sqrt(sigma_sq_err))) /
+    #                     ((1 - alpha_param) * dnorm(y, mean2, sqrt(sigma_sq_err))))
+    # ##*(abs(delta) > s)
+    # zeta <- 1 + (runif(length(y)) < prob_zeta)
+    # 
+    # chain_zeta[iter, ] = zeta
     
+    log_sum_exp <- function(x, y) {
+      m <- pmax(x, y)
+      m + log(exp(x - m) + exp(y - m))
+    }
+    
+    # Calculate log weights for each component
+    log_w1 <- log(alpha_param) + dnorm(y, mean1, sqrt(sigma_sq_err), log = TRUE)
+    log_w2 <- log(1 - alpha_param) + dnorm(y, mean2, sqrt(sigma_sq_err), log = TRUE)
+    
+    # Log-sum-exp of the denominator
+    log_denominator <- log_sum_exp(log_w1, log_w2)
+    
+    # Posterior probability P(zeta=1|y) in log space, then exponentiate
+    prob_zeta <- exp(log_w1 - log_denominator)
+    
+    #zeta <- 1 + (runif(length(y)) < prob_zeta)
+    zeta <- ifelse(runif(length(y)) < prob_zeta, 1, 2)
     chain_zeta[iter, ] = zeta
     
     
@@ -215,9 +234,9 @@ mcmc_step6 <- function(y, t, n_iter, init, sigma_proposals, mcmc_parameters, Sig
       Sigma_delta_ymym <- sigma_sq_err * diag(length(zeta_2_indices)) +
         Sigma_delta[zeta_2_indices, zeta_2_indices, drop = FALSE]
       Sigma_delta_ym <- Sigma_delta[, zeta_2_indices, drop = FALSE]
-      #Sigma_inv <- tryCatch(solve(Sigma_delta_ymym), error = function(e) diag(1, nrow(Sigma_delta_ymym)))
-      Sigma_inv <- tryCatch(chol2inv(chol(Sigma_delta_ymym)),
-                            error = function(e) diag(1, nrow(Sigma_delta_ymym)))
+      Sigma_inv <- tryCatch(solve(Sigma_delta_ymym), error = function(e) diag(1, nrow(Sigma_delta_ymym)))
+      #Sigma_inv <- tryCatch(chol2inv(chol(Sigma_delta_ymym)),
+      #error = function(e) diag(1, nrow(Sigma_delta_ymym)))
       #Sigma_inv <- 0.5 * (Sigma_inv + t(Sigma_inv))
       mu_delta_hat <- rep(0, n) + Sigma_delta_ym %*% Sigma_inv %*% (y_m - f_theta[zeta_2_indices])
       Sigma_delta_hat <- Sigma_delta - Sigma_delta_ym %*% Sigma_inv %*% t(Sigma_delta_ym)
@@ -243,8 +262,8 @@ mcmc_step6 <- function(y, t, n_iter, init, sigma_proposals, mcmc_parameters, Sig
     if (is.null(inv_Kstar_psi)) {
       quad_form_delta <- -Inf
     } else {
-      #quad_form_delta <- as.numeric(t(delta) %*% inv_Kstar_psi %*% delta)
-      quad_form_delta <- sum(delta * (inv_Kstar_psi %*% delta))
+      quad_form_delta <- as.numeric(t(delta) %*% inv_Kstar_psi %*% delta)
+      #quad_form_delta <- sum(delta * (inv_Kstar_psi %*% delta))
     }
     
     #if (is.null(K_star_psi)) {
@@ -260,7 +279,7 @@ mcmc_step6 <- function(y, t, n_iter, init, sigma_proposals, mcmc_parameters, Sig
     X <- cbind(1, -0.5 * (t * t_range)^2) #cbind(1, -0.5 * (t * t_range + t_min)^2)
     x1 <- X[zeta_1_indices, , drop = FALSE]
     x2 <- X[zeta_2_indices, , drop = FALSE]
-    theta_hat     <- matrix(c(46.14, 9.8), ncol = 1)
+    theta_hat     <- matrix(c(46.46, 9.8), ncol = 1)
     inv_sigma_theta <- solve(Sigma_theta)
     A <- ((t(x1) %*% x1) / theta[3]) + ((t(x2) %*% x2) / theta[3]) + inv_sigma_theta
     Sigmapost_theta <- solve(A)
@@ -268,15 +287,15 @@ mcmc_step6 <- function(y, t, n_iter, init, sigma_proposals, mcmc_parameters, Sig
     y2 <- matrix(y[zeta_2_indices], ncol = 1)
     d2 <- matrix(delta[zeta_2_indices], ncol = 1)
     B <- (t(x1) %*% y1) / theta[3] +
-         (t(x2) %*% y2) / theta[3] -
-         (t(x2) %*% d2) / theta[3] +
+      (t(x2) %*% y2) / theta[3] -
+      (t(x2) %*% d2) / theta[3] +
       inv_sigma_theta %*% theta_hat
     Mupost_theta <- Sigmapost_theta %*% B
     theta_sample <- rmvnorm(1, mean = Mupost_theta, sigma = Sigmapost_theta)
     h0 <- theta_sample[1];  g <- theta_sample[2]
     theta[1] <- g
     theta[2] <- h0
-
+    
     if(mcmc_parameters[1] == FALSE){
       g <- init[1]
       h0 <- init[2]
@@ -303,14 +322,14 @@ mcmc_step6 <- function(y, t, n_iter, init, sigma_proposals, mcmc_parameters, Sig
     residual2 <- y[idx2] - f_theta[idx2] - delta[idx2]
     rss2 <- sum(residual2^2)
     
-    # rate_err <- 2 + (0.5 * ( rss1 + rss2 + (theta[6] * quad_form_delta)))
-    # shape_err <- 1 + n
-    rate_err <- (0.5 * ( rss1 + rss2 + (k * quad_form_delta)))
+    # rate_err <- 1 + (0.5 * ( rss1 + rss2 + (theta[6] * quad_form_delta)))
+    # shape_err <- 5 + n/2
+    rate_err <- 0.5 * ( rss1 + rss2 + theta[6] * quad_form_delta)
     shape_err <- n + 1/2
     ##sigma_sq_err <- rinvgamma(1, shape = shape_err, rate = rate_err)
     #sigma_sq_err <- 1/rgamma(1, shape = shape_err, rate = rate_err)
     sigma_sq_err <- rinvgamma(1, shape = shape_err, rate = rate_err)
-
+    
     theta[3] <- sigma_sq_err
     if (mcmc_parameters[2] == FALSE) {
       sigma_sq_err <- init[3]
@@ -344,7 +363,7 @@ mcmc_step6 <- function(y, t, n_iter, init, sigma_proposals, mcmc_parameters, Sig
     
     # ## ---- MH for psi_delta (Uniform(0.1, 1) prior) ----
     psi_prop <- rtruncnorm(1, a = 0.1, b = 1, mean = psi_delta, sd = sigma_proposals[5])
-
+    
     K_star_prop <- GP_correlation(t, psi_prop)
     Sigma_delta_cur  <- GP_covariance_star_complete(t, sigma_sq_err, k, psi_delta)
     Sigma_delta_prop <- GP_covariance_star_complete(t, sigma_sq_err, k, psi_prop)
@@ -354,16 +373,16 @@ mcmc_step6 <- function(y, t, n_iter, init, sigma_proposals, mcmc_parameters, Sig
     log_prior_prop    <- dunif(psi_prop,  min = 0.1, max = 1, log = TRUE)
     log_like_current <- tryCatch(dmvnorm(delta, rep(0, n), Sigma_delta_cur,  log = TRUE), error = function(e) -Inf)
     log_like_prop    <- tryCatch(dmvnorm(delta, rep(0, n), Sigma_delta_prop, log = TRUE), error = function(e) -Inf)
-
+    
     log_ratio <- (log_like_prop + log_prior_prop) - (log_like_current + log_prior_current) +
       (log_prop_current - log_prop_prop)
-
+    
     if (!is.na(log_ratio) && log(runif(1)) < log_ratio) {
       psi_delta <- psi_prop
       theta[5]  <- psi_delta
       accept_psi <- accept_psi + 1
     }
-
+    
     
     if(mcmc_parameters[3] == FALSE){
       psi_delta <- init[5]
@@ -394,7 +413,7 @@ mcmc_step6 <- function(y, t, n_iter, init, sigma_proposals, mcmc_parameters, Sig
     #if (is.null(inv_Kstar)) {
     #  beta_k <- Inf
     #} else {
-    beta_k <- (1 / (2 * sigma_sq_err)) * sum(t(delta) %*% inv_Kstar %*% delta)
+    beta_k <- (1 / (2 * sigma_sq_err)) * sum((delta) %*% inv_Kstar %*% delta)
     #}
     
     alpha_k <- (n / 2) + 1
@@ -409,6 +428,7 @@ mcmc_step6 <- function(y, t, n_iter, init, sigma_proposals, mcmc_parameters, Sig
     if(mcmc_parameters[4] == FALSE){
       k <- init[6]
     }
+    
     
     # Gibbs step for alpha
     alpha_param <- rbeta(1, sum(zeta == 1) + 0.5, sum(zeta == 2) + 0.5)
@@ -444,7 +464,7 @@ mcmc_step6 <- function(y, t, n_iter, init, sigma_proposals, mcmc_parameters, Sig
 set.seed(12345)
 k = 0.2
 #sigma_sq_delta <- 0.1 
-sim_psi_delta <- 0.01 
+sim_psi_delta <- 0.3 
 sigma_sq_err <- (0.1)^2
 sigma_sq_delta <- sigma_sq_err / k
 n_samples <- 1
@@ -453,9 +473,9 @@ burn_in <- 5000
 
 sigma_props <- c(NA, NA, NA, NA, 0.4, NA) 
 #(g,h0), sigma, psi, k, alpha
-mcmc_parameters <- c(TRUE, FALSE, FALSE, FALSE, TRUE)
+mcmc_parameters <- c(TRUE, TRUE, TRUE, TRUE, TRUE)
 Sigma_theta <- matrix(c(0.5, 0, 0, 0.5), nrow = 2)
-init <- c(9.8, 46.14, 0.01, 0.5, sim_psi_delta, 0.2)
+init <- c(9.8, 46.46, 0.01, 0.5, 0.2, 0.2)
 
 g_chain     <- matrix(NA, n_iter, n_samples)
 h0_chain    <- matrix(NA, n_iter, n_samples)
@@ -474,8 +494,8 @@ for (v in 1:n_samples) {
   
   delta <- as.vector(rmvnorm(1, rep(0, n), Sigma_delta))
   
-  #y_1 <- balldropg(t, c(9.8, 46.14)) + rnorm(n, 0, sqrt(sigma_sq_err)) + delta
-  y_1 <- balldropg(t, c(9.8, 46.14)) + rnorm(n, 0, sqrt(sigma_sq_err)*(1+1/k))
+  y_1 <- balldropg(t, c(9.8, 46.46)) + rnorm(n, 0, sqrt(sigma_sq_err)) + delta
+  #y_1 <- balldropg(t, c(9.8, 46.46)) + rnorm(n, 0, sqrt(sigma_sq_err)*(1+1/k))
   
   y_obs[, v] <- y_1
   a_psi = 1
@@ -503,42 +523,22 @@ sig <- res[[3]]
 alpha <- res[[4]]
 psi <- res[[5]]
 k <- res[[6]]
-
+#
 par(mfrow = c(2,3))
 plot(g, type = "l")
 abline(h = 9.8, col = "red")
 plot(h, type = "l")
-abline(h = 46.14, col = "red")
+abline(h = 46.46, col = "red")
 plot(sig, type = "l")
 abline(h = 0.01, col = "red")
 plot(alpha, type = "l")
 plot(psi, type = "l")
 plot(k, type = "l")
 abline(h = 0.2, col = "red")
-hist(k)
-hist(sig)
-hist(psi)
+# hist(k)
+# hist(sig)
+# hist(psi)
 hist(alpha)
-
-
-GP_covariance <- function(t, sigma_sq_delta, psi_delta) {
-  n <- length(t)
-  Sigma <- outer(t, t, function(ti, tj) sigma_sq_delta * exp(-abs(ti - tj) / psi_delta))
-  return(Sigma)
-}
-GP_covariance(t, 0.05, 0.3)
-
-boxplot(colMeans(g))
-abline(h = 9.8)
-boxplot(colMeans(h))
-abline(h = 46.14)
-boxplot(colMeans(sig))
-abline(h = 0.1)
-boxplot(colMeans(alpha))
-boxplot(colMeans(psi))
-abline(h = 0.7)
-boxplot(colMeans(k))
-abline(h = 0.2)
 
 plot(y_1)
 zeta <- res[[8]]
@@ -552,70 +552,102 @@ delta_mean <- apply(do.call(rbind, delta_list), 2, mean)
 plot(t, delta_mean, type="l", main="Posterior mean of delta")
 
 
-#result_m2_sh2_psi1_ortho <- list(g_chain, h0_chain, sigma_chain, alpha_chain, psi_chain, k_chain, delta_list, zeta_list, loglik_mat, accept_rate)
-#save(result_m2_sh2_psi1_ortho,file = "/Users/negarsoleimani/Documents/phd/paper1/Orthogonality/result_m2_sh2_psi1_ortho.RData")
 
-########################
-set.seed(12345)
+# GP_covariance <- function(t, sigma_sq_delta, psi_delta) {
+#   n <- length(t)
+#   Sigma <- outer(t, t, function(ti, tj) sigma_sq_delta * exp(-abs(ti - tj) / psi_delta))
+#   return(Sigma)
+# }
+# GP_covariance(t, 0.05, 0.3)
+# 
+# boxplot(colMeans(g))
+# abline(h = 9.8)
+# boxplot(colMeans(h))
+# abline(h = 46.46)
+# boxplot(colMeans(sig))
+# abline(h = 0.1)
+# boxplot(colMeans(alpha))
+# boxplot(colMeans(psi))
+# abline(h = 0.7)
+# boxplot(colMeans(k))
+# abline(h = 0.2)
+# 
+# plot(y_1)
+# zeta <- res[[8]]
+# prob_zeta_m2 <- colMeans(res[[8]][[1]] == 2)
+# delta <- res[[7]][[1]]
+# boxplot(delta)
+# abline(h = 0, col = "red")
+# 
+# 
+# delta_mean <- apply(do.call(rbind, delta_list), 2, mean)
+# plot(t, delta_mean, type="l", main="Posterior mean of delta")
 
-init_base       <- c(9.8, 46.14, 0.01, 0.7, 0.5, 0.2)
-sigma_proposals <- c(NA,NA,NA,NA,0.5,NA)
-mcmc_parameters <- c(TRUE, TRUE, TRUE, TRUE, TRUE)
-#Sigma_theta     <- matrix(c(0.1,0,0,0.1),2)
-Sigma_theta     <- matrix(c(0.5,0,0,0.5),2)
-n_iter          <- 20000
-burn_in         <- 1000
 
-results_real_sh2 <- mcmc_step6(
-  y = y, t = t,
-  n_iter = n_iter,
-  init   = init_base,
-  sigma_proposals = sigma_proposals,
-  mcmc_parameters = mcmc_parameters,
-  Sigma_theta     = Sigma_theta,
-  n_burnin        = burn_in
-)
-g_chain <- results_real_sh2$theta[,1]
-h0_chain <- results_real_sh2$theta[,2]
-sigma_sq_err_chain <- results_real_sh2$theta[,3]
-alpha_chain <- results_real_sh2$theta[,4]
-psi_delta_chain <- results_real_sh2$theta[,5]
-k_chain <- results_real_sh2$theta[,6]
-delta_chain <- results_real_sh2$delta
-zeta_chain <- results_real_sh2$zeta
-loglik_chain <- results_real_sh2$loglik
-accept_rate_psi <- results_real_sh2$accept_rate_psi
+result_m2_sh2_psi1_ortho <- list(g_chain, h0_chain, sigma_chain, alpha_chain, psi_chain, k_chain, delta_list, zeta_list, loglik_mat, accept_rate)
+save(result_m2_sh2_psi1_ortho,file = "/Users/negarsoleimani/Documents/phd/paper1/Orthogonality/result_m2_sh2_psi1_ortho.RData")
 
-par(mfrow = c(1, 1))
-boxplot(results_real_sh2$delta, ylab = expression(delta))
-
-par(mfrow = c(2, 3))
-plot(results_real_sh2$theta[,1], type = "l",
-     xlab = "Blue Basketball", ylab = "g")
-abline(h = 9.8, col = "red")
-plot(results_real_sh2$theta[,2], type = "l",
-     xlab = "Blue Basketball", ylab = "h0")
-abline(h = 46.14, col = "red")
-plot(results_real_sh2$theta[,3], type = "l",
-     xlab = "Blue Basketball", ylab = expression(sigma[err]^2))
-abline(h = 0.01, col = "red")
-plot(results_real_sh2$theta[,4], type = "l",
-     xlab = "Blue Basketball", ylab = expression(alpha))
-plot(results_real_sh2$theta[,5], type = "l",
-     xlab = "Blue Basketball", ylab = expression(psi[delta]))
-plot(results_real_sh2$theta[,6], type = "l",
-     xlab = "Blue Basketball", ylab = "k")
+# ########################
+# set.seed(12345)
+# 
+# init_base       <- c(9.8, 46.46, 0.01, 0.7, 0.5, 0.2)
+# sigma_proposals <- c(NA,NA,NA,NA,0.5,NA)
+# mcmc_parameters <- c(TRUE, TRUE, TRUE, TRUE, TRUE)
+# #Sigma_theta     <- matrix(c(0.1,0,0,0.1),2)
+# Sigma_theta     <- matrix(c(0.5,0,0,0.5),2)
+# n_iter          <- 20000
+# burn_in         <- 1000
+# 
+# results_real_sh2 <- mcmc_step6(
+#   y = y, t = t,
+#   n_iter = n_iter,
+#   init   = init_base,
+#   sigma_proposals = sigma_proposals,
+#   mcmc_parameters = mcmc_parameters,
+#   Sigma_theta     = Sigma_theta,
+#   n_burnin        = burn_in
+# )
+# g_chain <- results_real_sh2$theta[,1]
+# h0_chain <- results_real_sh2$theta[,2]
+# sigma_sq_err_chain <- results_real_sh2$theta[,3]
+# alpha_chain <- results_real_sh2$theta[,4]
+# psi_delta_chain <- results_real_sh2$theta[,5]
+# k_chain <- results_real_sh2$theta[,6]
+# delta_chain <- results_real_sh2$delta
+# zeta_chain <- results_real_sh2$zeta
+# loglik_chain <- results_real_sh2$loglik
+# accept_rate_psi <- results_real_sh2$accept_rate_psi
+# 
+# par(mfrow = c(1, 1))
+# boxplot(results_real_sh2$delta, ylab = expression(delta))
+# 
+# par(mfrow = c(2, 3))
+# plot(results_real_sh2$theta[,1], type = "l",
+#      xlab = "Blue Basketball", ylab = "g")
+# abline(h = 9.8, col = "red")
+# plot(results_real_sh2$theta[,2], type = "l",
+#      xlab = "Blue Basketball", ylab = "h0")
+# abline(h = 46.46, col = "red")
+# plot(results_real_sh2$theta[,3], type = "l",
+#      xlab = "Blue Basketball", ylab = expression(sigma[err]^2))
+# abline(h = 0.01, col = "red")
+# plot(results_real_sh2$theta[,4], type = "l",
+#      xlab = "Blue Basketball", ylab = expression(alpha))
+# plot(results_real_sh2$theta[,5], type = "l",
+#      xlab = "Blue Basketball", ylab = expression(psi[delta]))
+# plot(results_real_sh2$theta[,6], type = "l",
+#      xlab = "Blue Basketball", ylab = "k")
 ######################
 
 
 ## Psi2 ############################################
 set.seed(12345)
-k = 1
+k = 0.2
 #sigma_sq_delta <- 0.1 
-sim_psi_delta <- 0.1 
-sigma_sq_err <- 0.1
+sim_psi_delta <- 0.2 
+sigma_sq_err <- (0.1)^2
 sigma_sq_delta <- sigma_sq_err / k
-n_samples <- 1
+n_samples <- 10
 n_iter <- 20000
 burn_in <- 5000
 
@@ -623,7 +655,7 @@ sigma_props <- c(NA, NA, NA, NA, 0.4, NA)
 #(g,h0), sigma, psi, k, alpha
 mcmc_parameters <- c(TRUE, TRUE, TRUE, TRUE, TRUE)
 Sigma_theta <- matrix(c(0.5, 0, 0, 0.5), nrow = 2)
-init <- c(9.8, 46.45, 0.1, 0.5, sim_psi_delta, 1)
+init <- c(9.8, 46.46, 0.01, 0.5, sim_psi_delta, 0.2)
 
 g_chain     <- matrix(NA, n_iter, n_samples)
 h0_chain    <- matrix(NA, n_iter, n_samples)
@@ -642,7 +674,7 @@ for (v in 1:n_samples) {
   
   delta <- as.vector(rmvnorm(1, rep(0, n), Sigma_delta))
   
-  y_1 <- balldropg(t, c(9.8, 46.45)) + rnorm(n, 0, sqrt(sigma_sq_err)) + delta
+  y_1 <- balldropg(t, c(9.8, 46.46)) + rnorm(n, 0, sqrt(sigma_sq_err)) + delta
   y_obs[, v] <- y_1
   a_psi = 1
   b_psi = 1#9
@@ -660,18 +692,18 @@ for (v in 1:n_samples) {
   loglik_mat[, v]  <- res$loglik
   accept_rate[v]   <- res$accept_rate_psi
 }
-res2 <- list(g_chain, h0_chain, sigma_chain, alpha_chain, psi_chain, k_chain, delta_list, zeta_list, loglik_mat, accept_rate)
+#res2 <- list(g_chain, h0_chain, sigma_chain, alpha_chain, psi_chain, k_chain, delta_list, zeta_list, loglik_mat, accept_rate)
 
-#result_m2_sh2_psi2_ortho <- list(g_chain, h0_chain, sigma_chain, alpha_chain, psi_chain, k_chain, delta_list, zeta_list, loglik_mat, accept_rate)
-#save(result_m2_sh2_psi2_ortho,file = "/Users/negarsoleimani/Documents/phd/paper1/Orthogonality/result_m2_sh2_psi2_ortho.RData")
+result_m2_sh2_psi2_ortho <- list(g_chain, h0_chain, sigma_chain, alpha_chain, psi_chain, k_chain, delta_list, zeta_list, loglik_mat, accept_rate)
+save(result_m2_sh2_psi2_ortho,file = "/Users/negarsoleimani/Documents/phd/paper1/Orthogonality/result_m2_sh2_psi2_ortho.RData")
 ## Psi3 ############################################
 set.seed(12345)
-k = 1
+k = 0.2
 #sigma_sq_delta <- 0.1 
-sim_psi_delta <- 0.2 
-sigma_sq_err <- 0.1
+sim_psi_delta <- 0.3 
+sigma_sq_err <- (0.1)^2
 sigma_sq_delta <- sigma_sq_err / k
-n_samples <- 1
+n_samples <- 10
 n_iter <- 20000
 burn_in <- 5000
 
@@ -679,7 +711,7 @@ sigma_props <- c(NA, NA, NA, NA, 0.4, NA)
 #(g,h0), sigma, psi, k, alpha
 mcmc_parameters <- c(TRUE, TRUE, TRUE, TRUE, TRUE)
 Sigma_theta <- matrix(c(0.5, 0, 0, 0.5), nrow = 2)
-init <- c(9.8, 46.45, 0.1, 0.5, sim_psi_delta, 1)
+init <- c(9.8, 46.46, 0.01, 0.5, sim_psi_delta, 0.2)
 
 g_chain     <- matrix(NA, n_iter, n_samples)
 h0_chain    <- matrix(NA, n_iter, n_samples)
@@ -698,7 +730,7 @@ for (v in 1:n_samples) {
   
   delta <- as.vector(rmvnorm(1, rep(0, n), Sigma_delta))
   
-  y_1 <- balldropg(t, c(9.8, 46.45)) + rnorm(n, 0, sqrt(sigma_sq_err)) + delta
+  y_1 <- balldropg(t, c(9.8, 46.46)) + rnorm(n, 0, sqrt(sigma_sq_err)) + delta
   y_obs[, v] <- y_1
   a_psi = 1#2
   b_psi = 1#8
@@ -716,20 +748,20 @@ for (v in 1:n_samples) {
   loglik_mat[, v]  <- res$loglik
   accept_rate[v]   <- res$accept_rate_psi
 }
-res3 <- list(g_chain, h0_chain, sigma_chain, alpha_chain, psi_chain, k_chain, delta_list, zeta_list, loglik_mat, accept_rate)
+#res3 <- list(g_chain, h0_chain, sigma_chain, alpha_chain, psi_chain, k_chain, delta_list, zeta_list, loglik_mat, accept_rate)
 
-#result_m2_sh2_psi3_ortho <- list(g_chain, h0_chain, sigma_chain, alpha_chain, psi_chain, k_chain, delta_list, zeta_list, loglik_mat, accept_rate)
-#save(result_m2_sh2_psi3_ortho,file = "/Users/negarsoleimani/Documents/phd/paper1/Orthogonality/result_m2_sh2_psi3_ortho.RData")
+result_m2_sh2_psi3_ortho <- list(g_chain, h0_chain, sigma_chain, alpha_chain, psi_chain, k_chain, delta_list, zeta_list, loglik_mat, accept_rate)
+save(result_m2_sh2_psi3_ortho,file = "/Users/negarsoleimani/Documents/phd/paper1/Orthogonality/result_m2_sh2_psi3_ortho.RData")
 
 
 ## Psi4 ############################################
 set.seed(12345)
-k = 1
+k = 0.2
 #sigma_sq_delta <- 0.1 
-sim_psi_delta <- 0.3 
-sigma_sq_err <- 0.1
+sim_psi_delta <- 0.4 
+sigma_sq_err <- 0.01
 sigma_sq_delta <- sigma_sq_err / k
-n_samples <- 1
+n_samples <- 10
 n_iter <- 20000
 burn_in <- 5000
 
@@ -737,7 +769,7 @@ sigma_props <- c(NA, NA, NA, NA, 0.4, NA)
 #(g,h0), sigma, psi, k, alpha
 mcmc_parameters <- c(TRUE, TRUE, TRUE, TRUE, TRUE)
 Sigma_theta <- matrix(c(0.5, 0, 0, 0.5), nrow = 2)
-init <- c(9.8, 46.45, 0.1, 0.5, sim_psi_delta, 1)
+init <- c(9.8, 46.46, 0.01, 0.5, sim_psi_delta, 0.2)
 
 g_chain     <- matrix(NA, n_iter, n_samples)
 h0_chain    <- matrix(NA, n_iter, n_samples)
@@ -756,7 +788,7 @@ for (v in 1:n_samples) {
   
   delta <- as.vector(rmvnorm(1, rep(0, n), Sigma_delta))
   
-  y_1 <- balldropg(t, c(9.8, 46.45)) + rnorm(n, 0, sqrt(sigma_sq_err)) + delta
+  y_1 <- balldropg(t, c(9.8, 46.46)) + rnorm(n, 0, sqrt(sigma_sq_err)) + delta
   y_obs[, v] <- y_1
   a_psi = 1#3
   b_psi = 1#7
@@ -774,89 +806,89 @@ for (v in 1:n_samples) {
   loglik_mat[, v]  <- res$loglik
   accept_rate[v]   <- res$accept_rate_psi
 }
-res4 <- list(g_chain, h0_chain, sigma_chain, alpha_chain, psi_chain, k_chain, delta_list, zeta_list, loglik_mat, accept_rate)
+#res4 <- list(g_chain, h0_chain, sigma_chain, alpha_chain, psi_chain, k_chain, delta_list, zeta_list, loglik_mat, accept_rate)
 
-#result_m2_sh2_psi4_ortho <- list(g_chain, h0_chain, sigma_chain, alpha_chain, psi_chain, k_chain, delta_list, zeta_list, loglik_mat, accept_rate)
-#save(result_m2_sh2_psi4_ortho,file = "/Users/negarsoleimani/Documents/phd/paper1/Orthogonality/result_m2_sh2_psi4_ortho.RData")
-View(res2)
-g1 <- res[["theta"]][, "g"]
-g2 <- res2[[1]]
-g3 <- res3[[1]]
-g4 <- res4[[1]]
-
-boxplot(g1, g2, g3, g4,
-        names = c("0.01","0.1","0.2","0.3"),
-        xlab = "psi_delta",
-        ylab = "g")
-abline(h=9.8)
-
-h1 <- res[["theta"]][, "h0"]
-h2 <- res2[[2]]
-h3 <- res3[[2]]
-h4 <- res4[[2]]
-
-boxplot(h1, h2, h3, h4,
-        names = c("0.01","0.1","0.2","0.3"),
-        xlab = "psi_delta",
-        ylab = "h")
-abline(h=46.45)
-
-sig1 <- res[["theta"]][, 3]
-sig2 <- res2[[3]]
-sig3 <- res3[[3]]
-sig4 <- res4[[3]]
-boxplot(sig1, sig2, sig3, sig4,
-        names = c("0.01","0.1","0.2","0.3"),
-        xlab = "psi_delta",
-        ylab = "sig")
-abline(h=0.1)
-
-a1 <- res[["theta"]][, 4]
-a2 <- res2[[4]]
-a3 <- res3[[4]]
-a4 <- res4[[4]]
-boxplot(a1, a2, a3, a4,
-        names = c("0.01","0.1","0.2","0.3"),
-        xlab = "psi_delta",
-        ylab = "alpha")
-
-p1 <- res[["theta"]][, 5]
-p2 <- res2[[5]]
-p3 <- res3[[5]]
-p4 <- res4[[5]]
-
-boxplot(p1, p2, p3, p4,
-        names = c("0.01","0.1","0.2","0.3"),
-        xlab = "psi_delta",
-        ylab = "psi")
-
-k1 <- res[["theta"]][, 6]
-k2 <- res2[[6]]
-k3 <- res3[[6]]
-k4 <- res4[[6]]
-
-boxplot(k1, k2, k3, k4,
-        names = c("0.01","0.1","0.2","0.3"),
-        xlab = "psi_delta",
-        ylab = "k")
-abline(h=0.2)
+result_m2_sh2_psi4_ortho <- list(g_chain, h0_chain, sigma_chain, alpha_chain, psi_chain, k_chain, delta_list, zeta_list, loglik_mat, accept_rate)
+save(result_m2_sh2_psi4_ortho,file = "/Users/negarsoleimani/Documents/phd/paper1/Orthogonality/result_m2_sh2_psi4_ortho.RData")
+# View(res2)
+# g1 <- res[["theta"]][, "g"]
+# g2 <- res2[[1]]
+# g3 <- res3[[1]]
+# g4 <- res4[[1]]
+# 
+# boxplot(g1, g2, g3, g4,
+#         names = c("0.01","0.1","0.2","0.3"),
+#         xlab = "psi_delta",
+#         ylab = "g")
+# abline(h=9.8)
+# 
+# h1 <- res[["theta"]][, "h0"]
+# h2 <- res2[[2]]
+# h3 <- res3[[2]]
+# h4 <- res4[[2]]
+# 
+# boxplot(h1, h2, h3, h4,
+#         names = c("0.01","0.1","0.2","0.3"),
+#         xlab = "psi_delta",
+#         ylab = "h")
+# abline(h=46.46)
+# 
+# sig1 <- res[["theta"]][, 3]
+# sig2 <- res2[[3]]
+# sig3 <- res3[[3]]
+# sig4 <- res4[[3]]
+# boxplot(sig1, sig2, sig3, sig4,
+#         names = c("0.01","0.1","0.2","0.3"),
+#         xlab = "psi_delta",
+#         ylab = "sig")
+# abline(h=0.1)
+# 
+# a1 <- res[["theta"]][, 4]
+# a2 <- res2[[4]]
+# a3 <- res3[[4]]
+# a4 <- res4[[4]]
+# boxplot(a1, a2, a3, a4,
+#         names = c("0.01","0.1","0.2","0.3"),
+#         xlab = "psi_delta",
+#         ylab = "alpha")
+# 
+# p1 <- res[["theta"]][, 5]
+# p2 <- res2[[5]]
+# p3 <- res3[[5]]
+# p4 <- res4[[5]]
+# 
+# boxplot(p1, p2, p3, p4,
+#         names = c("0.01","0.1","0.2","0.3"),
+#         xlab = "psi_delta",
+#         ylab = "psi")
+# 
+# k1 <- res[["theta"]][, 6]
+# k2 <- res2[[6]]
+# k3 <- res3[[6]]
+# k4 <- res4[[6]]
+# 
+# boxplot(k1, k2, k3, k4,
+#         names = c("0.01","0.1","0.2","0.3"),
+#         xlab = "psi_delta",
+#         ylab = "k")
+# abline(h=0.2)
 
 ## Psi5 ############################################
 set.seed(12345)
 k = 0.2
 #sigma_sq_delta <- 0.1 
-sim_psi_delta <- 0.4 
-sigma_sq_err <- 0.1
+sim_psi_delta <- 0.5 
+sigma_sq_err <- 0.01
 sigma_sq_delta <- sigma_sq_err / k
-n_samples <- 3
+n_samples <- 10
 n_iter <- 20000
 burn_in <- 5000
 
-sigma_props <- c(NA, NA, NA, NA, 0.3, NA) 
+sigma_props <- c(NA, NA, NA, NA, 0.4, NA) 
 #(g,h0), sigma, psi, k, alpha
 mcmc_parameters <- c(TRUE, TRUE, TRUE, TRUE, TRUE)
 Sigma_theta <- matrix(c(0.5, 0, 0, 0.5), nrow = 2)
-init <- c(9.8, 46.45, 0.1, 0.5, sim_psi_delta, 0.2)
+init <- c(9.8, 46.46, 0.01, 0.5, sim_psi_delta, 0.2)
 
 g_chain     <- matrix(NA, n_iter, n_samples)
 h0_chain    <- matrix(NA, n_iter, n_samples)
@@ -875,7 +907,7 @@ for (v in 1:n_samples) {
   
   delta <- as.vector(rmvnorm(1, rep(0, n), Sigma_delta))
   
-  y_1 <- balldropg(t, c(9.8, 46.45)) + rnorm(n, 0, sqrt(sigma_sq_err)) + delta
+  y_1 <- balldropg(t, c(9.8, 46.46)) + rnorm(n, 0, sqrt(sigma_sq_err)) + delta
   y_obs[, v] <- y_1
   a_psi = 1#4
   b_psi = 1#6
@@ -893,20 +925,20 @@ for (v in 1:n_samples) {
   loglik_mat[, v]  <- res$loglik
   accept_rate[v]   <- res$accept_rate_psi
 }
-res5 <- list(g_chain, h0_chain, sigma_chain, alpha_chain, psi_chain, k_chain, delta_list, zeta_list, loglik_mat, accept_rate)
+#res5 <- list(g_chain, h0_chain, sigma_chain, alpha_chain, psi_chain, k_chain, delta_list, zeta_list, loglik_mat, accept_rate)
 
-#result_m2_sh2_psi5_ortho <- list(g_chain, h0_chain, sigma_chain, alpha_chain, psi_chain, k_chain, delta_list, zeta_list, loglik_mat, accept_rate)
-#save(result_m2_sh2_psi5_ortho,file = "/Users/negarsoleimani/Documents/phd/paper1/Orthogonality/result_m2_sh2_psi5_ortho.RData")
+result_m2_sh2_psi5_ortho <- list(g_chain, h0_chain, sigma_chain, alpha_chain, psi_chain, k_chain, delta_list, zeta_list, loglik_mat, accept_rate)
+save(result_m2_sh2_psi5_ortho,file = "/Users/negarsoleimani/Documents/phd/paper1/Orthogonality/result_m2_sh2_psi5_ortho.RData")
 
 
 ## Psi6 ############################################
 set.seed(12345)
 k = 0.2
 #sigma_sq_delta <- 0.1 
-sim_psi_delta <- 0.5 
-sigma_sq_err <- 0.1
+sim_psi_delta <- 0.6 
+sigma_sq_err <- 0.01
 sigma_sq_delta <- sigma_sq_err / k
-n_samples <- 3
+n_samples <- 10
 n_iter <- 20000
 burn_in <- 5000
 
@@ -914,7 +946,7 @@ sigma_props <- c(NA, NA, NA, NA, 0.4, NA)
 #(g,h0), sigma, psi, k, alpha
 mcmc_parameters <- c(TRUE, TRUE, TRUE, TRUE, TRUE)
 Sigma_theta <- matrix(c(0.5, 0, 0, 0.5), nrow = 2)
-init <- c(9.8, 46.45, 0.1, 0.5, sim_psi_delta, 0.2)
+init <- c(9.8, 46.46, 0.01, 0.5, sim_psi_delta, 0.2)
 
 g_chain     <- matrix(NA, n_iter, n_samples)
 h0_chain    <- matrix(NA, n_iter, n_samples)
@@ -933,7 +965,7 @@ for (v in 1:n_samples) {
   
   delta <- as.vector(rmvnorm(1, rep(0, n), Sigma_delta))
   
-  y_1 <- balldropg(t, c(9.8, 46.45)) + rnorm(n, 0, sqrt(sigma_sq_err)) + delta
+  y_1 <- balldropg(t, c(9.8, 46.46)) + rnorm(n, 0, sqrt(sigma_sq_err)) + delta
   y_obs[, v] <- y_1
   a_psi = 1#5
   b_psi = 1#5
@@ -951,20 +983,20 @@ for (v in 1:n_samples) {
   loglik_mat[, v]  <- res$loglik
   accept_rate[v]   <- res$accept_rate_psi
 }
-res6 <- list(g_chain, h0_chain, sigma_chain, alpha_chain, psi_chain, k_chain, delta_list, zeta_list, loglik_mat, accept_rate)
+#res6 <- list(g_chain, h0_chain, sigma_chain, alpha_chain, psi_chain, k_chain, delta_list, zeta_list, loglik_mat, accept_rate)
 
-#result_m2_sh2_psi6_ortho <- list(g_chain, h0_chain, sigma_chain, alpha_chain, psi_chain, k_chain, delta_list, zeta_list, loglik_mat, accept_rate)
-#save(result_m2_sh2_psi6_ortho,file = "/Users/negarsoleimani/Documents/phd/paper1/Orthogonality/result_m2_sh2_psi6_ortho.RData")
+result_m2_sh2_psi6_ortho <- list(g_chain, h0_chain, sigma_chain, alpha_chain, psi_chain, k_chain, delta_list, zeta_list, loglik_mat, accept_rate)
+save(result_m2_sh2_psi6_ortho,file = "/Users/negarsoleimani/Documents/phd/paper1/Orthogonality/result_m2_sh2_psi6_ortho.RData")
 
 
 ## Psi7 ############################################
 set.seed(12345)
 k = 0.2
 #sigma_sq_delta <- 0.1 
-sim_psi_delta <- 0.6 
-sigma_sq_err <- 0.1
+sim_psi_delta <- 0.7 
+sigma_sq_err <- 0.01
 sigma_sq_delta <- sigma_sq_err / k
-n_samples <- 3
+n_samples <- 10
 n_iter <- 20000
 burn_in <- 5000
 
@@ -972,7 +1004,7 @@ sigma_props <- c(NA, NA, NA, NA, 0.4, NA)
 #(g,h0), sigma, psi, k, alpha
 mcmc_parameters <- c(TRUE, TRUE, TRUE, TRUE, TRUE)
 Sigma_theta <- matrix(c(0.5, 0, 0, 0.5), nrow = 2)
-init <- c(9.8, 46.45, 0.1, 0.5, sim_psi_delta, 0.2)
+init <- c(9.8, 46.46, 0.01, 0.5, sim_psi_delta, 0.2)
 
 g_chain     <- matrix(NA, n_iter, n_samples)
 h0_chain    <- matrix(NA, n_iter, n_samples)
@@ -991,7 +1023,7 @@ for (v in 1:n_samples) {
   
   delta <- as.vector(rmvnorm(1, rep(0, n), Sigma_delta))
   
-  y_1 <- balldropg(t, c(9.8, 46.45)) + rnorm(n, 0, sqrt(sigma_sq_err)) + delta
+  y_1 <- balldropg(t, c(9.8, 46.46)) + rnorm(n, 0, sqrt(sigma_sq_err)) + delta
   y_obs[, v] <- y_1
   a_psi = 1#6
   b_psi = 1#4
@@ -1009,28 +1041,28 @@ for (v in 1:n_samples) {
   loglik_mat[, v]  <- res$loglik
   accept_rate[v]   <- res$accept_rate_psi
 }
-res7 <- list(g_chain, h0_chain, sigma_chain, alpha_chain, psi_chain, k_chain, delta_list, zeta_list, loglik_mat, accept_rate)
+#res7 <- list(g_chain, h0_chain, sigma_chain, alpha_chain, psi_chain, k_chain, delta_list, zeta_list, loglik_mat, accept_rate)
 
-#result_m2_sh2_psi7_ortho <- list(g_chain, h0_chain, sigma_chain, alpha_chain, psi_chain, k_chain, delta_list, zeta_list, loglik_mat, accept_rate)
-#save(result_m2_sh2_psi7_ortho,file = "/Users/negarsoleimani/Documents/phd/paper1/Orthogonality/result_m2_sh2_psi7_ortho.RData")
+result_m2_sh2_psi7_ortho <- list(g_chain, h0_chain, sigma_chain, alpha_chain, psi_chain, k_chain, delta_list, zeta_list, loglik_mat, accept_rate)
+save(result_m2_sh2_psi7_ortho,file = "/Users/negarsoleimani/Documents/phd/paper1/Orthogonality/result_m2_sh2_psi7_ortho.RData")
 
 
 ## Psi8 ############################################
 set.seed(12345)
 k = 0.2
 #sigma_sq_delta <- 0.1 
-sim_psi_delta <- 0.7 
-sigma_sq_err <- 0.1
+sim_psi_delta <- 0.8 
+sigma_sq_err <- 0.01
 sigma_sq_delta <- sigma_sq_err / k
-n_samples <- 3
+n_samples <- 10
 n_iter <- 20000
 burn_in <- 5000
 
-sigma_props <- c(NA, NA, NA, NA, 0.5, NA) 
+sigma_props <- c(NA, NA, NA, NA, 0.4, NA) 
 #(g,h0), sigma, psi, k, alpha
 mcmc_parameters <- c(TRUE, TRUE, TRUE, TRUE, TRUE)
 Sigma_theta <- matrix(c(0.5, 0, 0, 0.5), nrow = 2)
-init <- c(9.8, 46.45, 0.1, 0.5, sim_psi_delta, 0.2)
+init <- c(9.8, 46.46, 0.01, 0.5, sim_psi_delta, 0.2)
 
 g_chain     <- matrix(NA, n_iter, n_samples)
 h0_chain    <- matrix(NA, n_iter, n_samples)
@@ -1049,7 +1081,7 @@ for (v in 1:n_samples) {
   
   delta <- as.vector(rmvnorm(1, rep(0, n), Sigma_delta))
   
-  y_1 <- balldropg(t, c(9.8, 46.45)) + rnorm(n, 0, sqrt(sigma_sq_err)) + delta
+  y_1 <- balldropg(t, c(9.8, 46.46)) + rnorm(n, 0, sqrt(sigma_sq_err)) + delta
   y_obs[, v] <- y_1
   a_psi = 1#7
   b_psi = 1#3
@@ -1067,28 +1099,28 @@ for (v in 1:n_samples) {
   loglik_mat[, v]  <- res$loglik
   accept_rate[v]   <- res$accept_rate_psi
 }
-res8 <- list(g_chain, h0_chain, sigma_chain, alpha_chain, psi_chain, k_chain, delta_list, zeta_list, loglik_mat, accept_rate)
+#res8 <- list(g_chain, h0_chain, sigma_chain, alpha_chain, psi_chain, k_chain, delta_list, zeta_list, loglik_mat, accept_rate)
 
-#result_m2_sh2_psi8_ortho <- list(g_chain, h0_chain, sigma_chain, alpha_chain, psi_chain, k_chain, delta_list, zeta_list, loglik_mat, accept_rate)
-#save(result_m2_sh2_psi8_ortho,file = "/Users/negarsoleimani/Documents/phd/paper1/Orthogonality/result_m2_sh2_psi8_ortho.RData")
+result_m2_sh2_psi8_ortho <- list(g_chain, h0_chain, sigma_chain, alpha_chain, psi_chain, k_chain, delta_list, zeta_list, loglik_mat, accept_rate)
+save(result_m2_sh2_psi8_ortho,file = "/Users/negarsoleimani/Documents/phd/paper1/Orthogonality/result_m2_sh2_psi8_ortho.RData")
 
 
 ## Psi9 ############################################
 set.seed(12345)
 k = 0.2
 #sigma_sq_delta <- 0.1 
-sim_psi_delta <- 0.8 
-sigma_sq_err <- 0.1
+sim_psi_delta <- 0.9 
+sigma_sq_err <- 0.01
 sigma_sq_delta <- sigma_sq_err / k
-n_samples <- 3
+n_samples <- 10
 n_iter <- 20000
 burn_in <- 5000
 
-sigma_props <- c(NA, NA, NA, NA, 0.5, NA) 
+sigma_props <- c(NA, NA, NA, NA, 0.4, NA) 
 #(g,h0), sigma, psi, k, alpha
 mcmc_parameters <- c(TRUE, TRUE, TRUE, TRUE, TRUE)
 Sigma_theta <- matrix(c(0.5, 0, 0, 0.5), nrow = 2)
-init <- c(9.8, 46.45, 0.1, 0.5, sim_psi_delta, 0.2)
+init <- c(9.8, 46.46, 0.01, 0.5, sim_psi_delta, 0.2)
 
 g_chain     <- matrix(NA, n_iter, n_samples)
 h0_chain    <- matrix(NA, n_iter, n_samples)
@@ -1107,7 +1139,7 @@ for (v in 1:n_samples) {
   
   delta <- as.vector(rmvnorm(1, rep(0, n), Sigma_delta))
   
-  y_1 <- balldropg(t, c(9.8, 46.45)) + rnorm(n, 0, sqrt(sigma_sq_err)) + delta
+  y_1 <- balldropg(t, c(9.8, 46.46)) + rnorm(n, 0, sqrt(sigma_sq_err)) + delta
   y_obs[, v] <- y_1
   a_psi = 1#8
   b_psi = 1#2
@@ -1125,65 +1157,65 @@ for (v in 1:n_samples) {
   loglik_mat[, v]  <- res$loglik
   accept_rate[v]   <- res$accept_rate_psi
 }
-res9 <- list(g_chain, h0_chain, sigma_chain, alpha_chain, psi_chain, k_chain, delta_list, zeta_list, loglik_mat, accept_rate)
+#res9 <- list(g_chain, h0_chain, sigma_chain, alpha_chain, psi_chain, k_chain, delta_list, zeta_list, loglik_mat, accept_rate)
 
-#result_m2_sh2_psi9_ortho <- list(g_chain, h0_chain, sigma_chain, alpha_chain, psi_chain, k_chain, delta_list, zeta_list, loglik_mat, accept_rate)
-#save(result_m2_sh2_psi9_ortho,file = "/Users/negarsoleimani/Documents/phd/paper1/Orthogonality/result_m2_sh2_psi9_ortho.RData")
+result_m2_sh2_psi9_ortho <- list(g_chain, h0_chain, sigma_chain, alpha_chain, psi_chain, k_chain, delta_list, zeta_list, loglik_mat, accept_rate)
+save(result_m2_sh2_psi9_ortho,file = "/Users/negarsoleimani/Documents/phd/paper1/Orthogonality/result_m2_sh2_psi9_ortho.RData")
 
 
-## Psi10 ############################################
-set.seed(12345)
-k = 0.2
-#sigma_sq_delta <- 0.1 
-sim_psi_delta <- 0.2 
-sigma_sq_err <- 0.1
-sigma_sq_delta <- sigma_sq_err / k
-n_samples <- 3
-n_iter <- 20000
-burn_in <- 5000
-
-sigma_props <- c(NA, NA, NA, NA, 0.4, NA) 
-#(g,h0), sigma, psi, k, alpha
-mcmc_parameters <- c(TRUE, TRUE, TRUE, TRUE, TRUE)
-Sigma_theta <- matrix(c(0.5, 0, 0, 0.5), nrow = 2)
-init <- c(9.8, 46.45, 0.1, 0.5, sim_psi_delta, 0.2)
-
-g_chain     <- matrix(NA, n_iter, n_samples)
-h0_chain    <- matrix(NA, n_iter, n_samples)
-sigma_chain <- matrix(NA, n_iter, n_samples)
-alpha_chain <- matrix(NA, n_iter, n_samples)
-psi_chain   <- matrix(NA, n_iter, n_samples)
-k_chain     <- matrix(NA, n_iter, n_samples)
-loglik_mat  <- matrix(NA, n_iter, n_samples)
-delta_list  <- vector("list", n_samples)
-zeta_list   <- vector("list", n_samples)
-accept_rate <- numeric(n_samples)
-
-y_obs <- matrix(NA, n, n_samples)
-for (v in 1:n_samples) {
-  Sigma_delta <- GP_covariance(t, sigma_sq_delta, sim_psi_delta)
-  
-  delta <- as.vector(rmvnorm(1, rep(0, n), Sigma_delta))
-  
-  y_1 <- balldropg(t, c(9.8, 46.45)) + rnorm(n, 0, sqrt(sigma_sq_err)) + delta
-  y_obs[, v] <- y_1
-  a_psi = 1#9
-  b_psi = 1
-  res <- mcmc_step6(y_1, t, n_iter, init, sigma_props, mcmc_parameters,
-                    Sigma_theta, n_burnin = burn_in, a_psi, b_psi)
-  
-  g_chain[, v]     <- res$theta[, 1]
-  h0_chain[, v]    <- res$theta[, 2]
-  sigma_chain[, v] <- res$theta[, 3]
-  alpha_chain[, v] <- res$theta[, 4]
-  psi_chain[, v]   <- res$theta[, 5]
-  k_chain[, v]     <- res$theta[, 6]
-  delta_list[[v]]  <- res$delta
-  zeta_list[[v]]   <- res$zeta
-  loglik_mat[, v]  <- res$loglik
-  accept_rate[v]   <- res$accept_rate_psi
-}
-res10 <- list(g_chain, h0_chain, sigma_chain, alpha_chain, psi_chain, k_chain, delta_list, zeta_list, loglik_mat, accept_rate)
+# ## Psi10 ############################################
+# set.seed(12345)
+# k = 0.2
+# #sigma_sq_delta <- 0.1 
+# sim_psi_delta <- 1
+# sigma_sq_err <- 0.01
+# sigma_sq_delta <- sigma_sq_err / k
+# n_samples <- 1
+# n_iter <- 20000
+# burn_in <- 5000
+# 
+# sigma_props <- c(NA, NA, NA, NA, 0.4, NA) 
+# #(g,h0), sigma, psi, k, alpha
+# mcmc_parameters <- c(TRUE, TRUE, TRUE, TRUE, TRUE)
+# Sigma_theta <- matrix(c(0.5, 0, 0, 0.5), nrow = 2)
+# init <- c(9.8, 46.46, 0.01, 0.5, sim_psi_delta, 0.2)
+# 
+# g_chain     <- matrix(NA, n_iter, n_samples)
+# h0_chain    <- matrix(NA, n_iter, n_samples)
+# sigma_chain <- matrix(NA, n_iter, n_samples)
+# alpha_chain <- matrix(NA, n_iter, n_samples)
+# psi_chain   <- matrix(NA, n_iter, n_samples)
+# k_chain     <- matrix(NA, n_iter, n_samples)
+# loglik_mat  <- matrix(NA, n_iter, n_samples)
+# delta_list  <- vector("list", n_samples)
+# zeta_list   <- vector("list", n_samples)
+# accept_rate <- numeric(n_samples)
+# 
+# y_obs <- matrix(NA, n, n_samples)
+# for (v in 1:n_samples) {
+#   Sigma_delta <- GP_covariance(t, sigma_sq_delta, sim_psi_delta)
+#   
+#   delta <- as.vector(rmvnorm(1, rep(0, n), Sigma_delta))
+#   
+#   y_1 <- balldropg(t, c(9.8, 46.46)) + rnorm(n, 0, sqrt(sigma_sq_err)) + delta
+#   y_obs[, v] <- y_1
+#   a_psi = 1#9
+#   b_psi = 1
+#   res <- mcmc_step6(y_1, t, n_iter, init, sigma_props, mcmc_parameters,
+#                     Sigma_theta, n_burnin = burn_in, a_psi, b_psi)
+#   
+#   g_chain[, v]     <- res$theta[, 1]
+#   h0_chain[, v]    <- res$theta[, 2]
+#   sigma_chain[, v] <- res$theta[, 3]
+#   alpha_chain[, v] <- res$theta[, 4]
+#   psi_chain[, v]   <- res$theta[, 5]
+#   k_chain[, v]     <- res$theta[, 6]
+#   delta_list[[v]]  <- res$delta
+#   zeta_list[[v]]   <- res$zeta
+#   loglik_mat[, v]  <- res$loglik
+#   accept_rate[v]   <- res$accept_rate_psi
+# }
+# res10 <- list(g_chain, h0_chain, sigma_chain, alpha_chain, psi_chain, k_chain, delta_list, zeta_list, loglik_mat, accept_rate)
 
 #result_m2_sh2_psi10_ortho <- list(g_chain, h0_chain, sigma_chain, alpha_chain, psi_chain, k_chain, delta_list, zeta_list, loglik_mat, accept_rate)
 #save(result_m2_sh2_psi10_ortho,file = "/Users/negarsoleimani/Documents/phd/paper1/Orthogonality/result_m2_sh2_psi10_ortho.RData")
@@ -1198,7 +1230,7 @@ load("/Users/negarsoleimani/Documents/phd/paper1/Orthogonality/result_m2_sh2_psi
 load("/Users/negarsoleimani/Documents/phd/paper1/Orthogonality/result_m2_sh2_psi7_ortho.RData")
 load("/Users/negarsoleimani/Documents/phd/paper1/Orthogonality/result_m2_sh2_psi8_ortho.RData")
 load("/Users/negarsoleimani/Documents/phd/paper1/Orthogonality/result_m2_sh2_psi9_ortho.RData")
-load("/Users/negarsoleimani/Documents/phd/paper1/Orthogonality/result_m2_sh2_psi10_ortho.RData")
+#load("/Users/negarsoleimani/Documents/phd/paper1/Orthogonality/result_m2_sh2_psi10_ortho.RData")
 
 g1 <- result_m2_sh2_psi1_ortho[[1]]
 g2 <- result_m2_sh2_psi2_ortho[[1]]
@@ -1209,15 +1241,16 @@ g6 <- result_m2_sh2_psi6_ortho[[1]]
 g7 <- result_m2_sh2_psi7_ortho[[1]]
 g8 <- result_m2_sh2_psi8_ortho[[1]]
 g9 <- result_m2_sh2_psi9_ortho[[1]]
-g10 <- result_m2_sh2_psi10_ortho[[1]]
+#g10 <- result_m2_sh2_psi10_ortho[[1]]
 
-par(mfrow = c(1,1))
+par(mfrow = c(2,3))
 boxplot(colMeans(g1), colMeans(g2), colMeans(g3), colMeans(g4), colMeans(g5), 
-        colMeans(g6), colMeans(g7), colMeans(g8), colMeans(g9), colMeans(g10),
-        names = c("0.01","0.1","0.2","0.3","0.4","0.5","0.6","0.7","0.8","0.9"),
+        colMeans(g6), colMeans(g7), colMeans(g8), colMeans(g9), #colMeans(g10),
+        names = c("0.1","0.2","0.3","0.4","0.5","0.6","0.7","0.8","0.9"),
         xlab = "psi_delta",
-        ylab = "g")
-abline(h=9.8)
+        ylab = "g",
+        ylim = c(9.6, 10))
+abline(h=9.8, col = "red")
 
 h01 <- result_m2_sh2_psi1_ortho[[2]]
 h02 <- result_m2_sh2_psi2_ortho[[2]]
@@ -1228,15 +1261,16 @@ h06 <- result_m2_sh2_psi6_ortho[[2]]
 h07 <- result_m2_sh2_psi7_ortho[[2]]
 h08 <- result_m2_sh2_psi8_ortho[[2]]
 h09 <- result_m2_sh2_psi9_ortho[[2]]
-h010 <- result_m2_sh2_psi10_ortho[[2]]
+#h010 <- result_m2_sh2_psi10_ortho[[2]]
 
 par(mfrow = c(1,1))
 boxplot(colMeans(h01), colMeans(h02), colMeans(h03), colMeans(h04), colMeans(h05), 
-        colMeans(h06), colMeans(h07), colMeans(h08), colMeans(h09), colMeans(h010),
-        names = c("0.01","0.1","0.2","0.3","0.4","0.5","0.6","0.7","0.8","0.9"),
+        colMeans(h06), colMeans(h07), colMeans(h08), colMeans(h09), #colMeans(h010),
+        names = c("0.1","0.2","0.3","0.4","0.5","0.6","0.7","0.8","0.9"),
         xlab = "psi_delta",
-        ylab = "h0")
-abline(h = 46.45)
+        ylab = "h0",
+        ylim = c(45.8, 47))
+abline(h = 46.46, col = "red")
 
 sigma1 <- result_m2_sh2_psi1_ortho[[3]]
 sigma2 <- result_m2_sh2_psi2_ortho[[3]]
@@ -1247,15 +1281,15 @@ sigma6 <- result_m2_sh2_psi6_ortho[[3]]
 sigma7 <- result_m2_sh2_psi7_ortho[[3]]
 sigma8 <- result_m2_sh2_psi8_ortho[[3]]
 sigma9 <- result_m2_sh2_psi9_ortho[[3]]
-sigma10 <- result_m2_sh2_psi10_ortho[[3]]
+#sigma10 <- result_m2_sh2_psi10_ortho[[3]]
 
 par(mfrow = c(1,1))
 boxplot(colMeans(sigma1), colMeans(sigma2), colMeans(sigma3), colMeans(sigma4), colMeans(sigma5), 
-        colMeans(sigma6), colMeans(sigma7), colMeans(sigma8), colMeans(sigma9), colMeans(sigma10),
-        names = c("0.01","0.1","0.2","0.3","0.4","0.5","0.6","0.7","0.8","0.9"),
+        colMeans(sigma6), colMeans(sigma7), colMeans(sigma8), colMeans(sigma9), #colMeans(sigma10),
+        names = c("0.1","0.2","0.3","0.4","0.5","0.6","0.7","0.8","0.9"),
         xlab = "psi_delta",
         ylab = "sigma")
-abline(h = 0.1)
+abline(h = 0.01, col = "red")
 
 alpha1 <- result_m2_sh2_psi1_ortho[[4]]
 alpha2 <- result_m2_sh2_psi2_ortho[[4]]
@@ -1266,12 +1300,12 @@ alpha6 <- result_m2_sh2_psi6_ortho[[4]]
 alpha7 <- result_m2_sh2_psi7_ortho[[4]]
 alpha8 <- result_m2_sh2_psi8_ortho[[4]]
 alpha9 <- result_m2_sh2_psi9_ortho[[4]]
-alpha10 <- result_m2_sh2_psi10_ortho[[4]]
+#alpha10 <- result_m2_sh2_psi10_ortho[[4]]
 
 par(mfrow = c(1,1))
 boxplot(colMeans(alpha1), colMeans(alpha2), colMeans(alpha3), colMeans(alpha4), colMeans(alpha5), 
-        colMeans(alpha6), colMeans(alpha7), colMeans(alpha8), colMeans(alpha9), colMeans(alpha10),
-        names = c("0.01","0.1","0.2","0.3","0.4","0.5","0.6","0.7","0.8","0.9"),
+        colMeans(alpha6), colMeans(alpha7), colMeans(alpha8), colMeans(alpha9), #colMeans(alpha10),
+        names = c("0.1","0.2","0.3","0.4","0.5","0.6","0.7","0.8","0.9"),
         xlab = "psi_delta",
         ylab = "alpha")
 
@@ -1284,12 +1318,12 @@ psi6 <- result_m2_sh2_psi6_ortho[[5]]
 psi7 <- result_m2_sh2_psi7_ortho[[5]]
 psi8 <- result_m2_sh2_psi8_ortho[[5]]
 psi9 <- result_m2_sh2_psi9_ortho[[5]]
-psi10 <- result_m2_sh2_psi10_ortho[[5]]
+#psi10 <- result_m2_sh2_psi10_ortho[[5]]
 
 par(mfrow = c(1,1))
 boxplot(colMeans(psi1), colMeans(psi2), colMeans(psi3), colMeans(psi4), colMeans(psi5), 
-        colMeans(psi6), colMeans(psi7), colMeans(psi8), colMeans(psi9), colMeans(psi10),
-        names = c("0.01","0.1","0.2","0.3","0.4","0.5","0.6","0.7","0.8","0.9"),
+        colMeans(psi6), colMeans(psi7), colMeans(psi8), colMeans(psi9), #colMeans(psi10),
+        names = c("0.1","0.2","0.3","0.4","0.5","0.6","0.7","0.8","0.9"),
         xlab = "psi_delta",
         ylab = "psi")
 
@@ -1302,14 +1336,15 @@ k6 <- result_m2_sh2_psi6_ortho[[6]]
 k7 <- result_m2_sh2_psi7_ortho[[6]]
 k8 <- result_m2_sh2_psi8_ortho[[6]]
 k9 <- result_m2_sh2_psi9_ortho[[6]]
-k10 <- result_m2_sh2_psi10_ortho[[6]]
+#k10 <- result_m2_sh2_psi10_ortho[[6]]
 
 par(mfrow = c(1,1))
 boxplot(colMeans(k1), colMeans(k2), colMeans(k3), colMeans(k4), colMeans(k5), 
-        colMeans(k6), colMeans(k7), colMeans(k8), colMeans(k9), colMeans(k10),
-        names = c("0.01","0.1","0.2","0.3","0.4","0.5","0.6","0.7","0.8","0.9"),
+        colMeans(k6), colMeans(k7), colMeans(k8), colMeans(k9), #colMeans(k10),
+        names = c("0.1","0.2","0.3","0.4","0.5","0.6","0.7","0.8","0.9"),
         xlab = "psi_delta",
-        ylab = "k")
+        ylab = "k",
+        ylim = c(0, 0.7))
 abline(h = 0.2)
 
 
@@ -1326,10 +1361,10 @@ plot(g_psi2, type = "l", ylab = expression(g ~ " with " ~ psi == 0.1), xlab = "i
 abline(h = 9.8, col = "red")
 
 plot(h0_psi2, type = "l", ylab = expression(h0 ~ " with " ~ psi == 0.1), xlab = "iteration")
-abline(h = 46.45, col = "red")
+abline(h = 46.46, col = "red")
 
 plot(sigma_psi2, type = "l", ylab = expression(sigma ~ " with " ~ psi == 0.1), xlab = "iteration")
-abline(h = 0.1, col = "red")
+abline(h = 0.01, col = "red")
 
 plot(alpha_psi2, type = "l", ylab = expression(alpha ~ " with " ~ psi == 0.1), xlab = "iteration")
 
@@ -1352,10 +1387,10 @@ plot(g_psi8, type = "l", ylab = expression(g ~ " with " ~ psi == 0.7), xlab = "i
 abline(h = 9.8, col = "red")
 
 plot(h0_psi8, type = "l", ylab = expression(h0 ~ " with " ~ psi == 0.7), xlab = "iteration")
-abline(h = 46.45, col = "red")
+abline(h = 46.46, col = "red")
 
 plot(sigma_psi8, type = "l", ylab = expression(sigma ~ " with " ~ psi == 0.7), xlab = "iteration")
-abline(h = 0.1, col = "red")
+abline(h = 0.01, col = "red")
 
 plot(alpha_psi8, type = "l", ylab = expression(alpha ~ " with " ~ psi == 0.7), xlab = "iteration")
 
@@ -1364,6 +1399,9 @@ abline(h = 0.7, col = "red")
 
 plot(k_psi8, type = "l", ylab = expression(k ~ " with " ~ psi == 0.7), xlab = "iteration")
 abline(h = 0.2, col = "red")
+
+colMeans(result_m2_sh2_psi8_ortho[[8]][[10]]==2)
+
 
 res_psi9 <- result_m2_sh2_psi9_ortho
 g_psi9 <- result_m2_sh2_psi9_ortho[[1]][,10]
@@ -1378,7 +1416,7 @@ plot(g_psi9, type = "l", ylab = expression(g ~ " with " ~ psi == 0.8), xlab = "i
 abline(h = 9.8, col = "red")
 
 plot(h0_psi9, type = "l", ylab = expression(h0 ~ " with " ~ psi == 0.8), xlab = "iteration")
-abline(h = 46.45, col = "red")
+abline(h = 46.46, col = "red")
 
 plot(sigma_psi9, type = "l", ylab = expression(sigma ~ " with " ~ psi == 0.8), xlab = "iteration")
 abline(h = 0.1, col = "red")
