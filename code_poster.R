@@ -188,6 +188,7 @@ mcmc_step6 <- function(y, t, n_iter, init, sigma_proposals, mcmc_parameters, Sig
 
 #-------------------------------- Gibbs step for sigma_sq_err --------------------------------#   
     
+    # R is kernel and 
     R <- outer(t, t, function(ti, tj) exp(-abs(ti - tj) / psi_delta))
     if(n > 0){
       R_inv <- tryCatch(solve(R), error = function(e) diag(1, n))
@@ -197,12 +198,7 @@ mcmc_step6 <- function(y, t, n_iter, init, sigma_proposals, mcmc_parameters, Sig
     else {
       quad_form_delta <- 0
     }
-    # residuals <- y - balldropg(t, c(g, h0)) - ifelse(zeta == 1, 0, delta)
-    # shape_err <- 2 +  n / 2  # alpha_0 + n
-    # rate_err <- 1 + 0.5 * ( sum(residuals^2) + k * quad_form_delta )  # beta_0 + 1/2 [RSS + k * delta'R^-1 delta]
-    # ####
-    # sigma_sq_err <- rinvgamma(1, shape = shape_err, rate = rate_err)
-
+    
     f_theta <- balldropg(t, c(g, h0))
     idx1 <- which(zeta == 1)
     idx2 <- which(zeta == 2)
@@ -230,7 +226,7 @@ mcmc_step6 <- function(y, t, n_iter, init, sigma_proposals, mcmc_parameters, Sig
  
 #-------------------------------- Gibbs step for psi_delta --------------------------------#   
     
-    # MH for psi_delta
+    # When the prior is the psi_delta of the "uniform(0.1, 1)", I use the following code:
     psi_prop <- rtruncnorm(1, a = 0.1, b = 1, mean = psi_delta, sd = sigma_proposals[5])
     sigma_sq_delta_prop <- sigma_sq_err / k
     Sigma_delta <- GP_covariance(t, sigma_sq_delta_prop, psi_delta)
@@ -250,6 +246,7 @@ mcmc_step6 <- function(y, t, n_iter, init, sigma_proposals, mcmc_parameters, Sig
       accept_psi <- accept_psi + 1
     }
 
+    # When the prior is the psi_delta of the "Beta(8, 4)", I use the following code:
     # psi_prop <- rtruncnorm(1, a = 0, b = 1, mean = psi_delta, sd = sigma_proposals[5])
     # sigma_sq_delta_prop <- sigma_sq_err / k
     # Sigma_delta_prop <- GP_covariance(t, sigma_sq_delta_prop, psi_prop)
@@ -272,10 +269,7 @@ mcmc_step6 <- function(y, t, n_iter, init, sigma_proposals, mcmc_parameters, Sig
 
 #-------------------------------- Gibbs step for k --------------------------------#   
     
-    # Gibbs for k
-    #R <- outer(t, t, function(ti, tj) exp(-abs(ti - tj) / psi_delta))
     alpha_k <- (n / 2) + 1
-    #beta_k <- (1 / (2 * sigma_sq_err)) * sum(delta * (solve(R, delta)))
     beta_k <- (1 / (2 * sigma_sq_err)) * quad_form_delta
     for (try_k in 1:100) {
       k_prop <- rgamma(1, shape = alpha_k, rate = beta_k)
@@ -294,11 +288,8 @@ mcmc_step6 <- function(y, t, n_iter, init, sigma_proposals, mcmc_parameters, Sig
  
 #-------------------------------- Gibbs step for alpha --------------------------------#   
     
-    # Gibbs step for alpha
     alpha_param <- rbeta(1, sum(zeta == 1) + 0.5, sum(zeta == 2) + 0.5)
     theta[4] <- alpha_param
-    #alpha_param <- if (t[1] < 0.1) { rbeta(1, 2, 2) } else { rbeta(1, sum(zeta == 1) + 2, sum(zeta == 2) + 2) }
-    #alpha_param <- rbeta(1, sum(zeta == 1) + 2 + exp(-t), sum(zeta == 2) + 2 + exp(t))
     
     if(mcmc_parameters[5] == FALSE){
       alpha_param <- init[4]
