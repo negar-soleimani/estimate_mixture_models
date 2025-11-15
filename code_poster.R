@@ -21,6 +21,8 @@ t_range <- max(t) - min(t)
 t <- (t - t_min) / t_range
 n <- length(y)
 
+##############################################################################################
+
 balldropg <- function(t, theta) {
   g <- theta[1]
   h0 <- theta[2]
@@ -31,15 +33,15 @@ balldropg <- function(t, theta) {
   return(as.vector(h))
 }
 
+##############################################################################################
+
 GP_covariance <- function(t, sigma_sq_delta, psi_delta) {
   n <- length(t)
   Sigma <- outer(t, t, function(ti, tj) sigma_sq_delta * exp(-abs(ti - tj) / psi_delta))
   return(Sigma)
 }
 
-#h <- function(x, sigma) {
-#  return(sigma * rnorm(length(x)))
-#}
+##############################################################################################
 
 mcmc_step6 <- function(y, t, n_iter, init, sigma_proposals, mcmc_parameters, Sigma_theta, n_burnin=1000) {
   # mcmc_parameters : c(theta(g, h0) = "TRUE", sigma_sq_err = "T", psi_delta = "T", k = "T", alpha = "T")
@@ -63,35 +65,43 @@ mcmc_step6 <- function(y, t, n_iter, init, sigma_proposals, mcmc_parameters, Sig
     sigma_sq_delta <- sigma_sq_err / k
     
     Sigma_delta <- GP_covariance(t, sigma_sq_delta, psi_delta)
-    #zeta_mean <- W_theta %*% solve(M_theta) %*% Q_theta
-    #Sigma_delta_simple <- Sigma_delta - W_theta %*% solve(M_theta) %*% t(W_theta)
     f_theta <- balldropg(t, c(g, h0))
     mean1 <- f_theta
     mean2 <- f_theta + delta
+
+#-------------------------------- probability of the zeta --------------------------------# 
     
-    ###s <- 0.3
+    # Method1 for calculate the probability of the zeta:
     # prob_zeta <- 1 / (1 + (alpha_param * dnorm(y, mean1, sqrt(sigma_sq_err))) /
-    #                     ((1 - alpha_param) * dnorm(y, mean2, sqrt(sigma_sq_err))))
-    # 
-    # ##*(abs(delta) > s)
+    #                     ((1 - alpha_param) * dnorm(y, mean2, sqrt(sigma_sq_err)))) #P(M2) = ((1-alpha)*M2)/((alpha*M1)+(1-alpha)*M2)
     # zeta <- 1 + (runif(length(y)) < prob_zeta)
-    # 
     # chain_zeta[iter, ] = zeta
     
+    #I don't use Method1 for computing prob_zeta,because this direct probability 
+    #computation is numerically unstable, when the parameter sigma_sq_err is small 
+    #(sigma_sq_err = 0.01), it leads to overflow and produces NaN/NA probabilities, 
+    #and these NA values then propagate into zeta and later cause singular matrices 
+    #and when computing solve(A), leading to errors.
+    
+    # Method2 for calculate the probability of the zeta:(log_sum_exp: https://rpubs.com/FJRubio/LSE and https://en.wikipedia.org/wiki/LogSumExp)
     log_w1 <- log(alpha_param) + dnorm(y, mean1, sqrt(sigma_sq_err), log = TRUE)
     log_w2 <- log(1 - alpha_param) + dnorm(y, mean2, sqrt(sigma_sq_err), log = TRUE)
     log_max <- pmax(log_w1, log_w2)
     log_den <- log_max + log(exp(log_w1 - log_max) + exp(log_w2 - log_max))
-    prob_zeta_1 <- exp(log_w1 - log_den)  #  P(zeta=1|y)
-    zeta <- ifelse(runif(length(y)) < prob_zeta_1, 1, 2) 
-    #zeta <- 1 + (runif(length(y)) < prob_zeta_1)
+    #prob_zeta_1 <- exp(log_w1 - log_den)  #  P(zeta=1|y)
+    prob_zeta_2 <- exp(log_w2 - log_den)  #  P(zeta=2|y)
+    #zeta <- ifelse(runif(length(y)) < prob_zeta_1, 1, 2)
+    zeta <- ifelse(runif(length(y)) < prob_zeta_2, 2, 1) #= zeta <- 1 + (runif(length(y)) < prob_zeta_1) # sample zeta: 2 with prob post_p2, otherwise 1
     chain_zeta[iter, ] = zeta
-    
+
+#-------------------------------- log_likelihood --------------------------------#   
     
     log_likelihood <- sum(log(ifelse(zeta == 1,
                                      alpha_param * dnorm(y, mean1, sqrt(sigma_sq_err)),
                                      (1 - alpha_param) * dnorm(y, mean2, sqrt(sigma_sq_err)))))
     loglik_chain[iter] <- log_likelihood
+
+#-------------------------------- delta(discrepancy) --------------------------------#  
     
     zeta_2_indices <- which(zeta == 2)
     if (length(zeta_2_indices) > 0) {
@@ -104,33 +114,60 @@ mcmc_step6 <- function(y, t, n_iter, init, sigma_proposals, mcmc_parameters, Sig
       Sigma_delta_hat <- Sigma_delta - Sigma_delta_ym %*% Sigma_inv %*% t(Sigma_delta_ym)
       Sigma_delta_hat <- 0.5 * (Sigma_delta_hat + t(Sigma_delta_hat))
       delta <- as.vector(rmvnorm(1, mean = mu_delta_hat, sigma = Sigma_delta_hat))
-      #delta <- rmvnorm(1, mean=zeta_mean, sigma=Sigma_delta_ortho)
     }
     else delta = as.vector(rmvnorm(1, rep(0, n), sigma = Sigma_delta))
     
+#-------------------------------- Gibbs step for theta --------------------------------# 
     
-    # Gibbs for theta
+    
+    
+    # zeta_1_indices <- which(zeta == 1)
+    # zeta_2_indices <- which(zeta == 2)
+    # X <- cbind(1, -0.5 * (t * t_range)^2) #cbind(1, -0.5 * (t * t_range + t_min)^2)
+    # x1 <- X[zeta_1_indices, , drop = FALSE]
+    # x2 <- X[zeta_2_indices, , drop = FALSE]
+    # theta_hat     <- matrix(c(46.45, 9.8), ncol = 1)
+    # inv_sigma_theta <- solve(Sigma_theta)
+    # A <- ((t(x1) %*% x1) / sigma_sq_err) + ((t(x2) %*% x2) / sigma_sq_err) + inv_sigma_theta
+    # Sigmapost_theta <- solve(A)
+    # y1 <- matrix(y[zeta_1_indices], ncol = 1)
+    # y2 <- matrix(y[zeta_2_indices], ncol = 1)
+    # d2 <- matrix(delta[zeta_2_indices], ncol = 1)
+    # B <- (t(x1) %*% y1) / sigma_sq_err +
+    #   (t(x2) %*% y2) / sigma_sq_err -
+    #   (t(x2) %*% d2) / sigma_sq_err +
+    #   inv_sigma_theta %*% theta_hat
+    # Mupost_theta <- Sigmapost_theta %*% B
+    # theta_sample <- rmvnorm(1, mean = Mupost_theta, sigma = Sigmapost_theta)
+    # h0 <- theta_sample[1];  g <- theta_sample[2]
+    # theta[1] <- g
+    # theta[2] <- h0
+    
+    # ---- Gibbs for theta (flat prior on theta) ----
     zeta_1_indices <- which(zeta == 1)
     zeta_2_indices <- which(zeta == 2)
-    X <- cbind(1, -0.5 * (t * t_range)^2) #cbind(1, -0.5 * (t * t_range + t_min)^2)
+    
+    X <- cbind(1, -0.5 * (t * t_range)^2)
     x1 <- X[zeta_1_indices, , drop = FALSE]
     x2 <- X[zeta_2_indices, , drop = FALSE]
-    theta_hat     <- matrix(c(46.45, 9.8), ncol = 1)
-    inv_sigma_theta <- solve(Sigma_theta)
-    A <- ((t(x1) %*% x1) / sigma_sq_err) + ((t(x2) %*% x2) / sigma_sq_err) + inv_sigma_theta
-    Sigmapost_theta <- solve(A)
+    
     y1 <- matrix(y[zeta_1_indices], ncol = 1)
     y2 <- matrix(y[zeta_2_indices], ncol = 1)
     d2 <- matrix(delta[zeta_2_indices], ncol = 1)
-    B <- (t(x1) %*% y1) / sigma_sq_err +
-      (t(x2) %*% y2) / sigma_sq_err -
-      (t(x2) %*% d2) / sigma_sq_err +
-      inv_sigma_theta %*% theta_hat
-    Mupost_theta <- Sigmapost_theta %*% B
-    theta_sample <- rmvnorm(1, mean = Mupost_theta, sigma = Sigmapost_theta)
+    
+    A <- (t(x1) %*% x1 + t(x2) %*% x2) / sigma_sq_err
+    B <- (t(x1) %*% y1 + t(x2) %*% y2 - t(x2) %*% d2) / sigma_sq_err
+    
+    Sigmapost_theta <- solve(A)             
+    Mupost_theta    <- Sigmapost_theta %*% B 
+    
+    theta_sample <- rmvnorm(1, mean = Mupost_theta,
+                                     sigma = Sigmapost_theta)
+    
     h0 <- theta_sample[1];  g <- theta_sample[2]
     theta[1] <- g
     theta[2] <- h0
+    
     
     if(mcmc_parameters[1] == FALSE){
       g <- init[1]
@@ -148,8 +185,9 @@ mcmc_step6 <- function(y, t, n_iter, init, sigma_proposals, mcmc_parameters, Sig
     #  h0 <- init[2] 
     #  g <- theta_sample[2] 
     #}
+
+#-------------------------------- Gibbs step for sigma_sq_err --------------------------------#   
     
-    # Gibbs for sigma_sq_err
     R <- outer(t, t, function(ti, tj) exp(-abs(ti - tj) / psi_delta))
     if(n > 0){
       R_inv <- tryCatch(solve(R), error = function(e) diag(1, n))
@@ -174,11 +212,11 @@ mcmc_step6 <- function(y, t, n_iter, init, sigma_proposals, mcmc_parameters, Sig
     residual2 <- y[idx2] - f_theta[idx2] - delta[idx2]
     rss2   <- sum(residual2^2)
 
-    #Jeffry
+    # When we consider the Jeffreys prior, I use the following code:
     rate_err <- (0.5 * ( rss1 + rss2 + (k * quad_form_delta)))
     shape_err <- n + 1/2
     
-    # IG
+    # When the prior is the sigma parameter of the "inverse gamma distribution", I use the following code:
     # rate_err <- 1 + (0.5 * ( rss1 + rss2 + (k * quad_form_delta)))
     # shape_err <- 2 + n
     # sigma_sq_err <- rinvgamma(1, shape = shape_err, scale = rate_err)
@@ -189,6 +227,8 @@ mcmc_step6 <- function(y, t, n_iter, init, sigma_proposals, mcmc_parameters, Sig
       sigma_sq_err <- init[3]
       theta[3] <- sigma_sq_err
     }
+ 
+#-------------------------------- Gibbs step for psi_delta --------------------------------#   
     
     # MH for psi_delta
     psi_prop <- rtruncnorm(1, a = 0.1, b = 1, mean = psi_delta, sd = sigma_proposals[5])
@@ -229,6 +269,8 @@ mcmc_step6 <- function(y, t, n_iter, init, sigma_proposals, mcmc_parameters, Sig
       psi_delta <- init[5]
       theta[5] <- psi_delta
     }
+
+#-------------------------------- Gibbs step for k --------------------------------#   
     
     # Gibbs for k
     #R <- outer(t, t, function(ti, tj) exp(-abs(ti - tj) / psi_delta))
@@ -249,6 +291,8 @@ mcmc_step6 <- function(y, t, n_iter, init, sigma_proposals, mcmc_parameters, Sig
       k <- init[6]
       theta[6] <- k
     }
+ 
+#-------------------------------- Gibbs step for alpha --------------------------------#   
     
     # Gibbs step for alpha
     alpha_param <- rbeta(1, sum(zeta == 1) + 0.5, sum(zeta == 2) + 0.5)
@@ -267,6 +311,8 @@ mcmc_step6 <- function(y, t, n_iter, init, sigma_proposals, mcmc_parameters, Sig
     chain_delta[iter, ] <- delta
     
   }
+ 
+#-------------------------------- Gibbs for theta --------------------------------#   
   
   # Remove burn-in samples if n_burnin > 0
   if (n_burnin > 0) {
@@ -283,28 +329,28 @@ mcmc_step6 <- function(y, t, n_iter, init, sigma_proposals, mcmc_parameters, Sig
   }
   return(list(theta = chain_theta, delta = chain_delta, zeta = chain_zeta, loglik = loglik_chain, accept_rate_psi = accept_psi / n_iter))
 }
-
+##############################################################################################
 ##############################################################
 ###################### Real Data #############################
 ##############################################################
-# set.seed(12345)
-# 
-# init_base       <- c(9.8, 46.45, 0.03, 0.5, 0.3, 0.2)
-# sigma_proposals <- c(NA,NA,NA,NA,0.2,NA)
-# mcmc_parameters <- c(TRUE, TRUE, TRUE, TRUE, TRUE)
-# Sigma_theta     <- matrix(c(0.5,0,0,0.5),2)
-# n_iter          <- 20000
-# burn_in         <- 5000
-# 
-# results_real_sh5 <- mcmc_step6(
-#   y = y, t = t,
-#   n_iter = n_iter,
-#   init   = init_base,
-#   sigma_proposals = sigma_proposals,
-#   mcmc_parameters = mcmc_parameters,
-#   Sigma_theta     = Sigma_theta,
-#   n_burnin        = burn_in
-# )
+set.seed(12345)
+
+init_base       <- c(9.8, 46.45, 0.01, 0.5, 0.3, 0.2)
+sigma_proposals <- c(NA,NA,NA,NA,0.4,NA)
+mcmc_parameters <- c(TRUE, TRUE, TRUE, TRUE, TRUE)
+Sigma_theta     <- matrix(c(0.5,0,0,0.5),2)
+n_iter          <- 20000
+burn_in         <- 5000
+
+results_real_sh5 <- mcmc_step6(
+  y = y, t = t,
+  n_iter = n_iter,
+  init   = init_base,
+  sigma_proposals = sigma_proposals,
+  mcmc_parameters = mcmc_parameters,
+  Sigma_theta     = Sigma_theta,
+  n_burnin        = burn_in
+)
 
 #save(results_real_sh5,file = "/Users/negarsoleimani/Documents/PhD/Paper1/Real Data/results_real_sh5.RData")
 
@@ -314,25 +360,27 @@ mcmc_step6 <- function(y, t, n_iter, init, sigma_proposals, mcmc_parameters, Sig
 # load("/Users/negarsoleimani/Documents/PhD/Paper1/Real Data/results_real_sh5.RData")
 # load("/Users/negarsoleimani/Documents/PhD/Paper1/Real Data/results_real_sh5.RData")
 
-# g_chain <- results_real_sh5$theta[,1]
-# h0_chain <- results_real_sh5$theta[,2]
-# sigma_sq_err_chain <- results_real_sh5$theta[,3]
-# alpha_chain <- results_real_sh5$theta[,4]
-# psi_delta_chain <- results_real_sh5$theta[,5]
-# k_chain <- results_real_sh5$theta[,6]
-# delta_chain <- results_real_sh5$delta
-# zeta_chain <- results_real_sh5$zeta
-# loglik_chain <- results_real_sh5$loglik
-# accept_rate_psi <- results_real_sh5$accept_rate_psi
+g_chain <- results_real_sh5$theta[,1]
+h0_chain <- results_real_sh5$theta[,2]
+sigma_sq_err_chain <- results_real_sh5$theta[,3]
+alpha_chain <- results_real_sh5$theta[,4]
+psi_delta_chain <- results_real_sh5$theta[,5]
+k_chain <- results_real_sh5$theta[,6]
+delta_chain <- results_real_sh5$delta
+zeta_chain <- results_real_sh5$zeta
+loglik_chain <- results_real_sh5$loglik
+accept_rate_psi <- results_real_sh5$accept_rate_psi
+# # 
+par(mfrow = c(1, 1))
+boxplot(results_real_sh5$delta, col = "#CCDAFF")
+title(ylab = expression(delta), xlab = "n", line = 1.75)
 # 
-# par(mfrow = c(1, 1))
-# boxplot(results_real_sh5$delta)
-# 
-# prob_zeta_model1 <- colMeans(results_real_sh5$zeta == 1)
-# print(prob_zeta_model1)
-# 
-# prob_zeta_model2 <- colMeans(results_real_sh5$zeta == 2)
-# print(prob_zeta_model2)
+# # 
+# # prob_zeta_model1 <- colMeans(results_real_sh5$zeta == 1)
+# # print(prob_zeta_model1)
+# # 
+prob_zeta_model2 <- colMeans(results_real_sh5$zeta == 2)
+print(prob_zeta_model2)
 
 # par(mfrow = c(3, 2))
 # plot(results_real_sh5$theta[, 1], type = "l", main = "Trace of g")
@@ -352,23 +400,23 @@ mcmc_step6 <- function(y, t, n_iter, init, sigma_proposals, mcmc_parameters, Sig
 # boxplot(results_real_sh5$theta[, 6])
 # # 
 # # 
-# par(mfrow = c(2, 3))
-# vioplot(results_real_sh5$theta[, 1], col = "#E18E96", xlab = "", xaxt = "n")
-# title(ylab = expression(g), line = 1.5)
-# abline(h = 9.8)
-# vioplot(results_real_sh5$theta[, 2], col = "#E18E96", xlab = "", xaxt = "n")
-# title(ylab = expression(h[0]), line = 1.5)
-# abline(h = 46.45)
-# vioplot(results_real_sh5$theta[, 3], col = "#E18E96", xlab = "", xaxt = "n")
-# title(ylab = expression(sigma[err]^2), line = 1.5)
-# abline(h = 0.01)
-# vioplot(results_real_sh5$theta[, 4], col = "#E18E96", xlab = "", xaxt = "n")
-# title(ylab = expression(alpha), line = 1.5)
-# vioplot(results_real_sh5$theta[, 5], col = "#E18E96", xlab = "", xaxt = "n")
-# title(ylab = expression(psi[delta]), line = 1.5)
-# vioplot(results_real_sh5$theta[, 6], col = "#E18E96", xlab = "", xaxt = "n")
-# title(ylab = expression(k), line = 1.5)
-# 
+par(mfrow = c(2, 3))
+vioplot(results_real_sh5$theta[, 1], col = "#C9E2FF", xlab = "", xaxt = "n")
+title(ylab = expression(g), line = 1.75)
+abline(h = 9.8)
+vioplot(results_real_sh5$theta[, 2], col = "#C9E2FF", xlab = "", xaxt = "n")
+title(ylab = expression(h[0]), line = 1.75)
+abline(h = 46.45)
+vioplot(results_real_sh5$theta[, 3], col = "#C9E2FF", xlab = "", xaxt = "n")
+title(ylab = expression(sigma[err]^2), line = 1.75)
+abline(h = 0.01)
+vioplot(results_real_sh5$theta[, 4], col = "#C9E2FF", xlab = "", xaxt = "n")
+title(ylab = expression(alpha), line = 1.75)
+vioplot(results_real_sh5$theta[, 5], col = "#C9E2FF", xlab = "", xaxt = "n")
+title(ylab = expression(psi[delta]), line = 1.75)
+vioplot(results_real_sh5$theta[, 6], col = "#C9E2FF", xlab = "", xaxt = "n")
+title(ylab = expression(k), line = 1.75)
+
 # 
 # title(xlab = expression(psi[delta]), line = 1.5)
 # title(ylab = expression(alpha), line = 1.5)
@@ -1122,7 +1170,7 @@ vioplot(colMeans(g1), colMeans(g2), colMeans(g3), colMeans(g4), colMeans(g5),
         names = c("0.01","0.1","0.2","0.3","0.4","0.5","0.6","0.7","0.8","0.9"),
         xlab = "",  
         ylab = "",
-        col = "lightgray")
+        col = "#E18E96")
 title(xlab = expression(psi[delta]), line = 1.5)
 title(ylab = expression(g), line = 1.5)
 abline(h = 9.8, col = "#800020")
@@ -1154,7 +1202,7 @@ vioplot(colMeans(h01), colMeans(h02), colMeans(h03), colMeans(h04), colMeans(h05
         names = c("0.01","0.1","0.2","0.3","0.4", "0.5","0.6","0.7","0.8","0.9"),
         xlab = "",
         ylab = "",
-        col = "lightgray")
+        col = "#E18E96")
 title(xlab = expression(psi[delta]), line = 1.5)
 title(ylab = expression(h), line = 1.5)
 abline(h = 46.46, col = "#800020")
@@ -1183,7 +1231,7 @@ vioplot(colMeans(sigma1), colMeans(sigma2), colMeans(sigma3), colMeans(sigma4), 
         names = c("0.01","0.1","0.2","0.3","0.4", "0.5","0.6","0.7","0.8","0.9"),
         xlab = "",
         ylab = "",
-        col = "lightgray")
+        col = "#E18E96")
 title(xlab = expression(psi[delta]), line = 1.5)
 title(ylab = expression(sigma[err]^2), line = 1.5)
 abline(h = 0.01, col = "#800020")
@@ -1213,7 +1261,7 @@ vioplot(colMeans(alpha1), colMeans(alpha2), colMeans(alpha3), colMeans(alpha4), 
         xlab = "",
         ylab = "",
         ylim = c(0,1),
-        col = "lightgray")
+        col = "#E18E96")
 title(xlab = expression(psi[delta]), line = 1.5)
 title(ylab = expression(alpha), line = 1.5)
 
@@ -1234,7 +1282,6 @@ boxplot(colMeans(psi1), colMeans(psi2), colMeans(psi3), colMeans(psi4), colMeans
         names = c("0.01","0.1","0.2","0.3","0.4", "0.5","0.6","0.7","0.8","0.9"),
         xlab = "psi_delta",
         ylab = "psi",
-        ylim = c(0.3,0.9),
         col = "#800020")
 
 vioplot(colMeans(psi1), colMeans(psi2), colMeans(psi3), colMeans(psi4), colMeans(psi5), 
@@ -1242,7 +1289,7 @@ vioplot(colMeans(psi1), colMeans(psi2), colMeans(psi3), colMeans(psi4), colMeans
         names = c("0.01","0.1","0.2","0.3","0.4", "0.5","0.6","0.7","0.8","0.9"),
         xlab = "",
         ylab = "",
-        col = "lightgray")
+        col = "#E18E96")
 title(xlab = expression(psi[delta]), line = 1.5)
 title(ylab = expression(psi[delta]), line = 1.5)
 
@@ -1271,7 +1318,7 @@ vioplot(colMeans(k1), colMeans(k2), colMeans(k3), colMeans(k4), colMeans(k5),
         names = c("0.1","0.2","0.3","0.4","0.5","0.6","0.7","0.8","0.9"),
         xlab = "",
         ylab = "",
-        col = "lightgray")
+        col = "#E18E96")
 title(xlab = expression(psi[delta]), line = 1.5)
 title(ylab = expression(k), line = 1.5)
 abline(h = 0.2, col = "#800020")
