@@ -120,13 +120,13 @@ mcmc_step6 <- function(y, t, n_iter, init, sigma_proposals, mcmc_parameters, Sig
 #-------------------------------- Gibbs step for theta --------------------------------# 
     
     
-    
+    # prior Normal distribution
     # zeta_1_indices <- which(zeta == 1)
     # zeta_2_indices <- which(zeta == 2)
     # X <- cbind(1, -0.5 * (t * t_range)^2) #cbind(1, -0.5 * (t * t_range + t_min)^2)
     # x1 <- X[zeta_1_indices, , drop = FALSE]
     # x2 <- X[zeta_2_indices, , drop = FALSE]
-    # theta_hat     <- matrix(c(46.45, 9.8), ncol = 1)
+    # theta_hat     <- matrix(c(46.46, 9.8), ncol = 1)
     # inv_sigma_theta <- solve(Sigma_theta)
     # A <- ((t(x1) %*% x1) / sigma_sq_err) + ((t(x2) %*% x2) / sigma_sq_err) + inv_sigma_theta
     # Sigmapost_theta <- solve(A)
@@ -143,7 +143,7 @@ mcmc_step6 <- function(y, t, n_iter, init, sigma_proposals, mcmc_parameters, Sig
     # theta[1] <- g
     # theta[2] <- h0
     
-    # ---- Gibbs for theta (flat prior on theta) ----
+    # flat prior on theta 
     zeta_1_indices <- which(zeta == 1)
     zeta_2_indices <- which(zeta == 2)
     
@@ -233,8 +233,6 @@ mcmc_step6 <- function(y, t, n_iter, init, sigma_proposals, mcmc_parameters, Sig
     Sigma_delta_prop <- GP_covariance(t, sigma_sq_delta_prop, psi_prop)
     log_prop_current <- log(dtruncnorm(psi_delta, a = 0.1, b = 1, mean = psi_prop, sd = sigma_proposals[5]))
     log_prop_prop <- log(dtruncnorm(psi_prop, a = 0.1, b = 1, mean = psi_delta, sd = sigma_proposals[5]))
-    # log_prior_current <- dbeta(psi_delta, shape1 = a_psi, shape2 = b_psi, log=TRUE)
-    # log_prior_prop <- dbeta(psi_prop, shape1 = a_psi, shape2 = b_psi, log=TRUE)
     log_prior_current <- dunif(psi_delta, min = 0.1, max = 1, log = TRUE)
     log_prior_prop    <- dunif(psi_prop,  min = 0.1, max = 1, log = TRUE)
     log_like_current <- tryCatch(dmvnorm(delta, rep(0, n), Sigma_delta, log = TRUE), error = function(e) -Inf)
@@ -247,6 +245,7 @@ mcmc_step6 <- function(y, t, n_iter, init, sigma_proposals, mcmc_parameters, Sig
     }
 
     # When the prior is the psi_delta of the "Beta(8, 4)", I use the following code:
+    
     # psi_prop <- rtruncnorm(1, a = 0, b = 1, mean = psi_delta, sd = sigma_proposals[5])
     # sigma_sq_delta_prop <- sigma_sq_err / k
     # Sigma_delta_prop <- GP_covariance(t, sigma_sq_delta_prop, psi_prop)
@@ -326,10 +325,10 @@ mcmc_step6 <- function(y, t, n_iter, init, sigma_proposals, mcmc_parameters, Sig
 ##############################################################
 set.seed(12345)
 
-init_base       <- c(9.8, 46.45, 0.01, 0.5, 0.3, 0.2)
+init_base       <- c(9.8, 46.46, 0.01, 0.5, 0.3, 0.2)
 sigma_proposals <- c(NA,NA,NA,NA,0.4,NA)
 mcmc_parameters <- c(TRUE, TRUE, TRUE, TRUE, TRUE)
-Sigma_theta     <- matrix(c(0.5,0,0,0.5),2)
+Sigma_theta     <- matrix(c(0.5,0,0,0.5), 2)
 n_iter          <- 20000
 burn_in         <- 5000
 
@@ -344,7 +343,6 @@ results_real_sh5 <- mcmc_step6(
 )
 
 #save(results_real_sh5,file = "/Users/negarsoleimani/Documents/PhD/Paper1/Real Data/results_real_sh5.RData")
-
 # load("/Users/negarsoleimani/Documents/PhD/Paper1/Real Data/results_real_sh5.RData")
 # load("/Users/negarsoleimani/Documents/PhD/Paper1/Real Data/results_real_sh5.RData")
 # load("/Users/negarsoleimani/Documents/PhD/Paper1/Real Data/results_real_sh5.RData")
@@ -361,15 +359,14 @@ delta_chain <- results_real_sh5$delta
 zeta_chain <- results_real_sh5$zeta
 loglik_chain <- results_real_sh5$loglik
 accept_rate_psi <- results_real_sh5$accept_rate_psi
-# # 
+
 par(mfrow = c(1, 1))
 boxplot(results_real_sh5$delta, col = "#CCDAFF")
 title(ylab = expression(delta), xlab = "n", line = 1.75)
-# 
-# # 
-# # prob_zeta_model1 <- colMeans(results_real_sh5$zeta == 1)
-# # print(prob_zeta_model1)
-# # 
+
+prob_zeta_model1 <- colMeans(results_real_sh5$zeta == 1)
+print(prob_zeta_model1)
+
 prob_zeta_model2 <- colMeans(results_real_sh5$zeta == 2)
 print(prob_zeta_model2)
 
@@ -384,20 +381,21 @@ print(prob_zeta_model2)
 # par(mfrow = c(2, 3))
 # boxplot(results_real_sh5$theta[, 1])
 # boxplot(results_real_sh5$theta[, 2])
-# abline(h = 46.45)
+# abline(h = 46.46)
 # boxplot(results_real_sh5$theta[, 3])
 # boxplot(results_real_sh5$theta[, 4])
 # boxplot(results_real_sh5$theta[, 5])
 # boxplot(results_real_sh5$theta[, 6])
 # # 
 # # 
-par(mfrow = c(2, 3))
+library("vioplot")
+par(mfrow = c(1, 6))
 vioplot(results_real_sh5$theta[, 1], col = "#C9E2FF", xlab = "", xaxt = "n")
 title(ylab = expression(g), line = 1.75)
 abline(h = 9.8)
 vioplot(results_real_sh5$theta[, 2], col = "#C9E2FF", xlab = "", xaxt = "n")
 title(ylab = expression(h[0]), line = 1.75)
-abline(h = 46.45)
+abline(h = 46.46)
 vioplot(results_real_sh5$theta[, 3], col = "#C9E2FF", xlab = "", xaxt = "n")
 title(ylab = expression(sigma[err]^2), line = 1.75)
 abline(h = 0.01)
@@ -407,20 +405,16 @@ vioplot(results_real_sh5$theta[, 5], col = "#C9E2FF", xlab = "", xaxt = "n")
 title(ylab = expression(psi[delta]), line = 1.75)
 vioplot(results_real_sh5$theta[, 6], col = "#C9E2FF", xlab = "", xaxt = "n")
 title(ylab = expression(k), line = 1.75)
-
-# 
-# title(xlab = expression(psi[delta]), line = 1.5)
-# title(ylab = expression(alpha), line = 1.5)
 # hist(results_real_sh5$theta[, 4])
-##############################################################
-##############################################################
-##############################################################
 
-
+##############################################################
+##############################################################
+##############################################################
+# Simulation the data of model 2 with different psi_delta
+# Code to verify the result
 ## Psi1 ############################################
 set.seed(12345)
 k = 0.2
-#sigma_sq_delta <- 0.1 
 sim_psi_delta <- 0.01 
 sigma_sq_err <- (0.1)^2
 sigma_sq_delta <- sigma_sq_err / k
@@ -455,8 +449,6 @@ for (v in 1:n_samples) {
   #y_1 <- balldropg(t, c(9.8, 46.46)) + rnorm(n, 0, sqrt(sigma_sq_err)*(1+1/k))
   
   y_obs[, v] <- y_1
-  # a_psi = 1
-  # b_psi = 1#99
   res <- mcmc_step6(y_1, t, n_iter, init, sigma_props, mcmc_parameters,
                     Sigma_theta, n_burnin = burn_in)
   
@@ -472,8 +464,7 @@ for (v in 1:n_samples) {
   accept_rate[v]   <- res$accept_rate_psi
 }
 result_m2_sh2_psi1_simple <- list(g_chain, h0_chain, sigma_chain, alpha_chain, psi_chain, k_chain, delta_list, zeta_list, loglik_mat, accept_rate)
-save(result_m2_sh2_psi1_simple,file = "/Users/negarsoleimani/Documents/phd/paper1/result_m2_sh2_psi1_simple.RData")
-
+#save(result_m2_sh2_psi1_simple,file = "/Users/negarsoleimani/Documents/phd/paper1/result_m2_sh2_psi1_simple.RData")
 # res <- list(g_chain, h0_chain, sigma_chain, alpha_chain, psi_chain, k_chain, delta_list, zeta_list, loglik_mat, accept_rate)
 
 # g <- res[[1]]
@@ -572,7 +563,8 @@ save(result_m2_sh2_psi1_simple,file = "/Users/negarsoleimani/Documents/phd/paper
 # #####################################
 
 
-
+##############################################################
+# Simulation the data of model 2 with different psi_delta
 # ## Psi1 ############################################
 # set.seed(12345)
 # k = 0.2
