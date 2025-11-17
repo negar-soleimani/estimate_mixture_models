@@ -25,6 +25,8 @@ t <- (t - t_min) / t_range
 a <- t_range
 n <- length(y)
 
+##############################################################################################
+
 
 balldropg <- function(t, theta) {
   g <- theta[1]
@@ -32,7 +34,7 @@ balldropg <- function(t, theta) {
   theta_vec <- rbind(h0, g)
   x_vec <- cbind(1, -0.5 * (t * t_range)^2) #cbind(1, -0.5 * (t * t_range + t_min)^2)
   h <- x_vec %*% theta_vec
-  #h[h < 0] <- 0
+  h[h < 0] <- 0
   return(as.vector(h))
 }
 
@@ -53,16 +55,6 @@ I_x <- function(x, psi_delta) {
   
   term1 + term2 + term3
 }
-
-# I_x <- function(x, psi_delta){
-#   psi <- psi_delta
-#   p1 <- (psi * (1 - exp(-x/psi)) + psi * (1 - exp(-(1-x)/psi))) 
-#   p2 <- (((psi^2) * (1 - exp(-x/psi))) + (psi * x * exp(-x/psi)) + ((psi^2) * (1 - exp((1-x)/psi))) - (psi * (1-x) * exp(-(1-x)/psi)))
-#   p3 <- ((2 * psi^3) - exp(-x/psi) * (((x^2) * psi) + (2 * x * psi^2)) + (2 * psi^3)) + (2 * psi^3) - (exp((1-x)/psi) * ((((1-x)^2) * psi) + (2 * (1-x) * psi^2) + (2 * psi^3)))
-#   term1 <- ((x^2) * p1)
-#   term2 <- ((2*x) * p2)
-#   term1 + term2 + p3
-# }
 
 A_scalar <- function(psi_delta) {
   psi <- psi_delta
@@ -89,13 +81,6 @@ h_vec_x <- function(x, psi_delta) {
   rbind(J, -0.5 * (a^2) * I)
 }
 
-# H_matrix <- function(psi_delta) {
-#   A <- A_scalar(psi_delta)
-#   B <- B_scalar(psi_delta)
-#   D <- D_scalar(psi_delta)
-#   matrix(c(A, -((a^2)*B)/2, -((a^2)*B)/2, ((a^4)*D)/4), nrow = 2, byrow = TRUE)
-# }
-
 H_matrix <- function(psi_delta) {
   A <- A_scalar(psi_delta); B <- B_scalar(psi_delta); D <- D_scalar(psi_delta)
   H <- matrix(c(A, -((a^2)*B)/2, -((a^2)*B)/2, ((a^4)*D)/4), nrow = 2, byrow = TRUE)
@@ -104,34 +89,18 @@ H_matrix <- function(psi_delta) {
 }
 
 
-# GP_correlation <- function(t, psi_delta) {
-#   R_se <- outer(t, t, function(ti, tj) exp(-abs(ti - tj) / psi_delta))
-#   
-#   h_mat <- t(sapply(t, function(x) h_vec_x(x, psi_delta)))
-#   H <- H_matrix(psi_delta)
-#   H_inv <- tryCatch(solve(H), error = function(e) NULL)
-#   if (is.null(H_inv)) return(NULL)
-#   
-#   K_star <- R_se - h_mat %*% H_inv %*% t(h_mat)
-#   #K_star <- 0.5 * (K_star + t(K_star))  # symmetrize
-#   K_star
-# }
-
 GP_correlation <- function(t, psi_delta) {
-  R_se  <- outer(t, t, function(ti, tj) exp(-abs(ti - tj) / psi_delta))
+  R_se <- outer(t, t, function(ti, tj) exp(-abs(ti - tj) / psi_delta))
+
   h_mat <- t(sapply(t, function(x) h_vec_x(x, psi_delta)))
-  H     <- H_matrix(psi_delta)
-  H_inv <- tryCatch(chol2inv(chol(H)), error = function(e) NULL)
+  H <- H_matrix(psi_delta)
+  H_inv <- tryCatch(solve(H), error = function(e) NULL)
   if (is.null(H_inv)) return(NULL)
+
   K_star <- R_se - h_mat %*% H_inv %*% t(h_mat)
-  K_star <- 0.5 * (K_star + t(K_star))   
-  eig <- eigen(K_star, symmetric = TRUE, only.values = TRUE)$values
-  if (min(eig) < 1e-10) {                 
-    K_star <- K_star + diag(1e-8 - min(0, min(eig)) + 1e-12, nrow(K_star))
-  }
+  #K_star <- 0.5 * (K_star + t(K_star))  # symmetrize
   K_star
 }
-
 
 GP_covariance_star_complete <- function(t, sigma_sq_err, k, psi_delta) {
   K_star <- GP_correlation(t, psi_delta)
@@ -141,25 +110,7 @@ GP_covariance_star_complete <- function(t, sigma_sq_err, k, psi_delta) {
   (sigma_sq_err / k) * K_star
 }
 
-# psi_delta <- 0.1
-# sigma_sq_err <- 0.01
-# k <- 0.2
-# sigma_sq_delta <- sigma_sq_err / k
-# t <- seq(0,1,0.25)
-# t_range <- max(t) - min(t)
-# a <- t_range
-# 
-# J_x(t, psi_delta)
-# I_x(t, psi_delta)
-# #
-# H_matrix(psi_delta)
-# GP_covariance(t, sigma_sq_delta, psi_delta)
-# GP_correlation(t, psi_delta)
-# GP_covariance(t, 1, psi_delta)-t(h_vec_x(t, psi_delta))%*%solve(H_matrix(psi_delta))%*%h_vec_x(t, psi_delta)
-# GP_covariance_star_complete(t, 1, 1, psi_delta)
-# GP_covariance_star_complete(t, sigma_sq_err, k, psi_delta)
-
-
+##############################################################################################
 mcmc_step6 <- function(y, t, n_iter, init, sigma_proposals, mcmc_parameters, Sigma_theta, n_burnin=1000, a_psi, b_psi) {
   # mcmc_parameters : c(theta(g, h0) = "TRUE", sigma_sq_err = "T", psi_delta = "T", k = "T", alpha = "T")
   
@@ -183,13 +134,11 @@ mcmc_step6 <- function(y, t, n_iter, init, sigma_proposals, mcmc_parameters, Sig
     alpha_param <- theta[4]; psi_delta <- theta[5]; k <- theta[6]
     sigma_sq_delta <- sigma_sq_err / k
     
+#-------------------------------- probability of the zeta --------------------------------# 
+    
     Sigma_delta <- GP_covariance_star_complete(t, sigma_sq_err, k, psi_delta) #c*(x,x')
     #Sigma_delta <- 0.5 * (Sigma_delta + t(Sigma_delta)) + diag(1e-10, n)
     
-    
-    # if (is.null(Sigma_delta)) {
-    #   log_likelihood <- -Inf
-    # } else {
     f_theta <- balldropg(t, c(g, h0))
     mean1 <- f_theta
     mean2 <- f_theta + delta
@@ -201,31 +150,27 @@ mcmc_step6 <- function(y, t, n_iter, init, sigma_proposals, mcmc_parameters, Sig
     # zeta <- 1 + (runif(length(y)) < prob_zeta)
     # 
     # chain_zeta[iter, ] = zeta
-    
-    log_sum_exp <- function(x, y) {
-      m <- pmax(x, y)
-      m + log(exp(x - m) + exp(y - m))
-    }
-    
-    # Calculate log weights for each component
+
+
+    # Method2 for calculate the probability of the zeta:(log_sum_exp: https://rpubs.com/FJRubio/LSE and https://en.wikipedia.org/wiki/LogSumExp)
     log_w1 <- log(alpha_param) + dnorm(y, mean1, sqrt(sigma_sq_err), log = TRUE)
     log_w2 <- log(1 - alpha_param) + dnorm(y, mean2, sqrt(sigma_sq_err), log = TRUE)
-    
-    # Log-sum-exp of the denominator
-    log_denominator <- log_sum_exp(log_w1, log_w2)
-    
-    # Posterior probability P(zeta=1|y) in log space, then exponentiate
-    prob_zeta <- exp(log_w1 - log_denominator)
-    
-    #zeta <- 1 + (runif(length(y)) < prob_zeta)
-    zeta <- ifelse(runif(length(y)) < prob_zeta, 1, 2)
+    log_max <- pmax(log_w1, log_w2)
+    log_den <- log_max + log(exp(log_w1 - log_max) + exp(log_w2 - log_max))
+    #prob_zeta_1 <- exp(log_w1 - log_den)  #  P(zeta=1|y)
+    prob_zeta_2 <- exp(log_w2 - log_den)  #  P(zeta=2|y)
+    #zeta <- ifelse(runif(length(y)) < prob_zeta_1, 1, 2)
+    zeta <- ifelse(runif(length(y)) < prob_zeta_2, 2, 1) #= zeta <- 1 + (runif(length(y)) < prob_zeta_1) # sample zeta: 2 with prob post_p2, otherwise 1
     chain_zeta[iter, ] = zeta
-    
+
+#-------------------------------- log_likelihood --------------------------------#   
     
     log_likelihood <- sum(log(ifelse(zeta == 1,
                                      alpha_param * dnorm(y, mean1, sqrt(sigma_sq_err)),
                                      (1 - alpha_param) * dnorm(y, mean2, sqrt(sigma_sq_err)))))
     loglik_chain[iter] <- log_likelihood
+ 
+#-------------------------------- delta(discrepancy) --------------------------------#  
     
     zeta_2_indices <- which(zeta == 2)
     if (length(zeta_2_indices) > 0) {
@@ -234,72 +179,70 @@ mcmc_step6 <- function(y, t, n_iter, init, sigma_proposals, mcmc_parameters, Sig
         Sigma_delta[zeta_2_indices, zeta_2_indices, drop = FALSE]
       Sigma_delta_ym <- Sigma_delta[, zeta_2_indices, drop = FALSE]
       Sigma_inv <- tryCatch(solve(Sigma_delta_ymym), error = function(e) diag(1, nrow(Sigma_delta_ymym)))
-      #Sigma_inv <- tryCatch(chol2inv(chol(Sigma_delta_ymym)),
-      #error = function(e) diag(1, nrow(Sigma_delta_ymym)))
-      #Sigma_inv <- 0.5 * (Sigma_inv + t(Sigma_inv))
       mu_delta_hat <- rep(0, n) + Sigma_delta_ym %*% Sigma_inv %*% (y_m - f_theta[zeta_2_indices])
       Sigma_delta_hat <- Sigma_delta - Sigma_delta_ym %*% Sigma_inv %*% t(Sigma_delta_ym)
-      # jitter <- 1e-8
-      # eig <- eigen(Sigma_delta_hat, symmetric = TRUE)
-      # min_eig <- min(eig$values)
-      # if (min_eig < 0) {
-      #   Sigma_delta_hat <- Sigma_delta_hat + diag(abs(min_eig) + jitter, nrow(Sigma_delta_hat))
-      # }
-      # Sigma_delta_hat <- Sigma_delta_hat + diag(jitter, nrow(Sigma_delta_hat))
-      # Sigma_delta_hat <- 0.5 * (Sigma_delta_hat + t(Sigma_delta_hat))
       Sigma_delta_hat <- 0.5 * (Sigma_delta_hat + t(Sigma_delta_hat))
       delta <- as.vector(rmvnorm(1, mean = mu_delta_hat, sigma = Sigma_delta_hat))
     } else {
       delta = as.vector(rmvnorm(1, rep(0, n), sigma = Sigma_delta))
     }
-    #}
+ 
+#-------------------------------- Gibbs step for theta --------------------------------#
     
-    K_star_psi <- GP_correlation(t, psi_delta)
-    #inv_Kstar_psi <- tryCatch(solve(K_star_psi), error = function(e) NULL)
-    inv_Kstar_psi <- tryCatch(chol2inv(chol(K_star_psi)), error = function(e) NULL)
+    # prior Normal distribution
+    # zeta_1_indices <- which(zeta == 1)
+    # zeta_2_indices <- which(zeta == 2)
+    # X <- cbind(1, -0.5 * (t * t_range)^2) #cbind(1, -0.5 * (t * t_range + t_min)^2)
+    # x1 <- X[zeta_1_indices, , drop = FALSE]
+    # x2 <- X[zeta_2_indices, , drop = FALSE]
+    # theta_hat     <- matrix(c(46.46, 9.8), ncol = 1)
+    # inv_sigma_theta <- solve(Sigma_theta)
+    # A <- ((t(x1) %*% x1) / sigma_sq_err) + ((t(x2) %*% x2) / sigma_sq_err) + inv_sigma_theta
+    # Sigmapost_theta <- solve(A)
+    # y1 <- matrix(y[zeta_1_indices], ncol = 1)
+    # y2 <- matrix(y[zeta_2_indices], ncol = 1)
+    # d2 <- matrix(delta[zeta_2_indices], ncol = 1)
+    # B <- (t(x1) %*% y1) / sigma_sq_err +
+    #   (t(x2) %*% y2) / sigma_sq_err -
+    #   (t(x2) %*% d2) / sigma_sq_err +
+    #   inv_sigma_theta %*% theta_hat
+    # Mupost_theta <- Sigmapost_theta %*% B
+    # theta_sample <- rmvnorm(1, mean = Mupost_theta, sigma = Sigmapost_theta)
+    # h0 <- theta_sample[1];  g <- theta_sample[2]
+    # theta[1] <- g
+    # theta[2] <- h0
     
-    if (is.null(inv_Kstar_psi)) {
-      quad_form_delta <- -Inf
-    } else {
-      quad_form_delta <- as.numeric(t(delta) %*% inv_Kstar_psi %*% delta)
-      #quad_form_delta <- sum(delta * (inv_Kstar_psi %*% delta))
-    }
     
-    #if (is.null(K_star_psi)) {
-    #  quad_form_delta <- -Inf
-    #} else {
-    #  quad_form_delta <- as.numeric(t(delta) %*% solve(K_star_psi) %*% delta)
-    #}
-    if (quad_form_delta == -Inf) next
-    
-    # # Gibbs for theta
+    # flat prior on theta 
     zeta_1_indices <- which(zeta == 1)
     zeta_2_indices <- which(zeta == 2)
-    X <- cbind(1, -0.5 * (t * t_range)^2) #cbind(1, -0.5 * (t * t_range + t_min)^2)
+    
+    X <- cbind(1, -0.5 * (t * t_range)^2)
     x1 <- X[zeta_1_indices, , drop = FALSE]
     x2 <- X[zeta_2_indices, , drop = FALSE]
-    theta_hat     <- matrix(c(46.46, 9.8), ncol = 1)
-    inv_sigma_theta <- solve(Sigma_theta)
-    A <- ((t(x1) %*% x1) / theta[3]) + ((t(x2) %*% x2) / theta[3]) + inv_sigma_theta
-    Sigmapost_theta <- solve(A)
+    
     y1 <- matrix(y[zeta_1_indices], ncol = 1)
     y2 <- matrix(y[zeta_2_indices], ncol = 1)
     d2 <- matrix(delta[zeta_2_indices], ncol = 1)
-    B <- (t(x1) %*% y1) / theta[3] +
-      (t(x2) %*% y2) / theta[3] -
-      (t(x2) %*% d2) / theta[3] +
-      inv_sigma_theta %*% theta_hat
-    Mupost_theta <- Sigmapost_theta %*% B
-    theta_sample <- rmvnorm(1, mean = Mupost_theta, sigma = Sigmapost_theta)
+    
+    A <- (t(x1) %*% x1 + t(x2) %*% x2) / sigma_sq_err
+    B <- (t(x1) %*% y1 + t(x2) %*% y2 - t(x2) %*% d2) / sigma_sq_err
+    
+    Sigmapost_theta <- solve(A)             
+    Mupost_theta    <- Sigmapost_theta %*% B 
+    
+    theta_sample <- rmvnorm(1, mean = Mupost_theta,
+                            sigma = Sigmapost_theta)
+    
     h0 <- theta_sample[1];  g <- theta_sample[2]
     theta[1] <- g
     theta[2] <- h0
+    
     
     if(mcmc_parameters[1] == FALSE){
       g <- init[1]
       h0 <- init[2]
     }
-    
     ## g = fixer
     # if (mcmc_parameters[1] == FALSE) {
     #  g <- init[1]
@@ -312,7 +255,19 @@ mcmc_step6 <- function(y, t, n_iter, init, sigma_proposals, mcmc_parameters, Sig
     #  g <- theta_sample[2] 
     #}
     
-    # Gibbs for sigma_sq_err
+#-------------------------------- Gibbs step for sigma_sq_err --------------------------------#   
+    
+    K_star_psi <- GP_correlation(t, psi_delta)
+    inv_Kstar_psi <- tryCatch(chol2inv(chol(K_star_psi)), error = function(e) NULL)
+    
+    if (is.null(inv_Kstar_psi)) {
+      quad_form_delta <- -Inf
+    } else {
+      quad_form_delta <- as.numeric(t(delta) %*% inv_Kstar_psi %*% delta)
+    }
+    
+    if (quad_form_delta == -Inf) next
+    
     f_theta <- balldropg(t, c(g, h0))
     idx1 <- which(zeta == 1)
     idx2 <- which(zeta == 2)
@@ -321,18 +276,22 @@ mcmc_step6 <- function(y, t, n_iter, init, sigma_proposals, mcmc_parameters, Sig
     residual2 <- y[idx2] - f_theta[idx2] - delta[idx2]
     rss2 <- sum(residual2^2)
     
-    # rate_err <- 1 + (0.5 * ( rss1 + rss2 + (theta[6] * quad_form_delta)))
-    # shape_err <- 5 + n/2
-    rate_err <- 0.5 * ( rss1 + rss2 + theta[6] * quad_form_delta)
+    # When we consider the Jeffreys prior, I use the following code:
+    rate_err <- (0.5 * ( rss1 + rss2 + (k * quad_form_delta)))
     shape_err <- n + 1/2
-    ##sigma_sq_err <- rinvgamma(1, shape = shape_err, rate = rate_err)
-    #sigma_sq_err <- 1/rgamma(1, shape = shape_err, rate = rate_err)
+    # When the prior is the sigma parameter of the "inverse gamma distribution", I use the following code:
+    # rate_err <- 1 + (0.5 * ( rss1 + rss2 + (k * quad_form_delta)))
+    # shape_err <- 2 + n
+    # sigma_sq_err <- rinvgamma(1, shape = shape_err, scale = rate_err)
     sigma_sq_err <- rinvgamma(1, shape = shape_err, rate = rate_err)
-    
     theta[3] <- sigma_sq_err
+
     if (mcmc_parameters[2] == FALSE) {
       sigma_sq_err <- init[3]
+      theta[3] <- sigma_sq_err
     }
+    
+#-------------------------------- Gibbs step for psi_delta --------------------------------#   
     
     # # # MH for psi_delta
     # psi_prop <- rtruncnorm(1, a = 0, b = 1, mean = psi_delta, sd = sigma_proposals[5])
@@ -360,9 +319,9 @@ mcmc_step6 <- function(y, t, n_iter, init, sigma_proposals, mcmc_parameters, Sig
     #   accept_psi <- accept_psi + 1
     # }
     
-    # ## ---- MH for psi_delta (Uniform(0.1, 1) prior) ----
+    # When the prior is the psi_delta of the "uniform(0.1, 1)", I use the following code:
     psi_prop <- rtruncnorm(1, a = 0.1, b = 1, mean = psi_delta, sd = sigma_proposals[5])
-    
+
     K_star_prop <- GP_correlation(t, psi_prop)
     Sigma_delta_cur  <- GP_covariance_star_complete(t, sigma_sq_err, k, psi_delta)
     Sigma_delta_prop <- GP_covariance_star_complete(t, sigma_sq_err, k, psi_prop)
@@ -372,49 +331,27 @@ mcmc_step6 <- function(y, t, n_iter, init, sigma_proposals, mcmc_parameters, Sig
     log_prior_prop    <- dunif(psi_prop,  min = 0.1, max = 1, log = TRUE)
     log_like_current <- tryCatch(dmvnorm(delta, rep(0, n), Sigma_delta_cur,  log = TRUE), error = function(e) -Inf)
     log_like_prop    <- tryCatch(dmvnorm(delta, rep(0, n), Sigma_delta_prop, log = TRUE), error = function(e) -Inf)
-    
+
     log_ratio <- (log_like_prop + log_prior_prop) - (log_like_current + log_prior_current) +
       (log_prop_current - log_prop_prop)
-    
+
     if (!is.na(log_ratio) && log(runif(1)) < log_ratio) {
       psi_delta <- psi_prop
       theta[5]  <- psi_delta
       accept_psi <- accept_psi + 1
     }
     
-    
     if(mcmc_parameters[3] == FALSE){
       psi_delta <- init[5]
+      theta[5] <- psi_delta
     }
-    
-    # # Gibbs for k
-    # R_se <- outer(t, t, function(ti, tj) exp(-abs(ti - tj) / psi_delta))
-    # alpha_k <- (n / 2) + 1
-    # #beta_k <- (1 / (2 * sigma_sq_err)) * as.numeric(t(delta) %*% solve(R_se) %*% delta)
-    # beta_k <- (1 / (2 * sigma_sq_err)) * sum(delta * (solve(R_se, delta)))
-    # for (try_k in 1:100) {
-    #   k_prop <- rgamma(1, shape = alpha_k, rate = beta_k)
-    #   if (k_prop > 0 && k_prop < 1) {
-    #     k <- k_prop
-    #     theta[6] <- k
-    #     break
-    #   }
-    # }
-    # if(mcmc_parameters[4] == FALSE){
-    #   k <- init[6]
-    # }
-    
+ 
+#-------------------------------- Gibbs step for k --------------------------------#   
+  
     K_star_psi <- GP_correlation(t, psi_delta)
-    #K_star_psi <- 0.5 * (K_star_psi + t(K_star_psi))
-    
     inv_Kstar <- tryCatch(chol2inv(chol(K_star_psi)), 
                           error = function(e) NULL)
-    #if (is.null(inv_Kstar)) {
-    #  beta_k <- Inf
-    #} else {
-    beta_k <- (1 / (2 * sigma_sq_err)) * sum((delta) %*% inv_Kstar %*% delta)
-    #}
-    
+    beta_k <- (1 / (2 * sigma_sq_err)) * quad_form_delta
     alpha_k <- (n / 2) + 1
     for (try_k in 1:100) {
       k_prop <- rgamma(1, shape = alpha_k, rate = beta_k)
@@ -426,10 +363,11 @@ mcmc_step6 <- function(y, t, n_iter, init, sigma_proposals, mcmc_parameters, Sig
     }
     if(mcmc_parameters[4] == FALSE){
       k <- init[6]
+      theta[6] <- k
     }
     
+#-------------------------------- Gibbs step for alpha --------------------------------#   
     
-    # Gibbs step for alpha
     alpha_param <- rbeta(1, sum(zeta == 1) + 0.5, sum(zeta == 2) + 0.5)
     theta[4] <- alpha_param
     
@@ -442,7 +380,7 @@ mcmc_step6 <- function(y, t, n_iter, init, sigma_proposals, mcmc_parameters, Sig
     chain_delta[iter, ] <- delta
     
   }
-  
+##################################################################
   # Remove burn-in 
   if (n_burnin > 0) {
     
@@ -459,6 +397,8 @@ mcmc_step6 <- function(y, t, n_iter, init, sigma_proposals, mcmc_parameters, Sig
   return(list(theta = chain_theta, delta = chain_delta, zeta = chain_zeta, loglik = loglik_chain, accept_rate_psi = accept_psi / n_iter))
 }
 
+# Simulation the data of model 2 with different psi_delta
+# Code to verify the result
 ## Psi1 ############################################
 set.seed(12345)
 k = 0.2
@@ -467,7 +407,7 @@ sim_psi_delta <- 0.3
 sigma_sq_err <- (0.1)^2
 sigma_sq_delta <- sigma_sq_err / k
 n_samples <- 1
-n_iter <- 20000
+n_iter <- 10000
 burn_in <- 5000
 
 sigma_props <- c(NA, NA, NA, NA, 0.4, NA) 
@@ -534,9 +474,7 @@ plot(alpha, type = "l")
 plot(psi, type = "l")
 plot(k, type = "l")
 abline(h = 0.2, col = "red")
-# hist(k)
-# hist(sig)
-# hist(psi)
+
 hist(alpha)
 
 plot(y_1)
@@ -581,6 +519,24 @@ plot(t, delta_mean, type="l", main="Posterior mean of delta")
 # 
 # delta_mean <- apply(do.call(rbind, delta_list), 2, mean)
 # plot(t, delta_mean, type="l", main="Posterior mean of delta")
+# psi_delta <- 0.1
+# sigma_sq_err <- 0.01
+# k <- 0.2
+# sigma_sq_delta <- sigma_sq_err / k
+# t <- seq(0,1,0.25)
+# t_range <- max(t) - min(t)
+# a <- t_range
+# 
+# J_x(t, psi_delta)
+# I_x(t, psi_delta)
+# #
+# H_matrix(psi_delta)
+# GP_covariance(t, sigma_sq_delta, psi_delta)
+# GP_correlation(t, psi_delta)
+# GP_covariance(t, 1, psi_delta)-t(h_vec_x(t, psi_delta))%*%solve(H_matrix(psi_delta))%*%h_vec_x(t, psi_delta)
+# GP_covariance_star_complete(t, 1, 1, psi_delta)
+# GP_covariance_star_complete(t, sigma_sq_err, k, psi_delta)
+
 
 
 result_m2_sh2_psi1_ortho <- list(g_chain, h0_chain, sigma_chain, alpha_chain, psi_chain, k_chain, delta_list, zeta_list, loglik_mat, accept_rate)
