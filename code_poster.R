@@ -302,7 +302,7 @@ mcmc_step6 <- function(y, t, n_iter, init, sigma_proposals, mcmc_parameters, Sig
     
   }
  
-#-------------------------------- Gibbs for theta --------------------------------#   
+#----------------------------------------------------------------#   
   
   # Remove burn-in samples if n_burnin > 0
   if (n_burnin > 0) {
