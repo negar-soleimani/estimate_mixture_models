@@ -319,9 +319,10 @@ mcmc_step6 <- function(y, t, n_iter, init, sigma_proposals, mcmc_parameters, Sig
   }
   return(list(theta = chain_theta, delta = chain_delta, zeta = chain_zeta, loglik = loglik_chain, accept_rate_psi = accept_psi / n_iter))
 }
-##############################################################################################
+##############################################################
 ##############################################################
 ###################### Real Data #############################
+##############################################################
 ##############################################################
 set.seed(12345)
 
@@ -329,7 +330,7 @@ init_base       <- c(9.8, 46.46, 0.01, 0.5, 0.3, 0.2)
 sigma_proposals <- c(NA,NA,NA,NA,0.4,NA)
 mcmc_parameters <- c(TRUE, TRUE, TRUE, TRUE, TRUE)
 Sigma_theta     <- matrix(c(0.5,0,0,0.5), 2)
-n_iter          <- 20000
+n_iter          <- 10000
 burn_in         <- 5000
 
 results_real_sh5 <- mcmc_step6(
@@ -370,24 +371,23 @@ print(prob_zeta_model1)
 prob_zeta_model2 <- colMeans(results_real_sh5$zeta == 2)
 print(prob_zeta_model2)
 
-# par(mfrow = c(3, 2))
-# plot(results_real_sh5$theta[, 1], type = "l", main = "Trace of g")
-# plot(results_real_sh5$theta[, 2], type = "l", main = "Trace of h0")
-# plot(results_real_sh5$theta[, 3], type = "l", ylim = c(0, 1), main = "Trace of sigma_sq_err")
-# plot(results_real_sh5$theta[, 4], type = "l", ylim = c(0, 1), main = "alpha")
-# plot(results_real_sh5$theta[, 5], type = "l", main = "Trace of psi_delta")
-# plot(results_real_sh5$theta[, 6], type = "l", ylim = c(0, 1), main = "k")
+par(mfrow = c(3, 2))
+plot(results_real_sh5$theta[, 1], type = "l", main = "Trace of g")
+plot(results_real_sh5$theta[, 2], type = "l", main = "Trace of h0")
+plot(results_real_sh5$theta[, 3], type = "l", ylim = c(0, 1), main = "Trace of sigma_sq_err")
+plot(results_real_sh5$theta[, 4], type = "l", ylim = c(0, 1), main = "alpha")
+plot(results_real_sh5$theta[, 5], type = "l", main = "Trace of psi_delta")
+plot(results_real_sh5$theta[, 6], type = "l", ylim = c(0, 1), main = "k")
 
-# par(mfrow = c(2, 3))
-# boxplot(results_real_sh5$theta[, 1])
-# boxplot(results_real_sh5$theta[, 2])
-# abline(h = 46.46)
-# boxplot(results_real_sh5$theta[, 3])
-# boxplot(results_real_sh5$theta[, 4])
-# boxplot(results_real_sh5$theta[, 5])
-# boxplot(results_real_sh5$theta[, 6])
-# # 
-# # 
+par(mfrow = c(2, 3))
+boxplot(results_real_sh5$theta[, 1])
+boxplot(results_real_sh5$theta[, 2])
+abline(h = 46.46)
+boxplot(results_real_sh5$theta[, 3])
+boxplot(results_real_sh5$theta[, 4])
+boxplot(results_real_sh5$theta[, 5])
+boxplot(results_real_sh5$theta[, 6])
+
 library("vioplot")
 par(mfrow = c(1, 6))
 vioplot(results_real_sh5$theta[, 1], col = "#C9E2FF", xlab = "", xaxt = "n")
@@ -405,24 +405,24 @@ vioplot(results_real_sh5$theta[, 5], col = "#C9E2FF", xlab = "", xaxt = "n")
 title(ylab = expression(psi[delta]), line = 1.75)
 vioplot(results_real_sh5$theta[, 6], col = "#C9E2FF", xlab = "", xaxt = "n")
 title(ylab = expression(k), line = 1.75)
-# hist(results_real_sh5$theta[, 4])
+hist(results_real_sh5$theta[, 4])
 
 ##############################################################
 ##############################################################
 ##############################################################
 # Simulation the data of model 2 with different psi_delta
 # Code to verify the result
-## Psi1 ############################################
+
 set.seed(12345)
 k = 0.2
-sim_psi_delta <- 0.01 
+sim_psi_delta <- 0.9
 sigma_sq_err <- (0.1)^2
 sigma_sq_delta <- sigma_sq_err / k
 n_samples <- 5
-n_iter <- 20000
+n_iter <- 10000
 burn_in <- 5000
 
-sigma_props <- c(NA, NA, NA, NA, 0.4, NA) 
+sigma_props <- c(NA, NA, NA, NA, 0.4, NA)
 #(g,h0), sigma, psi, k, alpha
 mcmc_parameters <- c(TRUE, TRUE, TRUE, TRUE, TRUE)
 Sigma_theta <- matrix(c(0.5, 0, 0, 0.5), nrow = 2)
@@ -442,16 +442,16 @@ accept_rate <- numeric(n_samples)
 y_obs <- matrix(NA, n, n_samples)
 for (v in 1:n_samples) {
   Sigma_delta <- GP_covariance(t, sigma_sq_delta, sim_psi_delta)
-  
+
   delta <- as.vector(rmvnorm(1, rep(0, n), Sigma_delta))
-  
+
   y_1 <- balldropg(t, c(9.8, 46.46)) + rnorm(n, 0, sqrt(sigma_sq_err)) + delta
   #y_1 <- balldropg(t, c(9.8, 46.46)) + rnorm(n, 0, sqrt(sigma_sq_err)*(1+1/k))
-  
+
   y_obs[, v] <- y_1
   res <- mcmc_step6(y_1, t, n_iter, init, sigma_props, mcmc_parameters,
                     Sigma_theta, n_burnin = burn_in)
-  
+
   g_chain[, v]     <- res$theta[, 1]
   h0_chain[, v]    <- res$theta[, 2]
   sigma_chain[, v] <- res$theta[, 3]
@@ -463,158 +463,92 @@ for (v in 1:n_samples) {
   loglik_mat[, v]  <- res$loglik
   accept_rate[v]   <- res$accept_rate_psi
 }
-result_m2_sh2_psi1_simple <- list(g_chain, h0_chain, sigma_chain, alpha_chain, psi_chain, k_chain, delta_list, zeta_list, loglik_mat, accept_rate)
-#save(result_m2_sh2_psi1_simple,file = "/Users/negarsoleimani/Documents/phd/paper1/result_m2_sh2_psi1_simple.RData")
-# res <- list(g_chain, h0_chain, sigma_chain, alpha_chain, psi_chain, k_chain, delta_list, zeta_list, loglik_mat, accept_rate)
+res <- list(g_chain, h0_chain, sigma_chain, alpha_chain, psi_chain, k_chain, delta_list, zeta_list, loglik_mat, accept_rate)
 
-# g <- res[[1]]
-# h <- res[[2]]
-# sig <- res[[3]]
-# alpha <- res[[4]]
-# psi <- res[[5]]
-# k <- res[[6]]
+g <- res[[1]]
+h <- res[[2]]
+sig <- res[[3]]
+alpha <- res[[4]]
+psi <- res[[5]]
+k <- res[[6]]
 
-# par(mfrow = c(2,3))
-# plot(g, type = "l")
-# abline(h = 9.8, col = "red")
-# plot(h, type = "l")
-# abline(h = 46.46, col = "red")
-# plot(sig, type = "l")
-# abline(h = 0.01, col = "red")
-# plot(alpha, type = "l")
-# plot(psi, type = "l")
-# plot(k, type = "l")
-# abline(h = 0.2, col = "red")
-# hist(k)
-# hist(sig)
-# hist(psi)
-# hist(alpha)
-# 
-# boxplot(colMeans(g))
-# abline(h = 9.8)
-# boxplot(colMeans(h))
-# abline(h = 46.46)
-# boxplot(colMeans(sig))
-# abline(h = 0.01)
-# boxplot(colMeans(alpha))
-# boxplot(colMeans(psi))
-# abline(h = 0.7)
-# boxplot(colMeans(k))
-# abline(h = 0.2)
-# 
+hist(k)
+hist(sig)
+hist(psi)
+hist(alpha)
+
+boxplot(colMeans(g))
+abline(h = 9.8)
+boxplot(colMeans(h))
+abline(h = 46.46)
+boxplot(colMeans(sig))
+abline(h = 0.01)
+boxplot(colMeans(alpha))
+boxplot(colMeans(psi))
+abline(h = 0.7)
+boxplot(colMeans(k))
+abline(h = 0.2)
+# # 
 # plot(y_1)
 # zeta <- res[[8]]
 # prob_zeta_m2 <- colMeans(res[[8]][[1]] == 2)
 # delta <- res[[7]][[1]]
-# boxplot(delta)
-# abline(h = 0, col = "red")
-# #####################################
-# ########################
-# set.seed(12345)
-# 
-# init_base       <- c(9.8, 46.14, 0.01, 0.7, 0.5, 0.2)
-# sigma_proposals <- c(NA,NA,NA,NA,0.5,NA)
-# mcmc_parameters <- c(FALSE, TRUE, TRUE, TRUE, TRUE)
-# #Sigma_theta     <- matrix(c(0.1,0,0,0.1),2)
-# Sigma_theta     <- matrix(c(0.5,0,0,0.5),2)
-# n_iter          <- 20000
-# burn_in         <- 1000
-# 
-# results_real_sh2 <- mcmc_step6(
-#   y = y, t = t,
-#   n_iter = n_iter,
-#   init   = init_base,
-#   sigma_proposals = sigma_proposals,
-#   mcmc_parameters = mcmc_parameters,
-#   Sigma_theta     = Sigma_theta,
-#   n_burnin        = burn_in
-# )
-# g_chain <- results_real_sh2$theta[,1]
-# h0_chain <- results_real_sh2$theta[,2]
-# sigma_sq_err_chain <- results_real_sh2$theta[,3]
-# alpha_chain <- results_real_sh2$theta[,4]
-# psi_delta_chain <- results_real_sh2$theta[,5]
-# k_chain <- results_real_sh2$theta[,6]
-# delta_chain <- results_real_sh2$delta
-# zeta_chain <- results_real_sh2$zeta
-# loglik_chain <- results_real_sh2$loglik
-# accept_rate_psi <- results_real_sh2$accept_rate_psi
-# 
-# par(mfrow = c(1, 1))
-# boxplot(results_real_sh2$delta, ylab = expression(delta))
-# 
-# par(mfrow = c(2, 3))
-# plot(results_real_sh2$theta[,1], type = "l",
-#      xlab = "Blue Basketball", ylab = "g")
-# abline(h = 9.8, col = "red")
-# plot(results_real_sh2$theta[,2], type = "l",
-#      xlab = "Blue Basketball", ylab = "h0")
-# abline(h = 46.14, col = "red")
-# plot(results_real_sh2$theta[,3], type = "l",
-#      xlab = "Blue Basketball", ylab = expression(sigma[err]^2))
-# abline(h = 0.01, col = "red")
-# plot(results_real_sh2$theta[,4], type = "l",
-#      xlab = "Blue Basketball", ylab = expression(alpha))
-# plot(results_real_sh2$theta[,5], type = "l",
-#      xlab = "Blue Basketball", ylab = expression(psi[delta]))
-# plot(results_real_sh2$theta[,6], type = "l",
-#      xlab = "Blue Basketball", ylab = "k")
-# ####################################
-# #####################################
-
 
 ##############################################################
+##############################################################
 # Simulation the data of model 2 with different psi_delta
-# ## Psi1 ############################################
-# set.seed(12345)
-# k = 0.2
-# #sigma_sq_delta <- 0.1 
-# sim_psi_delta <- 0.01 
-# sigma_sq_err <- 0.1
-# sigma_sq_delta <- sigma_sq_err / k
-# n_samples <- 10
-# n_iter <- 20000
-# burn_in <- 5000
+# ## Psi1 ####################################################
+set.seed(12345)
+k = 0.2
+#sigma_sq_delta <- 0.1
+sim_psi_delta <- 0.01
+sigma_sq_err <- 0.1
+sigma_sq_delta <- sigma_sq_err / k
+n_samples <- 3
+n_iter <- 20000
+burn_in <- 5000
 # 
-# sigma_props <- c(NA, NA, NA, NA, 0.02, NA) 
-# #(g,h0), sigma, psi, k, alpha
-# mcmc_parameters <- c(TRUE, TRUE, TRUE, TRUE, TRUE)
-# Sigma_theta <- matrix(c(0.5, 0, 0, 0.5), nrow = 2)
-# init <- c(9.8, 46.46, 0.1, 0.5, sim_psi_delta, 0.2)
+sigma_props <- c(NA, NA, NA, NA, 0.02, NA)
+#(g,h0), sigma, psi, k, alpha
+mcmc_parameters <- c(TRUE, TRUE, TRUE, TRUE, TRUE)
+Sigma_theta <- matrix(c(0.5, 0, 0, 0.5), nrow = 2)
+init <- c(9.8, 46.46, 0.01, 0.5, sim_psi_delta, 0.2)
 # 
-# g_chain     <- matrix(NA, n_iter, n_samples)
-# h0_chain    <- matrix(NA, n_iter, n_samples)
-# sigma_chain <- matrix(NA, n_iter, n_samples)
-# alpha_chain <- matrix(NA, n_iter, n_samples)
-# psi_chain   <- matrix(NA, n_iter, n_samples)
-# k_chain     <- matrix(NA, n_iter, n_samples)
-# loglik_mat  <- matrix(NA, n_iter, n_samples)
-# delta_list  <- vector("list", n_samples)
-# zeta_list   <- vector("list", n_samples)
-# accept_rate <- numeric(n_samples)
+g_chain     <- matrix(NA, n_iter, n_samples)
+h0_chain    <- matrix(NA, n_iter, n_samples)
+sigma_chain <- matrix(NA, n_iter, n_samples)
+alpha_chain <- matrix(NA, n_iter, n_samples)
+psi_chain   <- matrix(NA, n_iter, n_samples)
+k_chain     <- matrix(NA, n_iter, n_samples)
+loglik_mat  <- matrix(NA, n_iter, n_samples)
+delta_list  <- vector("list", n_samples)
+zeta_list   <- vector("list", n_samples)
+accept_rate <- numeric(n_samples)
 # 
-# y_obs <- matrix(NA, n, n_samples)
-# for (v in 1:n_samples) {
-#   Sigma_delta <- GP_covariance(t, sigma_sq_delta, sim_psi_delta)
-#   
-#   delta <- as.vector(rmvnorm(1, rep(0, n), Sigma_delta))
-#   
-#   y_1 <- balldropg(t, c(9.8, 46.46)) + rnorm(n, 0, sqrt(sigma_sq_err)) + delta
-#   y_obs[, v] <- y_1
-#   res <- mcmc_step6(y_1, t, n_iter, init, sigma_props, mcmc_parameters,
-#                     Sigma_theta, n_burnin = burn_in)
-#   
-#   g_chain[, v]     <- res$theta[, 1]
-#   h0_chain[, v]    <- res$theta[, 2]
-#   sigma_chain[, v] <- res$theta[, 3]
-#   alpha_chain[, v] <- res$theta[, 4]
-#   psi_chain[, v]   <- res$theta[, 5]
-#   k_chain[, v]     <- res$theta[, 6]
-#   delta_list[[v]]  <- res$delta
-#   zeta_list[[v]]   <- res$zeta
-#   loglik_mat[, v]  <- res$loglik
-#   accept_rate[v]   <- res$accept_rate_psi
-# }
+y_obs <- matrix(NA, n, n_samples)
+for (v in 1:n_samples) {
+  Sigma_delta <- GP_covariance(t, sigma_sq_delta, sim_psi_delta)
+
+  delta <- as.vector(rmvnorm(1, rep(0, n), Sigma_delta))
+
+  y_1 <- balldropg(t, c(9.8, 46.46)) + rnorm(n, 0, sqrt(sigma_sq_err)) + delta
+  y_obs[, v] <- y_1
+  res <- mcmc_step6(y_1, t, n_iter, init, sigma_props, mcmc_parameters,
+                    Sigma_theta, n_burnin = burn_in)
+
+  g_chain[, v]     <- res$theta[, 1]
+  h0_chain[, v]    <- res$theta[, 2]
+  sigma_chain[, v] <- res$theta[, 3]
+  alpha_chain[, v] <- res$theta[, 4]
+  psi_chain[, v]   <- res$theta[, 5]
+  k_chain[, v]     <- res$theta[, 6]
+  delta_list[[v]]  <- res$delta
+  zeta_list[[v]]   <- res$zeta
+  loglik_mat[, v]  <- res$loglik
+  accept_rate[v]   <- res$accept_rate_psi
+}
+result_m2_sh2_psi1_simple1 <- list(g_chain, h0_chain, sigma_chain, alpha_chain, psi_chain, k_chain, delta_list, zeta_list, loglik_mat, accept_rate)
+
 # result_m2_sh2_psi1_simple <- list(g_chain, h0_chain, sigma_chain, alpha_chain, psi_chain, k_chain, delta_list, zeta_list, loglik_mat, accept_rate)
 # save(result_m2_sh2_psi1_simple,file = "/Users/negarsoleimani/Documents/phd/paper1/result_m2_sh2_psi1_simple.RData")
 
@@ -626,7 +560,7 @@ k = 0.2
 sim_psi_delta <- 0.1 
 sigma_sq_err <- 0.01
 sigma_sq_delta <- sigma_sq_err / k
-n_samples <- 10
+n_samples <- 3
 n_iter <- 20000
 burn_in <- 5000
 
@@ -670,8 +604,10 @@ for (v in 1:n_samples) {
   loglik_mat[, v]  <- res$loglik
   accept_rate[v]   <- res$accept_rate_psi
 }
-result_m2_sh2_psi2_simple <- list(g_chain, h0_chain, sigma_chain, alpha_chain, psi_chain, k_chain, delta_list, zeta_list, loglik_mat, accept_rate)
-save(result_m2_sh2_psi2_simple,file = "/Users/negarsoleimani/Documents/phd/paper1/result_m2_sh2_psi2_simple.RData")
+result_m2_sh2_psi2_simple1 <- list(g_chain, h0_chain, sigma_chain, alpha_chain, psi_chain, k_chain, delta_list, zeta_list, loglik_mat, accept_rate)
+
+#result_m2_sh2_psi2_simple <- list(g_chain, h0_chain, sigma_chain, alpha_chain, psi_chain, k_chain, delta_list, zeta_list, loglik_mat, accept_rate)
+#save(result_m2_sh2_psi2_simple,file = "/Users/negarsoleimani/Documents/phd/paper1/result_m2_sh2_psi2_simple.RData")
 ## Psi3 ############################################
 set.seed(12345)
 k = 0.2
@@ -679,7 +615,7 @@ k = 0.2
 sim_psi_delta <- 0.2
 sigma_sq_err <- 0.01
 sigma_sq_delta <- sigma_sq_err / k
-n_samples <- 10
+n_samples <- 3
 n_iter <- 20000
 burn_in <- 5000
 
@@ -722,8 +658,10 @@ for (v in 1:n_samples) {
   loglik_mat[, v]  <- res$loglik
   accept_rate[v]   <- res$accept_rate_psi
 }
-result_m2_sh2_psi3_simple <- list(g_chain, h0_chain, sigma_chain, alpha_chain, psi_chain, k_chain, delta_list, zeta_list, loglik_mat, accept_rate)
-save(result_m2_sh2_psi3_simple,file = "/Users/negarsoleimani/Documents/phd/paper1/result_m2_sh2_psi3_simple.RData")
+result_m2_sh2_psi3_simple1 <- list(g_chain, h0_chain, sigma_chain, alpha_chain, psi_chain, k_chain, delta_list, zeta_list, loglik_mat, accept_rate)
+
+#result_m2_sh2_psi3_simple <- list(g_chain, h0_chain, sigma_chain, alpha_chain, psi_chain, k_chain, delta_list, zeta_list, loglik_mat, accept_rate)
+#save(result_m2_sh2_psi3_simple,file = "/Users/negarsoleimani/Documents/phd/paper1/result_m2_sh2_psi3_simple.RData")
 
 
 ## Psi4 ############################################
@@ -733,7 +671,7 @@ k = 0.2
 sim_psi_delta <- 0.3 
 sigma_sq_err <- 0.01
 sigma_sq_delta <- sigma_sq_err / k
-n_samples <- 10
+n_samples <- 3
 n_iter <- 20000
 burn_in <- 5000
 
@@ -776,8 +714,10 @@ for (v in 1:n_samples) {
   loglik_mat[, v]  <- res$loglik
   accept_rate[v]   <- res$accept_rate_psi
 }
-result_m2_sh2_psi4_simple <- list(g_chain, h0_chain, sigma_chain, alpha_chain, psi_chain, k_chain, delta_list, zeta_list, loglik_mat, accept_rate)
-save(result_m2_sh2_psi4_simple,file = "/Users/negarsoleimani/Documents/phd/paper1/result_m2_sh2_psi4_simple.RData")
+result_m2_sh2_psi4_simple1 <- list(g_chain, h0_chain, sigma_chain, alpha_chain, psi_chain, k_chain, delta_list, zeta_list, loglik_mat, accept_rate)
+
+#result_m2_sh2_psi4_simple <- list(g_chain, h0_chain, sigma_chain, alpha_chain, psi_chain, k_chain, delta_list, zeta_list, loglik_mat, accept_rate)
+#save(result_m2_sh2_psi4_simple,file = "/Users/negarsoleimani/Documents/phd/paper1/result_m2_sh2_psi4_simple.RData")
 
 
 ## Psi5 ############################################
@@ -787,7 +727,7 @@ k = 0.2
 sim_psi_delta <- 0.4
 sigma_sq_err <- 0.01
 sigma_sq_delta <- sigma_sq_err / k
-n_samples <- 10
+n_samples <- 3
 n_iter <- 20000
 burn_in <- 5000
 
@@ -831,8 +771,10 @@ for (v in 1:n_samples) {
   loglik_mat[, v]  <- res$loglik
   accept_rate[v]   <- res$accept_rate_psi
 }
-result_m2_sh2_psi5_simple <- list(g_chain, h0_chain, sigma_chain, alpha_chain, psi_chain, k_chain, delta_list, zeta_list, loglik_mat, accept_rate)
-save(result_m2_sh2_psi5_simple,file = "/Users/negarsoleimani/Documents/phd/paper1/result_m2_sh2_psi5_simple.RData")
+result_m2_sh2_psi5_simple1 <- list(g_chain, h0_chain, sigma_chain, alpha_chain, psi_chain, k_chain, delta_list, zeta_list, loglik_mat, accept_rate)
+
+#result_m2_sh2_psi5_simple <- list(g_chain, h0_chain, sigma_chain, alpha_chain, psi_chain, k_chain, delta_list, zeta_list, loglik_mat, accept_rate)
+#save(result_m2_sh2_psi5_simple,file = "/Users/negarsoleimani/Documents/phd/paper1/result_m2_sh2_psi5_simple.RData")
 
 
 ## Psi6 ############################################
@@ -842,7 +784,7 @@ k = 0.2
 sim_psi_delta <- 0.5 
 sigma_sq_err <- 0.01
 sigma_sq_delta <- sigma_sq_err / k
-n_samples <- 10
+n_samples <- 3
 n_iter <- 20000
 burn_in <- 5000
 
@@ -886,8 +828,10 @@ for (v in 1:n_samples) {
   loglik_mat[, v]  <- res$loglik
   accept_rate[v]   <- res$accept_rate_psi
 }
-result_m2_sh2_psi6_simple <- list(g_chain, h0_chain, sigma_chain, alpha_chain, psi_chain, k_chain, delta_list, zeta_list, loglik_mat, accept_rate)
-save(result_m2_sh2_psi6_simple,file = "/Users/negarsoleimani/Documents/phd/paper1/result_m2_sh2_psi6_simple.RData")
+result_m2_sh2_psi6_simple1 <- list(g_chain, h0_chain, sigma_chain, alpha_chain, psi_chain, k_chain, delta_list, zeta_list, loglik_mat, accept_rate)
+
+#result_m2_sh2_psi6_simple <- list(g_chain, h0_chain, sigma_chain, alpha_chain, psi_chain, k_chain, delta_list, zeta_list, loglik_mat, accept_rate)
+#save(result_m2_sh2_psi6_simple,file = "/Users/negarsoleimani/Documents/phd/paper1/result_m2_sh2_psi6_simple.RData")
 
 
 ## Psi7 ############################################
@@ -897,7 +841,7 @@ k = 0.2
 sim_psi_delta <- 0.6 
 sigma_sq_err <- 0.01
 sigma_sq_delta <- sigma_sq_err / k
-n_samples <- 10
+n_samples <- 3
 n_iter <- 20000
 burn_in <- 5000
 
@@ -941,8 +885,10 @@ for (v in 1:n_samples) {
   loglik_mat[, v]  <- res$loglik
   accept_rate[v]   <- res$accept_rate_psi
 }
-result_m2_sh2_psi7_simple <- list(g_chain, h0_chain, sigma_chain, alpha_chain, psi_chain, k_chain, delta_list, zeta_list, loglik_mat, accept_rate)
-save(result_m2_sh2_psi7_simple,file = "/Users/negarsoleimani/Documents/phd/paper1/result_m2_sh2_psi7_simple.RData")
+result_m2_sh2_psi7_simple1 <- list(g_chain, h0_chain, sigma_chain, alpha_chain, psi_chain, k_chain, delta_list, zeta_list, loglik_mat, accept_rate)
+
+#result_m2_sh2_psi7_simple <- list(g_chain, h0_chain, sigma_chain, alpha_chain, psi_chain, k_chain, delta_list, zeta_list, loglik_mat, accept_rate)
+#save(result_m2_sh2_psi7_simple,file = "/Users/negarsoleimani/Documents/phd/paper1/result_m2_sh2_psi7_simple.RData")
 
 
 ## Psi8 ############################################
@@ -952,7 +898,7 @@ k = 0.2
 sim_psi_delta <- 0.7 
 sigma_sq_err <- 0.01
 sigma_sq_delta <- sigma_sq_err / k
-n_samples <- 10
+n_samples <- 3
 n_iter <- 20000
 burn_in <- 5000
 
@@ -996,8 +942,10 @@ for (v in 1:n_samples) {
   loglik_mat[, v]  <- res$loglik
   accept_rate[v]   <- res$accept_rate_psi
 }
-result_m2_sh2_psi8_simple <- list(g_chain, h0_chain, sigma_chain, alpha_chain, psi_chain, k_chain, delta_list, zeta_list, loglik_mat, accept_rate)
-save(result_m2_sh2_psi8_simple,file = "/Users/negarsoleimani/Documents/phd/paper1/result_m2_sh2_psi8_simple.RData")
+result_m2_sh2_psi8_simple1 <- list(g_chain, h0_chain, sigma_chain, alpha_chain, psi_chain, k_chain, delta_list, zeta_list, loglik_mat, accept_rate)
+
+#result_m2_sh2_psi8_simple <- list(g_chain, h0_chain, sigma_chain, alpha_chain, psi_chain, k_chain, delta_list, zeta_list, loglik_mat, accept_rate)
+#save(result_m2_sh2_psi8_simple,file = "/Users/negarsoleimani/Documents/phd/paper1/result_m2_sh2_psi8_simple.RData")
 
 
 ## Psi9 ############################################
@@ -1007,7 +955,7 @@ k = 0.2
 sim_psi_delta <- 0.8 
 sigma_sq_err <- 0.01
 sigma_sq_delta <- sigma_sq_err / k
-n_samples <- 10
+n_samples <- 3
 n_iter <- 20000
 burn_in <- 5000
 
@@ -1051,8 +999,10 @@ for (v in 1:n_samples) {
   loglik_mat[, v]  <- res$loglik
   accept_rate[v]   <- res$accept_rate_psi
 }
-result_m2_sh2_psi9_simple <- list(g_chain, h0_chain, sigma_chain, alpha_chain, psi_chain, k_chain, delta_list, zeta_list, loglik_mat, accept_rate)
-save(result_m2_sh2_psi9_simple,file = "/Users/negarsoleimani/Documents/phd/paper1/result_m2_sh2_psi9_simple.RData")
+result_m2_sh2_psi9_simple1 <- list(g_chain, h0_chain, sigma_chain, alpha_chain, psi_chain, k_chain, delta_list, zeta_list, loglik_mat, accept_rate)
+
+#result_m2_sh2_psi9_simple <- list(g_chain, h0_chain, sigma_chain, alpha_chain, psi_chain, k_chain, delta_list, zeta_list, loglik_mat, accept_rate)
+#save(result_m2_sh2_psi9_simple,file = "/Users/negarsoleimani/Documents/phd/paper1/result_m2_sh2_psi9_simple.RData")
 
 
 ## Psi10 ############################################
@@ -1062,7 +1012,7 @@ k = 0.2
 sim_psi_delta <- 0.9
 sigma_sq_err <- 0.01
 sigma_sq_delta <- sigma_sq_err / k
-n_samples <- 10
+n_samples <- 3
 n_iter <- 20000
 burn_in <- 5000
 # 
@@ -1106,8 +1056,10 @@ for (v in 1:n_samples) {
   loglik_mat[, v]  <- res$loglik
   accept_rate[v]   <- res$accept_rate_psi
 }
-result_m2_sh2_psi10_simple <- list(g_chain, h0_chain, sigma_chain, alpha_chain, psi_chain, k_chain, delta_list, zeta_list, loglik_mat, accept_rate)
-save(result_m2_sh2_psi10_simple,file = "/Users/negarsoleimani/Documents/phd/paper1/m2_simplegp/result_m2_sh2_psi10_simple.RData")
+result_m2_sh2_psi10_simple1 <- list(g_chain, h0_chain, sigma_chain, alpha_chain, psi_chain, k_chain, delta_list, zeta_list, loglik_mat, accept_rate)
+
+#result_m2_sh2_psi10_simple <- list(g_chain, h0_chain, sigma_chain, alpha_chain, psi_chain, k_chain, delta_list, zeta_list, loglik_mat, accept_rate)
+#save(result_m2_sh2_psi10_simple,file = "/Users/negarsoleimani/Documents/phd/paper1/m2_simplegp/result_m2_sh2_psi10_simple.RData")
 # #####################################################################################################
 
 load("/Users/negarsoleimani/Documents/phd/paper1/m2_simplegp/result_m2_sh2_psi1_simple.RData")
@@ -1123,18 +1075,18 @@ load("/Users/negarsoleimani/Documents/phd/paper1/m2_simplegp/result_m2_sh2_psi8_
 load("/Users/negarsoleimani/Documents/phd/paper1/m2_simplegp/result_m2_sh2_psi9_simple.RData")
 load("/Users/negarsoleimani/Documents/phd/paper1/m2_simplegp/result_m2_sh2_psi10_simple.RData")
 
-boxplot(result_m2_sh2_psi8_simple[[7]][[1]])
+boxplot(result_m2_sh2_psi8_simple1[[7]][[1]])
 
-g1 <- result_m2_sh2_psi1_simple[[1]]
-g2 <- result_m2_sh2_psi2_simple[[1]]
-g3 <- result_m2_sh2_psi3_simple[[1]]
-g4 <- result_m2_sh2_psi4_simple[[1]]
-g5 <- result_m2_sh2_psi5_simple[[1]]
-g6 <- result_m2_sh2_psi6_simple[[1]]
-g7 <- result_m2_sh2_psi7_simple[[1]]
-g8 <- result_m2_sh2_psi8_simple[[1]]
-g9 <- result_m2_sh2_psi9_simple[[1]]
-g10 <- result_m2_sh2_psi10_simple[[1]]
+g1 <- result_m2_sh2_psi1_simple1[[1]]
+g2 <- result_m2_sh2_psi2_simple1[[1]]
+g3 <- result_m2_sh2_psi3_simple1[[1]]
+g4 <- result_m2_sh2_psi4_simple1[[1]]
+g5 <- result_m2_sh2_psi5_simple1[[1]]
+g6 <- result_m2_sh2_psi6_simple1[[1]]
+g7 <- result_m2_sh2_psi7_simple1[[1]]
+g8 <- result_m2_sh2_psi8_simple1[[1]]
+g9 <- result_m2_sh2_psi9_simple1[[1]]
+g10 <- result_m2_sh2_psi10_simple1[[1]]
 
 par(mfrow = c(2,3))
 boxplot(colMeans(g1), colMeans(g2), colMeans(g3), colMeans(g4), colMeans(g5), 
@@ -1161,16 +1113,16 @@ abline(h = 9.8, col = "#800020")
 
 
 
-h01 <- result_m2_sh2_psi1_simple[[2]]
-h02 <- result_m2_sh2_psi2_simple[[2]]
-h03 <- result_m2_sh2_psi3_simple[[2]]
-h04 <- result_m2_sh2_psi4_simple[[2]]
-h05 <- result_m2_sh2_psi5_simple[[2]]
-h06 <- result_m2_sh2_psi6_simple[[2]]
-h07 <- result_m2_sh2_psi7_simple[[2]]
-h08 <- result_m2_sh2_psi8_simple[[2]]
-h09 <- result_m2_sh2_psi9_simple[[2]]
-h010 <- result_m2_sh2_psi10_simple[[2]]
+h01 <- result_m2_sh2_psi1_simple1[[2]]
+h02 <- result_m2_sh2_psi2_simple1[[2]]
+h03 <- result_m2_sh2_psi3_simple1[[2]]
+h04 <- result_m2_sh2_psi4_simple1[[2]]
+h05 <- result_m2_sh2_psi5_simple1[[2]]
+h06 <- result_m2_sh2_psi6_simple1[[2]]
+h07 <- result_m2_sh2_psi7_simple1[[2]]
+h08 <- result_m2_sh2_psi8_simple1[[2]]
+h09 <- result_m2_sh2_psi9_simple1[[2]]
+h010 <- result_m2_sh2_psi10_simple1[[2]]
 
 boxplot(colMeans(h01), colMeans(h02), colMeans(h03), colMeans(h04), colMeans(h05), 
         colMeans(h06), colMeans(h07), colMeans(h08), colMeans(h09), colMeans(h010),
@@ -1190,16 +1142,16 @@ title(xlab = expression(psi[delta]), line = 1.5)
 title(ylab = expression(h), line = 1.5)
 abline(h = 46.46, col = "#800020")
 
-sigma1 <- result_m2_sh2_psi1_simple[[3]]
-sigma2 <- result_m2_sh2_psi2_simple[[3]]
-sigma3 <- result_m2_sh2_psi3_simple[[3]]
-sigma4 <- result_m2_sh2_psi4_simple[[3]]
-sigma5 <- result_m2_sh2_psi5_simple[[3]]
-sigma6 <- result_m2_sh2_psi6_simple[[3]]
-sigma7 <- result_m2_sh2_psi7_simple[[3]]
-sigma8 <- result_m2_sh2_psi8_simple[[3]]
-sigma9 <- result_m2_sh2_psi9_simple[[3]]
-sigma10 <- result_m2_sh2_psi10_simple[[3]]
+sigma1 <- result_m2_sh2_psi1_simple1[[3]]
+sigma2 <- result_m2_sh2_psi2_simple1[[3]]
+sigma3 <- result_m2_sh2_psi3_simple1[[3]]
+sigma4 <- result_m2_sh2_psi4_simple1[[3]]
+sigma5 <- result_m2_sh2_psi5_simple1[[3]]
+sigma6 <- result_m2_sh2_psi6_simple1[[3]]
+sigma7 <- result_m2_sh2_psi7_simple1[[3]]
+sigma8 <- result_m2_sh2_psi8_simple1[[3]]
+sigma9 <- result_m2_sh2_psi9_simple1[[3]]
+sigma10 <- result_m2_sh2_psi10_simple1[[3]]
 
 boxplot(colMeans(sigma1), colMeans(sigma2), colMeans(sigma3), colMeans(sigma4), colMeans(sigma5), 
         colMeans(sigma6), colMeans(sigma7), colMeans(sigma8), colMeans(sigma9), colMeans(sigma10),
@@ -1219,16 +1171,16 @@ title(xlab = expression(psi[delta]), line = 1.5)
 title(ylab = expression(sigma[err]^2), line = 1.5)
 abline(h = 0.01, col = "#800020")
 
-alpha1 <- result_m2_sh2_psi1_simple[[4]]
-alpha2 <- result_m2_sh2_psi2_simple[[4]]
-alpha3 <- result_m2_sh2_psi3_simple[[4]]
-alpha4 <- result_m2_sh2_psi4_simple[[4]]
-alpha5 <- result_m2_sh2_psi5_simple[[4]]
-alpha6 <- result_m2_sh2_psi6_simple[[4]]
-alpha7 <- result_m2_sh2_psi7_simple[[4]]
-alpha8 <- result_m2_sh2_psi8_simple[[4]]
-alpha9 <- result_m2_sh2_psi9_simple[[4]]
-alpha10 <- result_m2_sh2_psi10_simple[[4]]
+alpha1 <- result_m2_sh2_psi1_simple1[[4]]
+alpha2 <- result_m2_sh2_psi2_simple1[[4]]
+alpha3 <- result_m2_sh2_psi3_simple1[[4]]
+alpha4 <- result_m2_sh2_psi4_simple1[[4]]
+alpha5 <- result_m2_sh2_psi5_simple1[[4]]
+alpha6 <- result_m2_sh2_psi6_simple1[[4]]
+alpha7 <- result_m2_sh2_psi7_simple1[[4]]
+alpha8 <- result_m2_sh2_psi8_simple1[[4]]
+alpha9 <- result_m2_sh2_psi9_simple1[[4]]
+alpha10 <- result_m2_sh2_psi10_simple1[[4]]
 
 boxplot(colMeans(alpha1), colMeans(alpha2), colMeans(alpha3), colMeans(alpha4), colMeans(alpha5), 
         colMeans(alpha6), colMeans(alpha7), colMeans(alpha8), colMeans(alpha9), colMeans(alpha10),
@@ -1248,16 +1200,16 @@ vioplot(colMeans(alpha1), colMeans(alpha2), colMeans(alpha3), colMeans(alpha4), 
 title(xlab = expression(psi[delta]), line = 1.5)
 title(ylab = expression(alpha), line = 1.5)
 
-psi1 <- result_m2_sh2_psi1_simple[[5]]
-psi2 <- result_m2_sh2_psi2_simple[[5]]
-psi3 <- result_m2_sh2_psi3_simple[[5]]
-psi4 <- result_m2_sh2_psi4_simple[[5]]
-psi5 <- result_m2_sh2_psi5_simple[[5]]
-psi6 <- result_m2_sh2_psi6_simple[[5]]
-psi7 <- result_m2_sh2_psi7_simple[[5]]
-psi8 <- result_m2_sh2_psi8_simple[[5]]
-psi9 <- result_m2_sh2_psi9_simple[[5]]
-psi10 <- result_m2_sh2_psi10_simple[[5]]
+psi1 <- result_m2_sh2_psi1_simple1[[5]]
+psi2 <- result_m2_sh2_psi2_simple1[[5]]
+psi3 <- result_m2_sh2_psi3_simple1[[5]]
+psi4 <- result_m2_sh2_psi4_simple1[[5]]
+psi5 <- result_m2_sh2_psi5_simple1[[5]]
+psi6 <- result_m2_sh2_psi6_simple1[[5]]
+psi7 <- result_m2_sh2_psi7_simple1[[5]]
+psi8 <- result_m2_sh2_psi8_simple1[[5]]
+psi9 <- result_m2_sh2_psi9_simple1[[5]]
+psi10 <- result_m2_sh2_psi10_simple1[[5]]
 
 
 boxplot(colMeans(psi1), colMeans(psi2), colMeans(psi3), colMeans(psi4), colMeans(psi5), 
@@ -1276,16 +1228,16 @@ vioplot(colMeans(psi1), colMeans(psi2), colMeans(psi3), colMeans(psi4), colMeans
 title(xlab = expression(psi[delta]), line = 1.5)
 title(ylab = expression(psi[delta]), line = 1.5)
 
-k1 <- result_m2_sh2_psi1_simple[[6]]
-k2 <- result_m2_sh2_psi2_simple[[6]]
-k3 <- result_m2_sh2_psi3_simple[[6]]
-k4 <- result_m2_sh2_psi4_simple[[6]]
-k5 <- result_m2_sh2_psi5_simple[[6]]
-k6 <- result_m2_sh2_psi6_simple[[6]]
-k7 <- result_m2_sh2_psi7_simple[[6]]
-k8 <- result_m2_sh2_psi8_simple[[6]]
-k9 <- result_m2_sh2_psi9_simple[[6]]
-k10 <- result_m2_sh2_psi10_simple[[6]]
+k1 <- result_m2_sh2_psi1_simple1[[6]]
+k2 <- result_m2_sh2_psi2_simple1[[6]]
+k3 <- result_m2_sh2_psi3_simple1[[6]]
+k4 <- result_m2_sh2_psi4_simple1[[6]]
+k5 <- result_m2_sh2_psi5_simple1[[6]]
+k6 <- result_m2_sh2_psi6_simple1[[6]]
+k7 <- result_m2_sh2_psi7_simple1[[6]]
+k8 <- result_m2_sh2_psi8_simple1[[6]]
+k9 <- result_m2_sh2_psi9_simple1[[6]]
+k10 <- result_m2_sh2_psi10_simple1[[6]]
 
 
 boxplot(colMeans(k1), colMeans(k2), colMeans(k3), colMeans(k4), colMeans(k5), 
