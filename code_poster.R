@@ -118,8 +118,7 @@ mcmc_step6 <- function(y, t, n_iter, init, sigma_proposals, mcmc_parameters, Sig
     else delta = as.vector(rmvnorm(1, rep(0, n), sigma = Sigma_delta))
     
 #-------------------------------- Gibbs step for theta --------------------------------# 
-    
-    
+
     # prior Normal distribution
     # zeta_1_indices <- which(zeta == 1)
     # zeta_2_indices <- which(zeta == 2)
@@ -142,7 +141,8 @@ mcmc_step6 <- function(y, t, n_iter, init, sigma_proposals, mcmc_parameters, Sig
     # h0 <- theta_sample[1];  g <- theta_sample[2]
     # theta[1] <- g
     # theta[2] <- h0
-    
+
+    #-------------------------------- Page 26 - part 8.1 --------------------------------#     
     # flat prior on theta 
     zeta_1_indices <- which(zeta == 1)
     zeta_2_indices <- which(zeta == 2)
@@ -186,9 +186,9 @@ mcmc_step6 <- function(y, t, n_iter, init, sigma_proposals, mcmc_parameters, Sig
     #  g <- theta_sample[2] 
     #}
 
-#-------------------------------- Gibbs step for sigma_sq_err --------------------------------#   
+#-------------------------------- Gibbs step for sigma_sq_err(lambda^2) --------------------------------#   
+#-------------------------------- Page 27 - part 8.2 --------------------------------#     
     
-    # R is kernel and 
     R <- outer(t, t, function(ti, tj) exp(-abs(ti - tj) / psi_delta))
     if(n > 0){
       R_inv <- tryCatch(solve(R), error = function(e) diag(1, n))
@@ -267,6 +267,7 @@ mcmc_step6 <- function(y, t, n_iter, init, sigma_proposals, mcmc_parameters, Sig
     }
 
 #-------------------------------- Gibbs step for k --------------------------------#   
+#-------------------------------- Page 28-part 8.3 --------------------------------#     
     
     alpha_k <- (n / 2) + 1
     beta_k <- (1 / (2 * sigma_sq_err)) * quad_form_delta
@@ -286,6 +287,7 @@ mcmc_step6 <- function(y, t, n_iter, init, sigma_proposals, mcmc_parameters, Sig
     }
  
 #-------------------------------- Gibbs step for alpha --------------------------------#   
+#-------------------------------- Page 29 - part 8.4 --------------------------------#     
     
     alpha_param <- rbeta(1, sum(zeta == 1) + 0.5, sum(zeta == 2) + 0.5)
     theta[4] <- alpha_param
