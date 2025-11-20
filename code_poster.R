@@ -142,7 +142,7 @@ mcmc_step6 <- function(y, t, n_iter, init, sigma_proposals, mcmc_parameters, Sig
     # theta[1] <- g
     # theta[2] <- h0
 
-    #-------------------------------- Page 26 - part 8.1 --------------------------------#     
+    #-------------------------------- Page 22 - part 8.1 --------------------------------#     
     # flat prior on theta 
     zeta_1_indices <- which(zeta == 1)
     zeta_2_indices <- which(zeta == 2)
@@ -187,7 +187,7 @@ mcmc_step6 <- function(y, t, n_iter, init, sigma_proposals, mcmc_parameters, Sig
     #}
 
 #-------------------------------- Gibbs step for sigma_sq_err(lambda^2) --------------------------------#   
-#-------------------------------- Page 27 - part 8.2 --------------------------------#     
+#-------------------------------- Page 23 - part 8.2 --------------------------------#     
     
     R <- outer(t, t, function(ti, tj) exp(-abs(ti - tj) / psi_delta))
     if(n > 0){
@@ -267,7 +267,7 @@ mcmc_step6 <- function(y, t, n_iter, init, sigma_proposals, mcmc_parameters, Sig
     }
 
 #-------------------------------- Gibbs step for k --------------------------------#   
-#-------------------------------- Page 28-part 8.3 --------------------------------#     
+#-------------------------------- Page 24-part 8.3 --------------------------------#     
     
     alpha_k <- (n / 2) + 1
     beta_k <- (1 / (2 * sigma_sq_err)) * quad_form_delta
@@ -287,7 +287,7 @@ mcmc_step6 <- function(y, t, n_iter, init, sigma_proposals, mcmc_parameters, Sig
     }
  
 #-------------------------------- Gibbs step for alpha --------------------------------#   
-#-------------------------------- Page 29 - part 8.4 --------------------------------#     
+#-------------------------------- Page 25 - part 8.4 --------------------------------#     
     
     alpha_param <- rbeta(1, sum(zeta == 1) + 0.5, sum(zeta == 2) + 0.5)
     theta[4] <- alpha_param
