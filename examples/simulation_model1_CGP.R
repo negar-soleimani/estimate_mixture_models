@@ -2,12 +2,12 @@ source("scripts/helper_function_CGP.R")
 source("scripts/main_function_CGP.R")
 
 set.seed(12345)
-Sigma_theta <- matrix(c(0.1,0,0,0.1), nrow = 2)
+Sigma_theta <- matrix(c(0.5,0,0,0.5), nrow = 2)
 # c(g, h0, sig2err, alpha, psidelta, k)
-init <- c(9.8, 48, 0.08, 0.7, 0.5, 0.2)
+init <- c(9.8, 46.45, 0.1, 0.5, 0.2, 0.2)
 sigma_proposals <- c(NA, NA, NA, NA, 0.5, NA)
 n_samples       <- 3
-burn_in         <- 1000
+burn_in         <- 10000
 n_iter          <- 1000
 # FALSE= fixed parameter
 # mcmc parameter (g,h), sig2err, psidelta, k, alpha
@@ -26,8 +26,8 @@ for (v in 1:n_samples) {
   y_1 = balldropg(t,c(9.8, 46.45)) + rnorm(n, 0, 0.01)
   y_obs[,v] <- y_1
   
-  results <- mcmc_step6(y_1, t, n_iter, init, sigma_proposals, mcmc_parameters, Sigma_theta, n_burnin = burn_in)
-  
+  results <- mcmc_step6(y_1, t, n_iter, init, sigma_proposals, g_init=FALSE, h0_init= FALSE, sig2er_init = FALSE,
+                        alpha_init = FALSE, psi_init = FALSE, k_init = FALSE, Sigma_theta, n_burnin = burn_in, a_psi, b_psi, seuil = FALSE, s = 0.3)
   g[,v] = results$theta[,1]
   h0[,v]=results$theta[,2]
   sigma_sq_err[,v]=results$theta[,3]
