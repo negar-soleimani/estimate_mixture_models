@@ -1253,7 +1253,7 @@ abline(h = 0.2, col = "orange")
 
 vioplot(colMeans(k1), colMeans(k2), colMeans(k3), colMeans(k4), colMeans(k5), 
         colMeans(k6), colMeans(k7), colMeans(k8), colMeans(k9), colMeans(k10),
-        names = c("0.1","0.2","0.3","0.4","0.5","0.6","0.7","0.8","0.9"),
+        names = c("0.01","0.1","0.2","0.3","0.4","0.5","0.6","0.7","0.8","0.9"),
         xlab = "",
         ylab = "",
         col = "#E18E96")
