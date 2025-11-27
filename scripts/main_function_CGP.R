@@ -1,8 +1,8 @@
 mcmc_step6 <- function(y, t, n_iter, init, sigma_proposals,
                        g_init=TRUE, h0_init= TRUE, sig2er_init = TRUE,
                        alpha_init = TRUE, psi_init = TRUE, k_init = TRUE, Sigma_theta, n_burnin=1000,
-                       a_psi, b_psi, seuil = TRUE, s = 0.3) {
-
+                       a_psi, b_psi, seuil = FALSE, s = 0.3) {
+  
   # Total iterations = burn-in + desired samples
   total_iter <- n_burnin + n_iter
   
@@ -18,7 +18,7 @@ mcmc_step6 <- function(y, t, n_iter, init, sigma_proposals,
   
   for (iter in 1:total_iter) {
     g <- theta[1]; h0 <- theta[2]; sigma_sq_err <- theta[3]
-    alpha_param <- theta[4]; psi_delta <- theta[5]; k <- theta[6]; alpha_prime <- theta[7]
+    alpha_param <- theta[4]; psi_delta <- theta[5]; k <- theta[6] #; alpha_prime <- theta[7]
     sigma_sq_delta <- sigma_sq_err / k
     
     Sigma_delta <- GP_covariance(t, sigma_sq_delta, psi_delta)
@@ -26,22 +26,31 @@ mcmc_step6 <- function(y, t, n_iter, init, sigma_proposals,
     mean1 <- f_theta
     mean2 <- f_theta + delta
     
-    log_sum_exp <- function(x, y) {
-      m <- pmax(x, y)
-      m + log(exp(x - m) + exp(y - m))
-    }
+    # log_sum_exp <- function(x, y) {
+    #   m <- pmax(x, y)
+    #   m + log(exp(x - m) + exp(y - m))
+    # }
     
     # log-weights
     log_w1 <- log(alpha_param) + dnorm(y, mean1, sqrt(sigma_sq_err), log = TRUE) # comp 1
     log_w2 <- log(1 - alpha_param) + dnorm(y, mean2, sqrt(sigma_sq_err), log = TRUE) # comp 2
+    log_max <- pmax(log_w1, log_w2)
+    log_den <- log_max + log(exp(log_w1 - log_max) + exp(log_w2 - log_max))
     
-    # Log-sum-exp of the denominator
-    log_den <- log_sum_exp(log_w1, log_w2)
-    
+    # if (seuil) {
+    #   prob_zeta_base <- exp(log_w1 - log_den)
+    #   prob_zeta <- prob_zeta_base * (abs(delta) > s)
+    #   zeta <- ifelse(runif(length(y)) < prob_zeta, 1, 2)
+    #   #zeta <- 1 + (runif(length(y)) < prob_zeta)
+    # } else {
+    #   prob_zeta <- exp(log_w2 - log_den)
+    #   #zeta <- 1 + (runif(length(y)) < prob_zeta)
+    #   zeta <- ifelse(runif(length(y)) < prob_zeta, 2, 1)
+    # }
     if (seuil) {
-      prob_zeta_base <- exp(log_w1 - log_den)
+      prob_zeta_base <- exp(log_w2 - log_den)
       prob_zeta <- prob_zeta_base * (abs(delta) > s)
-      zeta <- ifelse(runif(length(y)) < prob_zeta, 1, 2)
+      zeta <- ifelse(runif(length(y)) < prob_zeta, 2, 1)
       #zeta <- 1 + (runif(length(y)) < prob_zeta)
     } else {
       prob_zeta <- exp(log_w2 - log_den)
@@ -51,6 +60,7 @@ mcmc_step6 <- function(y, t, n_iter, init, sigma_proposals,
     
     chain_zeta[iter, ] <- zeta
     
+    
     log_likelihood <- sum(log(ifelse(zeta == 1,
                                      alpha_param * dnorm(y, mean1, sqrt(sigma_sq_err)),
                                      (1 - alpha_param) * dnorm(y, mean2, sqrt(sigma_sq_err)))))
@@ -58,57 +68,93 @@ mcmc_step6 <- function(y, t, n_iter, init, sigma_proposals,
     
     
     # ---- Update delta ----
-    if(seuil){
-      zeta_2_indices <- which(zeta == 2)
-      if (length(zeta_2_indices) > 0) {
-        y_m <- y[zeta_2_indices]
-        Sigma_delta_ymym <- sigma_sq_err * diag(length(zeta_2_indices)) +
-          Sigma_delta[zeta_2_indices, zeta_2_indices, drop = FALSE]
-        Sigma_delta_ym <- Sigma_delta[, zeta_2_indices, drop = FALSE]
-        Sigma_inv <- tryCatch(solve(Sigma_delta_ymym), error = function(e) diag(1, nrow(Sigma_delta_ymym)))
-        mu_delta_hat <- rep(0, n) + Sigma_delta_ym %*% Sigma_inv %*% (y_m - f_theta[zeta_2_indices])
-        Sigma_delta_hat <- Sigma_delta - Sigma_delta_ym %*% Sigma_inv %*% t(Sigma_delta_ym)
-        delta <- as.vector(rmvnorm(1, mean = mu_delta_hat, sigma = Sigma_delta_hat))
-      }
-      else delta = as.vector(rmvnorm(1, rep(0, n), sigma = Sigma_delta))
+    # if(seuil){
+    #   zeta_2_indices <- which(zeta == 2)
+    #   if (length(zeta_2_indices) > 0) {
+    #     y_m <- y[zeta_2_indices]
+    #     Sigma_delta_ymym <- sigma_sq_err * diag(length(zeta_2_indices)) +
+    #       Sigma_delta[zeta_2_indices, zeta_2_indices, drop = FALSE]
+    #     Sigma_delta_ym <- Sigma_delta[, zeta_2_indices, drop = FALSE]
+    #     Sigma_inv <- tryCatch(solve(Sigma_delta_ymym), error = function(e) diag(1, nrow(Sigma_delta_ymym)))
+    #     mu_delta_hat <- rep(0, n) + Sigma_delta_ym %*% Sigma_inv %*% (y_m - f_theta[zeta_2_indices])
+    #     Sigma_delta_hat <- Sigma_delta - Sigma_delta_ym %*% Sigma_inv %*% t(Sigma_delta_ym)
+    #     delta <- as.vector(rmvnorm(1, mean = mu_delta_hat, sigma = Sigma_delta_hat))
+    #   }
+    #   else delta = as.vector(rmvnorm(1, rep(0, n), sigma = Sigma_delta))
+    # }
+    # else{
+    #   zeta_2_indices <- which(zeta == 2)
+    #   if (length(zeta_2_indices) > 0) {
+    #     y_m <- y[zeta_2_indices]
+    #     Sigma_delta_ymym <- sigma_sq_err * diag(length(zeta_2_indices)) +
+    #       Sigma_delta[zeta_2_indices, zeta_2_indices, drop = FALSE]
+    #     Sigma_delta_ym <- Sigma_delta[, zeta_2_indices, drop = FALSE]
+    #     Sigma_inv <- tryCatch(solve(Sigma_delta_ymym), error = function(e) diag(1, nrow(Sigma_delta_ymym)))
+    #     mu_delta_hat <- rep(0, n) + Sigma_delta_ym %*% Sigma_inv %*% (y_m - f_theta[zeta_2_indices])
+    #     Sigma_delta_hat <- Sigma_delta - Sigma_delta_ym %*% Sigma_inv %*% t(Sigma_delta_ym)
+    #     delta <- as.vector(rmvnorm(1, mean = mu_delta_hat, sigma = Sigma_delta_hat))
+    #   }
+    # }
+    zeta_2_indices <- which(zeta == 2)
+    if (length(zeta_2_indices) > 0) {
+      y_m <- y[zeta_2_indices]
+      Sigma_delta_ymym <- sigma_sq_err * diag(length(zeta_2_indices)) +
+        Sigma_delta[zeta_2_indices, zeta_2_indices, drop = FALSE]
+      Sigma_delta_ym <- Sigma_delta[, zeta_2_indices, drop = FALSE]
+      Sigma_inv <- tryCatch(solve(Sigma_delta_ymym), error = function(e) diag(1, nrow(Sigma_delta_ymym)))
+      mu_delta_hat <- rep(0, n) + Sigma_delta_ym %*% Sigma_inv %*% (y_m - f_theta[zeta_2_indices])
+      Sigma_delta_hat <- Sigma_delta - Sigma_delta_ym %*% Sigma_inv %*% t(Sigma_delta_ym)
+      Sigma_delta_hat <- 0.5 * (Sigma_delta_hat + t(Sigma_delta_hat))
+      delta <- as.vector(rmvnorm(1, mean = mu_delta_hat, sigma = Sigma_delta_hat))
     }
-    else{
-      zeta_2_indices <- which(zeta == 2)
-      if (length(zeta_2_indices) > 0) {
-        y_m <- y[zeta_2_indices]
-        Sigma_delta_ymym <- sigma_sq_err * diag(length(zeta_2_indices)) +
-          Sigma_delta[zeta_2_indices, zeta_2_indices, drop = FALSE]
-        Sigma_delta_ym <- Sigma_delta[, zeta_2_indices, drop = FALSE]
-        Sigma_inv <- tryCatch(solve(Sigma_delta_ymym), error = function(e) diag(1, nrow(Sigma_delta_ymym)))
-        mu_delta_hat <- rep(0, n) + Sigma_delta_ym %*% Sigma_inv %*% (y_m - f_theta[zeta_2_indices])
-        Sigma_delta_hat <- Sigma_delta - Sigma_delta_ym %*% Sigma_inv %*% t(Sigma_delta_ym)
-        delta <- as.vector(rmvnorm(1, mean = mu_delta_hat, sigma = Sigma_delta_hat))
-      }
-    }
+    else delta = as.vector(rmvnorm(1, rep(0, n), sigma = Sigma_delta))
     
     
     # Gibbs for theta
+    # zeta_1_indices <- which(zeta == 1)
+    # zeta_2_indices <- which(zeta == 2)
+    # X <- cbind(1, -0.5 * (t * t_range + t_min)^2)
+    # x1 <- X[zeta_1_indices, , drop = FALSE]
+    # x2 <- X[zeta_2_indices, , drop = FALSE]
+    # theta_hat     <- matrix(c(46.45, 9.8), ncol = 1)
+    # inv_sigma_theta <- solve(Sigma_theta)
+    # A <- ((t(x1) %*% x1) / theta[3]) + ((t(x2) %*% x2) / theta[3]) + inv_sigma_theta
+    # Sigmapost_theta <- solve(A)
+    # y1 <- matrix(y[zeta_1_indices], ncol = 1)
+    # y2 <- matrix(y[zeta_2_indices], ncol = 1)
+    # d2 <- matrix(delta[zeta_2_indices], ncol = 1)
+    # B <- (t(x1) %*% y1) / theta[3] +
+    #   (t(x2) %*% y2) / theta[3] -
+    #   (t(x2) %*% d2) / theta[3] +
+    #   inv_sigma_theta %*% theta_hat
+    # Mupost_theta <- Sigmapost_theta %*% B
+    # theta_sample <- rmvnorm(1, mean = Mupost_theta, sigma = Sigmapost_theta)
+    # h0 <- theta_sample[1];  g <- theta_sample[2]
+    # 
+    # flat prior on theta 
     zeta_1_indices <- which(zeta == 1)
     zeta_2_indices <- which(zeta == 2)
-    X <- cbind(1, -0.5 * (t * t_range + t_min)^2)
-    x1 <- X[zeta_1_indices, , drop = FALSE]  
+    
+    X <- cbind(1, -0.5 * (t * t_range)^2)
+    x1 <- X[zeta_1_indices, , drop = FALSE]
     x2 <- X[zeta_2_indices, , drop = FALSE]
-    theta_hat     <- matrix(c(46.45, 9.8), ncol = 1)
-    inv_sigma_theta <- solve(Sigma_theta)
-    A <- ((t(x1) %*% x1) / theta[3]) + ((t(x2) %*% x2) / theta[3]) + inv_sigma_theta
-    Sigmapost_theta <- solve(A)
+    
     y1 <- matrix(y[zeta_1_indices], ncol = 1)
     y2 <- matrix(y[zeta_2_indices], ncol = 1)
     d2 <- matrix(delta[zeta_2_indices], ncol = 1)
-    B <- (t(x1) %*% y1) / theta[3] + 
-      (t(x2) %*% y2) / theta[3] -
-      (t(x2) %*% d2) / theta[3] +
-      inv_sigma_theta %*% theta_hat
-    Mupost_theta <- Sigmapost_theta %*% B
-    theta_sample <- rmvnorm(1, mean = Mupost_theta, sigma = Sigmapost_theta)
+    
+    A <- (t(x1) %*% x1 + t(x2) %*% x2) / sigma_sq_err
+    B <- (t(x1) %*% y1 + t(x2) %*% y2 - t(x2) %*% d2) / sigma_sq_err
+    
+    Sigmapost_theta <- solve(A)
+    Mupost_theta    <- Sigmapost_theta %*% B
+    
+    theta_sample <- rmvnorm(1, mean = Mupost_theta,
+                            sigma = Sigmapost_theta)
+    
     h0 <- theta_sample[1];  g <- theta_sample[2]
-    #theta[1] <- g
-    #theta[2] <- h0
+    # theta[1] <- g
+    # theta[2] <- h0
     
     if(g_init){
       g <- init[1]
@@ -156,9 +202,9 @@ mcmc_step6 <- function(y, t, n_iter, init, sigma_proposals,
       residual2 <- y[idx2] - f_theta[idx2] - delta[idx2]
       rss2   <- sum(residual2^2)
       
-      rate_err <- 0.5 + (0.5 * ( rss1 + rss2 + (theta[6] * quad_form_delta)))
+      rate_err <- 0.5 * (( rss1 + rss2 + (theta[6] * quad_form_delta)))
       
-      shape_err <- 4 + n
+      shape_err <- n + 1/2 #n + 1#/2 #4 + n
       sigma_sq_err <- rinvgamma(1, shape = shape_err, rate = rate_err)}
     
     
@@ -166,36 +212,49 @@ mcmc_step6 <- function(y, t, n_iter, init, sigma_proposals,
     if(psi_init){
       psi_delta <- init[5]
     }else{# MH for psi_delta
-      psi_prop <- rtruncnorm(1, a = 0, b = 1, mean = psi_delta, sd = sigma_proposals[5])
+      psi_prop <- rtruncnorm(1, a = 0.1, b = 1, mean = psi_delta, sd = sigma_proposals[5])
       sigma_sq_delta_prop <- sigma_sq_err / k
+      Sigma_delta <- GP_covariance(t, sigma_sq_delta_prop, psi_delta)
       Sigma_delta_prop <- GP_covariance(t, sigma_sq_delta_prop, psi_prop)
-      log_prop_current <- log(dtruncnorm(psi_delta, a = 0, b = 1, mean = psi_prop, sd = sigma_proposals[5]))
-      log_prop_prop <- log(dtruncnorm(psi_prop, a = 0, b = 1, mean = psi_delta, sd = sigma_proposals[5]))
-      log_prior_current <- dbeta(psi_delta, shape1 = a_psi, shape2 = b_psi, log=TRUE)
-      log_prior_prop <- dbeta(psi_prop, shape1 = a_psi, shape2 = b_psi, log=TRUE)
+      log_prop_current <- log(dtruncnorm(psi_delta, a = 0.1, b = 1, mean = psi_prop, sd = sigma_proposals[5]))
+      log_prop_prop <- log(dtruncnorm(psi_prop, a = 0.1, b = 1, mean = psi_delta, sd = sigma_proposals[5]))
+      log_prior_current <- dunif(psi_delta, min = 0.1, max = 1, log = TRUE)
+      log_prior_prop    <- dunif(psi_prop,  min = 0.1, max = 1, log = TRUE)
       log_like_current <- tryCatch(dmvnorm(delta, rep(0, n), Sigma_delta, log = TRUE), error = function(e) -Inf)
       log_like_prop <- tryCatch(dmvnorm(delta, rep(0, n), Sigma_delta_prop, log = TRUE), error = function(e) -Inf)
-      log_ratio <- (log_like_prop + log_prior_prop) - (log_like_current + log_prior_current) + log_prop_current - log_prop_prop
+      log_ratio <- (log_like_prop + log_prior_prop) - (log_like_current + log_prior_current) + (log_prop_current - log_prop_prop)
       if (!is.na(log_ratio) && log(runif(1)) < log_ratio) {
         psi_delta <- psi_prop
-        #theta[5] <- psi_delta
+        theta[5] <- psi_delta
         accept_psi <- accept_psi + 1
       }}
     
     
-    
+    # if(k_init){
+    #   k <- init[6]
+    # }else{# Gibbs for k
+    #   alpha_k <- (n / 2) + 1
+    #   beta_k <- (1 / (2 * sigma_sq_err)) * quad_form_delta
+    #   for (try_k in 1:100) {
+    #     k_prop <- rgamma(1, shape = alpha_k, rate = beta_k)
+    #     #if (k_prop >= 0.1 && k_prop <= 0.9) {
+    #     if (k_prop > 0 && k_prop < 1) {
+    #       k <- k_prop
+    #       theta[6] <- k
+    #       break
+    #     }
+    #   }}
     if(k_init){
       k <- init[6]
     }else{# Gibbs for k
-      R <- outer(t, t, function(ti, tj) exp(-abs(ti - tj) / psi_delta))
       alpha_k <- (n / 2) + 1
-      beta_k <- (1 / (2 * sigma_sq_err)) * sum(delta * (solve(R, delta)))
+      beta_k <- (1 / (2 * sigma_sq_err)) * quad_form_delta
       for (try_k in 1:100) {
         k_prop <- rgamma(1, shape = alpha_k, rate = beta_k)
         #if (k_prop >= 0.1 && k_prop <= 0.9) {
         if (k_prop > 0 && k_prop < 1) {
           k <- k_prop
-          #theta[6] <- k
+          theta[6] <- k
           break
         }
       }}
