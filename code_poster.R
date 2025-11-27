@@ -429,7 +429,7 @@ mcmc_step6 <- function(y, t, n_iter, init, sigma_proposals, mcmc_parameters, Sig
 # #(g,h0), sigma, psi, k, alpha
 # mcmc_parameters <- c(TRUE, TRUE, TRUE, TRUE, TRUE)
 # Sigma_theta <- matrix(c(0.5, 0, 0, 0.5), nrow = 2)
-# init <- c(9.8, 46.46, 0.1, 0.5, 0.2, 0.2)
+# init <- c(9.8, 46.46, 0.01, 0.5, 0.2, 0.2)
 # 
 # g_chain     <- matrix(NA, n_iter, n_samples)
 # h0_chain    <- matrix(NA, n_iter, n_samples)
@@ -505,7 +505,7 @@ set.seed(12345)
 k = 0.2
 #sigma_sq_delta <- 0.1
 sim_psi_delta <- 0.01
-sigma_sq_err <- 0.1
+sigma_sq_err <- 0.01
 sigma_sq_delta <- sigma_sq_err / k
 n_samples <- 3
 n_iter <- 20000
@@ -515,7 +515,7 @@ sigma_props <- c(NA, NA, NA, NA, 0.02, NA)
 #(g,h0), sigma, psi, k, alpha
 mcmc_parameters <- c(TRUE, TRUE, TRUE, TRUE, TRUE)
 Sigma_theta <- matrix(c(0.5, 0, 0, 0.5), nrow = 2)
-init <- c(9.8, 46.46, 0.01, 0.5, 0.2, 0.2)
+init <- c(9.8, 46.46, 0.1, 0.5, 0.2, 0.2)
 # 
 g_chain     <- matrix(NA, n_iter, n_samples)
 h0_chain    <- matrix(NA, n_iter, n_samples)
@@ -571,7 +571,7 @@ sigma_props <- c(NA, NA, NA, NA, 0.4, NA)
 #(g,h0), sigma, psi, k, alpha
 mcmc_parameters <- c(TRUE, TRUE, TRUE, TRUE, TRUE)
 Sigma_theta <- matrix(c(0.5, 0, 0, 0.5), nrow = 2)
-init <- c(9.8, 46.46, 0.01, 0.5, 0.2, 0.2)
+init <- c(9.8, 46.46, 0.1, 0.5, 0.2, 0.2)
 
 g_chain     <- matrix(NA, n_iter, n_samples)
 h0_chain    <- matrix(NA, n_iter, n_samples)

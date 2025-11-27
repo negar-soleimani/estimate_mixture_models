@@ -1,3 +1,20 @@
+GP_covariance <- function(t, sigma_sq_delta, psi_delta) {
+  n <- length(t)
+  Sigma <- outer(t, t, function(ti, tj) sigma_sq_delta * exp(-abs(ti - tj) / psi_delta))
+  return(Sigma)
+}
+
+t <- don$time
+y <- don$Height
+t_min <- min(t)
+t_range <- max(t) - min(t)
+t <- (t - t_min) / t_range
+a <- t_range
+n <- length(y)
+
+##############################################################################################
+
+
 balldropg <- function(t, theta) {
   g <- theta[1]
   h0 <- theta[2]
