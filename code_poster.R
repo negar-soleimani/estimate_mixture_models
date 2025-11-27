@@ -202,6 +202,8 @@ mcmc_step6 <- function(y, t, n_iter, init, sigma_proposals, mcmc_parameters, Sig
     f_theta <- balldropg(t, c(g, h0))
     idx1 <- which(zeta == 1)
     idx2 <- which(zeta == 2)
+    n1   <- length(idx1)
+    n2   <- length(idx2)
     residual1 <- y[idx1] - f_theta[idx1]
     rss1   <- sum(residual1^2)
 
@@ -211,7 +213,6 @@ mcmc_step6 <- function(y, t, n_iter, init, sigma_proposals, mcmc_parameters, Sig
     # When we consider the Jeffreys prior, I use the following code:
     rate_err <- (0.5 * ( rss1 + rss2 + (k * quad_form_delta)))
     shape_err <- n + 1/2
-    
     # When the prior is the sigma parameter of the "inverse gamma distribution", I use the following code:
     # rate_err <- 1 + (0.5 * ( rss1 + rss2 + (k * quad_form_delta)))
     # shape_err <- 2 + n
@@ -326,24 +327,24 @@ mcmc_step6 <- function(y, t, n_iter, init, sigma_proposals, mcmc_parameters, Sig
 ###################### Real Data #############################
 ##############################################################
 ##############################################################
-set.seed(12345)
-
-init_base       <- c(9.8, 46.46, 0.01, 0.5, 0.3, 0.2)
-sigma_proposals <- c(NA,NA,NA,NA,0.4,NA)
-mcmc_parameters <- c(TRUE, TRUE, TRUE, TRUE, TRUE)
-Sigma_theta     <- matrix(c(0.5,0,0,0.5), 2)
-n_iter          <- 10000
-burn_in         <- 5000
-
-results_real_sh5 <- mcmc_step6(
-  y = y, t = t,
-  n_iter = n_iter,
-  init   = init_base,
-  sigma_proposals = sigma_proposals,
-  mcmc_parameters = mcmc_parameters,
-  Sigma_theta     = Sigma_theta,
-  n_burnin        = burn_in
-)
+# set.seed(12345)
+# 
+# init_base       <- c(9.8, 46.46, 0.01, 0.5, 0.3, 0.2)
+# sigma_proposals <- c(NA,NA,NA,NA,0.4,NA)
+# mcmc_parameters <- c(TRUE, TRUE, TRUE, TRUE, TRUE)
+# Sigma_theta     <- matrix(c(0.5,0,0,0.5), 2)
+# n_iter          <- 10000
+# burn_in         <- 5000
+# 
+# results_real_sh5 <- mcmc_step6(
+#   y = y, t = t,
+#   n_iter = n_iter,
+#   init   = init_base,
+#   sigma_proposals = sigma_proposals,
+#   mcmc_parameters = mcmc_parameters,
+#   Sigma_theta     = Sigma_theta,
+#   n_burnin        = burn_in
+# )
 
 #save(results_real_sh5,file = "/Users/negarsoleimani/Documents/PhD/Paper1/Real Data/results_real_sh5.RData")
 # load("/Users/negarsoleimani/Documents/PhD/Paper1/Real Data/results_real_sh5.RData")
@@ -352,62 +353,62 @@ results_real_sh5 <- mcmc_step6(
 # load("/Users/negarsoleimani/Documents/PhD/Paper1/Real Data/results_real_sh5.RData")
 # load("/Users/negarsoleimani/Documents/PhD/Paper1/Real Data/results_real_sh5.RData")
 
-g_chain <- results_real_sh5$theta[,1]
-h0_chain <- results_real_sh5$theta[,2]
-sigma_sq_err_chain <- results_real_sh5$theta[,3]
-alpha_chain <- results_real_sh5$theta[,4]
-psi_delta_chain <- results_real_sh5$theta[,5]
-k_chain <- results_real_sh5$theta[,6]
-delta_chain <- results_real_sh5$delta
-zeta_chain <- results_real_sh5$zeta
-loglik_chain <- results_real_sh5$loglik
-accept_rate_psi <- results_real_sh5$accept_rate_psi
+# g_chain <- results_real_sh5$theta[,1]
+# h0_chain <- results_real_sh5$theta[,2]
+# sigma_sq_err_chain <- results_real_sh5$theta[,3]
+# alpha_chain <- results_real_sh5$theta[,4]
+# psi_delta_chain <- results_real_sh5$theta[,5]
+# k_chain <- results_real_sh5$theta[,6]
+# delta_chain <- results_real_sh5$delta
+# zeta_chain <- results_real_sh5$zeta
+# loglik_chain <- results_real_sh5$loglik
+# accept_rate_psi <- results_real_sh5$accept_rate_psi
+# 
+# par(mfrow = c(1, 1))
+# boxplot(results_real_sh5$delta, col = "#CCDAFF")
+# title(ylab = expression(delta), xlab = "n", line = 1.75)
+# 
+# prob_zeta_model1 <- colMeans(results_real_sh5$zeta == 1)
+# print(prob_zeta_model1)
+# 
+# prob_zeta_model2 <- colMeans(results_real_sh5$zeta == 2)
+# print(prob_zeta_model2)
+# 
+# par(mfrow = c(3, 2))
+# plot(results_real_sh5$theta[, 1], type = "l", main = "Trace of g")
+# plot(results_real_sh5$theta[, 2], type = "l", main = "Trace of h0")
+# plot(results_real_sh5$theta[, 3], type = "l", ylim = c(0, 1), main = "Trace of sigma_sq_err")
+# plot(results_real_sh5$theta[, 4], type = "l", ylim = c(0, 1), main = "alpha")
+# plot(results_real_sh5$theta[, 5], type = "l", main = "Trace of psi_delta")
+# plot(results_real_sh5$theta[, 6], type = "l", ylim = c(0, 1), main = "k")
 
-par(mfrow = c(1, 1))
-boxplot(results_real_sh5$delta, col = "#CCDAFF")
-title(ylab = expression(delta), xlab = "n", line = 1.75)
-
-prob_zeta_model1 <- colMeans(results_real_sh5$zeta == 1)
-print(prob_zeta_model1)
-
-prob_zeta_model2 <- colMeans(results_real_sh5$zeta == 2)
-print(prob_zeta_model2)
-
-par(mfrow = c(3, 2))
-plot(results_real_sh5$theta[, 1], type = "l", main = "Trace of g")
-plot(results_real_sh5$theta[, 2], type = "l", main = "Trace of h0")
-plot(results_real_sh5$theta[, 3], type = "l", ylim = c(0, 1), main = "Trace of sigma_sq_err")
-plot(results_real_sh5$theta[, 4], type = "l", ylim = c(0, 1), main = "alpha")
-plot(results_real_sh5$theta[, 5], type = "l", main = "Trace of psi_delta")
-plot(results_real_sh5$theta[, 6], type = "l", ylim = c(0, 1), main = "k")
-
-par(mfrow = c(2, 3))
-boxplot(results_real_sh5$theta[, 1])
-boxplot(results_real_sh5$theta[, 2])
-abline(h = 46.46)
-boxplot(results_real_sh5$theta[, 3])
-boxplot(results_real_sh5$theta[, 4])
-boxplot(results_real_sh5$theta[, 5])
-boxplot(results_real_sh5$theta[, 6])
-
-library("vioplot")
-par(mfrow = c(1, 6))
-vioplot(results_real_sh5$theta[, 1], col = "#C9E2FF", xlab = "", xaxt = "n")
-title(ylab = expression(g), line = 1.75)
-abline(h = 9.8)
-vioplot(results_real_sh5$theta[, 2], col = "#C9E2FF", xlab = "", xaxt = "n")
-title(ylab = expression(h[0]), line = 1.75)
-abline(h = 46.46)
-vioplot(results_real_sh5$theta[, 3], col = "#C9E2FF", xlab = "", xaxt = "n")
-title(ylab = expression(sigma[err]^2), line = 1.75)
-abline(h = 0.01)
-vioplot(results_real_sh5$theta[, 4], col = "#C9E2FF", xlab = "", xaxt = "n")
-title(ylab = expression(alpha), line = 1.75)
-vioplot(results_real_sh5$theta[, 5], col = "#C9E2FF", xlab = "", xaxt = "n")
-title(ylab = expression(psi[delta]), line = 1.75)
-vioplot(results_real_sh5$theta[, 6], col = "#C9E2FF", xlab = "", xaxt = "n")
-title(ylab = expression(k), line = 1.75)
-hist(results_real_sh5$theta[, 4])
+# par(mfrow = c(2, 3))
+# boxplot(results_real_sh5$theta[, 1])
+# boxplot(results_real_sh5$theta[, 2])
+# abline(h = 46.46)
+# boxplot(results_real_sh5$theta[, 3])
+# boxplot(results_real_sh5$theta[, 4])
+# boxplot(results_real_sh5$theta[, 5])
+# boxplot(results_real_sh5$theta[, 6])
+# 
+# library("vioplot")
+# par(mfrow = c(1, 6))
+# vioplot(results_real_sh5$theta[, 1], col = "#C9E2FF", xlab = "", xaxt = "n")
+# title(ylab = expression(g), line = 1.75)
+# abline(h = 9.8)
+# vioplot(results_real_sh5$theta[, 2], col = "#C9E2FF", xlab = "", xaxt = "n")
+# title(ylab = expression(h[0]), line = 1.75)
+# abline(h = 46.46)
+# vioplot(results_real_sh5$theta[, 3], col = "#C9E2FF", xlab = "", xaxt = "n")
+# title(ylab = expression(sigma[err]^2), line = 1.75)
+# abline(h = 0.01)
+# vioplot(results_real_sh5$theta[, 4], col = "#C9E2FF", xlab = "", xaxt = "n")
+# title(ylab = expression(alpha), line = 1.75)
+# vioplot(results_real_sh5$theta[, 5], col = "#C9E2FF", xlab = "", xaxt = "n")
+# title(ylab = expression(psi[delta]), line = 1.75)
+# vioplot(results_real_sh5$theta[, 6], col = "#C9E2FF", xlab = "", xaxt = "n")
+# title(ylab = expression(k), line = 1.75)
+# hist(results_real_sh5$theta[, 4])
 
 ##############################################################
 ##############################################################
@@ -415,81 +416,81 @@ hist(results_real_sh5$theta[, 4])
 # Simulation the data of model 2 with different psi_delta
 # Code to verify the result
 
-set.seed(12345)
-k = 0.2
-sim_psi_delta <- 0.9
-sigma_sq_err <- (0.1)^2
-sigma_sq_delta <- sigma_sq_err / k
-n_samples <- 5
-n_iter <- 10000
-burn_in <- 5000
+# set.seed(12345)
+# k = 0.2
+# sim_psi_delta <- 0.9
+# sigma_sq_err <- (0.1)^2
+# sigma_sq_delta <- sigma_sq_err / k
+# n_samples <- 5
+# n_iter <- 10000
+# burn_in <- 5000
+# 
+# sigma_props <- c(NA, NA, NA, NA, 0.4, NA)
+# #(g,h0), sigma, psi, k, alpha
+# mcmc_parameters <- c(TRUE, TRUE, TRUE, TRUE, TRUE)
+# Sigma_theta <- matrix(c(0.5, 0, 0, 0.5), nrow = 2)
+# init <- c(9.8, 46.46, 0.1, 0.5, 0.2, 0.2)
+# 
+# g_chain     <- matrix(NA, n_iter, n_samples)
+# h0_chain    <- matrix(NA, n_iter, n_samples)
+# sigma_chain <- matrix(NA, n_iter, n_samples)
+# alpha_chain <- matrix(NA, n_iter, n_samples)
+# psi_chain   <- matrix(NA, n_iter, n_samples)
+# k_chain     <- matrix(NA, n_iter, n_samples)
+# loglik_mat  <- matrix(NA, n_iter, n_samples)
+# delta_list  <- vector("list", n_samples)
+# zeta_list   <- vector("list", n_samples)
+# accept_rate <- numeric(n_samples)
 
-sigma_props <- c(NA, NA, NA, NA, 0.4, NA)
-#(g,h0), sigma, psi, k, alpha
-mcmc_parameters <- c(TRUE, TRUE, TRUE, TRUE, TRUE)
-Sigma_theta <- matrix(c(0.5, 0, 0, 0.5), nrow = 2)
-init <- c(9.8, 46.46, 0.1, 0.5, 0.2, 0.2)
+# y_obs <- matrix(NA, n, n_samples)
+# for (v in 1:n_samples) {
+#   Sigma_delta <- GP_covariance(t, sigma_sq_delta, sim_psi_delta)
+# 
+#   delta <- as.vector(rmvnorm(1, rep(0, n), Sigma_delta))
+# 
+#   y_1 <- balldropg(t, c(9.8, 46.46)) + rnorm(n, 0, sqrt(sigma_sq_err)) + delta
+#   #y_1 <- balldropg(t, c(9.8, 46.46)) + rnorm(n, 0, sqrt(sigma_sq_err)*(1+1/k))
+# 
+#   y_obs[, v] <- y_1
+#   res <- mcmc_step6(y_1, t, n_iter, init, sigma_props, mcmc_parameters,
+#                     Sigma_theta, n_burnin = burn_in)
+# 
+#   g_chain[, v]     <- res$theta[, 1]
+#   h0_chain[, v]    <- res$theta[, 2]
+#   sigma_chain[, v] <- res$theta[, 3]
+#   alpha_chain[, v] <- res$theta[, 4]
+#   psi_chain[, v]   <- res$theta[, 5]
+#   k_chain[, v]     <- res$theta[, 6]
+#   delta_list[[v]]  <- res$delta
+#   zeta_list[[v]]   <- res$zeta
+#   loglik_mat[, v]  <- res$loglik
+#   accept_rate[v]   <- res$accept_rate_psi
+# }
+# res <- list(g_chain, h0_chain, sigma_chain, alpha_chain, psi_chain, k_chain, delta_list, zeta_list, loglik_mat, accept_rate)
 
-g_chain     <- matrix(NA, n_iter, n_samples)
-h0_chain    <- matrix(NA, n_iter, n_samples)
-sigma_chain <- matrix(NA, n_iter, n_samples)
-alpha_chain <- matrix(NA, n_iter, n_samples)
-psi_chain   <- matrix(NA, n_iter, n_samples)
-k_chain     <- matrix(NA, n_iter, n_samples)
-loglik_mat  <- matrix(NA, n_iter, n_samples)
-delta_list  <- vector("list", n_samples)
-zeta_list   <- vector("list", n_samples)
-accept_rate <- numeric(n_samples)
+# g <- res[[1]]
+# h <- res[[2]]
+# sig <- res[[3]]
+# alpha <- res[[4]]
+# psi <- res[[5]]
+# k <- res[[6]]
 
-y_obs <- matrix(NA, n, n_samples)
-for (v in 1:n_samples) {
-  Sigma_delta <- GP_covariance(t, sigma_sq_delta, sim_psi_delta)
+# hist(k)
+# hist(sig)
+# hist(psi)
+# hist(alpha)
 
-  delta <- as.vector(rmvnorm(1, rep(0, n), Sigma_delta))
-
-  y_1 <- balldropg(t, c(9.8, 46.46)) + rnorm(n, 0, sqrt(sigma_sq_err)) + delta
-  #y_1 <- balldropg(t, c(9.8, 46.46)) + rnorm(n, 0, sqrt(sigma_sq_err)*(1+1/k))
-
-  y_obs[, v] <- y_1
-  res <- mcmc_step6(y_1, t, n_iter, init, sigma_props, mcmc_parameters,
-                    Sigma_theta, n_burnin = burn_in)
-
-  g_chain[, v]     <- res$theta[, 1]
-  h0_chain[, v]    <- res$theta[, 2]
-  sigma_chain[, v] <- res$theta[, 3]
-  alpha_chain[, v] <- res$theta[, 4]
-  psi_chain[, v]   <- res$theta[, 5]
-  k_chain[, v]     <- res$theta[, 6]
-  delta_list[[v]]  <- res$delta
-  zeta_list[[v]]   <- res$zeta
-  loglik_mat[, v]  <- res$loglik
-  accept_rate[v]   <- res$accept_rate_psi
-}
-res <- list(g_chain, h0_chain, sigma_chain, alpha_chain, psi_chain, k_chain, delta_list, zeta_list, loglik_mat, accept_rate)
-
-g <- res[[1]]
-h <- res[[2]]
-sig <- res[[3]]
-alpha <- res[[4]]
-psi <- res[[5]]
-k <- res[[6]]
-
-hist(k)
-hist(sig)
-hist(psi)
-hist(alpha)
-
-boxplot(colMeans(g))
-abline(h = 9.8)
-boxplot(colMeans(h))
-abline(h = 46.46)
-boxplot(colMeans(sig))
-abline(h = 0.01)
-boxplot(colMeans(alpha))
-boxplot(colMeans(psi))
-abline(h = 0.7)
-boxplot(colMeans(k))
-abline(h = 0.2)
+# boxplot(colMeans(g))
+# abline(h = 9.8)
+# boxplot(colMeans(h))
+# abline(h = 46.46)
+# boxplot(colMeans(sig))
+# abline(h = 0.01)
+# boxplot(colMeans(alpha))
+# boxplot(colMeans(psi))
+# abline(h = 0.7)
+# boxplot(colMeans(k))
+# abline(h = 0.2)
 # # 
 # plot(y_1)
 # zeta <- res[[8]]
@@ -514,7 +515,7 @@ sigma_props <- c(NA, NA, NA, NA, 0.02, NA)
 #(g,h0), sigma, psi, k, alpha
 mcmc_parameters <- c(TRUE, TRUE, TRUE, TRUE, TRUE)
 Sigma_theta <- matrix(c(0.5, 0, 0, 0.5), nrow = 2)
-init <- c(9.8, 46.46, 0.01, 0.5, sim_psi_delta, 0.2)
+init <- c(9.8, 46.46, 0.01, 0.5, 0.2, 0.2)
 # 
 g_chain     <- matrix(NA, n_iter, n_samples)
 h0_chain    <- matrix(NA, n_iter, n_samples)
@@ -1094,7 +1095,7 @@ par(mfrow = c(2,3))
 boxplot(colMeans(g1), colMeans(g2), colMeans(g3), colMeans(g4), colMeans(g5), 
         colMeans(g6), colMeans(g7), colMeans(g8), colMeans(g9), colMeans(g10),
         names = c("0.01","0.1","0.2","0.3","0.4", "0.5","0.6","0.7","0.8","0.9"),
-        xlab = "psi_delta",
+        xlab = expression(psi[delta]),
         ylab = "g",
         col = "#800020")
 abline(h=9.8, col = "orange")
@@ -1129,7 +1130,7 @@ h010 <- result_m2_sh2_psi10_simple1[[2]]
 boxplot(colMeans(h01), colMeans(h02), colMeans(h03), colMeans(h04), colMeans(h05), 
         colMeans(h06), colMeans(h07), colMeans(h08), colMeans(h09), colMeans(h010),
         names = c("0.01","0.1","0.2","0.3","0.4", "0.5","0.6","0.7","0.8","0.9"),
-        xlab = expression(psi_delta),
+        xlab = expression(psi[delta]),
         ylab = "h0",
         col = "#800020")
 abline(h = 46.46, col = "orange")
@@ -1158,8 +1159,8 @@ sigma10 <- result_m2_sh2_psi10_simple1[[3]]
 boxplot(colMeans(sigma1), colMeans(sigma2), colMeans(sigma3), colMeans(sigma4), colMeans(sigma5), 
         colMeans(sigma6), colMeans(sigma7), colMeans(sigma8), colMeans(sigma9), colMeans(sigma10),
         names = c("0.01","0.1","0.2","0.3","0.4", "0.5","0.6","0.7","0.8","0.9"),
-        xlab = "psi_delta",
-        ylab = "sigma",
+        xlab = expression(psi[delta]),
+        ylab = expression(sigma[err]^2),
         col = "#800020")
 abline(h = 0.01, col = "orange")
 
@@ -1187,8 +1188,8 @@ alpha10 <- result_m2_sh2_psi10_simple1[[4]]
 boxplot(colMeans(alpha1), colMeans(alpha2), colMeans(alpha3), colMeans(alpha4), colMeans(alpha5), 
         colMeans(alpha6), colMeans(alpha7), colMeans(alpha8), colMeans(alpha9), colMeans(alpha10),
         names = c("0.01","0.1","0.2","0.3","0.4", "0.5","0.6","0.7","0.8", "0.9"),
-        xlab = "psi_delta",
-        ylab = "alpha",
+        xlab = expression(psi[delta]),
+        ylab = expression(alpha),
         ylim = c(0,1),
         col = "#800020")
 
@@ -1217,8 +1218,8 @@ psi10 <- result_m2_sh2_psi10_simple1[[5]]
 boxplot(colMeans(psi1), colMeans(psi2), colMeans(psi3), colMeans(psi4), colMeans(psi5), 
         colMeans(psi6), colMeans(psi7), colMeans(psi8), colMeans(psi9), colMeans(psi10),
         names = c("0.01","0.1","0.2","0.3","0.4", "0.5","0.6","0.7","0.8","0.9"),
-        xlab = "psi_delta",
-        ylab = "psi",
+        xlab = expression(psi[delta]),
+        ylab = expression(psi[delta]),
         col = "#800020")
 
 vioplot(colMeans(psi1), colMeans(psi2), colMeans(psi3), colMeans(psi4), colMeans(psi5), 
@@ -1243,15 +1244,15 @@ k10 <- result_m2_sh2_psi10_simple1[[6]]
 
 
 boxplot(colMeans(k1), colMeans(k2), colMeans(k3), colMeans(k4), colMeans(k5), 
-        colMeans(k6), colMeans(k7), colMeans(k8), colMeans(k9), #colMeans(k10),
-        names = c("0.1","0.2","0.3","0.4","0.5","0.6","0.7","0.8","0.9"),
-        xlab = "psi_delta",
-        ylab = "k",
+        colMeans(k6), colMeans(k7), colMeans(k8), colMeans(k9), colMeans(k10),
+        names = c("0.01","0.1","0.2","0.3","0.4","0.5","0.6","0.7","0.8","0.9"),
+        xlab = expression(psi[delta]),
+        ylab = expression(k),
         col = "#800020")
 abline(h = 0.2, col = "orange")
 
 vioplot(colMeans(k1), colMeans(k2), colMeans(k3), colMeans(k4), colMeans(k5), 
-        colMeans(k6), colMeans(k7), colMeans(k8), colMeans(k9), #colMeans(k10),
+        colMeans(k6), colMeans(k7), colMeans(k8), colMeans(k9), colMeans(k10),
         names = c("0.1","0.2","0.3","0.4","0.5","0.6","0.7","0.8","0.9"),
         xlab = "",
         ylab = "",
