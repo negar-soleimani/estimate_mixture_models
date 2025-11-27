@@ -1,4 +1,4 @@
-source("scripts/helper_function.R")
+source("scripts/helper_function_CGP.R")
 source("scripts/main_function.R")
 
 set.seed(12345)
