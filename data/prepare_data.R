@@ -12,9 +12,6 @@ names(don) <- c("drop", "time", "Height", "Velocity")
 don$drop <- as.factor(don$drop)
 don <- don[don$drop == 1, ]
 
-
-
-
 t <- don$time
 y <- don$Height
 length(t)

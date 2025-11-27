@@ -1,5 +1,5 @@
 source("scripts/helper_function_CGP.R")
-source("scripts/main_function.R")
+source("scripts/main_function_CGP.R")
 
 set.seed(12345)
 Sigma_theta <- matrix(c(0.1,0,0,0.1), nrow = 2)
@@ -23,7 +23,7 @@ k            <- matrix(NA, n_iter, n_samples, byrow = FALSE)
 
 y_obs <- matrix(NA, length(t), n_samples, byrow = FALSE)
 for (v in 1:n_samples) {
-  y_1 = balldropg(t,c(9.8, 46.45)) + rnorm(n,0,.1)
+  y_1 = balldropg(t,c(9.8, 46.45)) + rnorm(n, 0, 0.01)
   y_obs[,v] <- y_1
   
   results <- mcmc_step6(y_1, t, n_iter, init, sigma_proposals, mcmc_parameters, Sigma_theta, n_burnin = burn_in)
