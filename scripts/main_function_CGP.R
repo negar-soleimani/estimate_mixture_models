@@ -9,7 +9,7 @@ mcmc_step6 <- function(y, t, n_iter, init, sigma_proposals,
   theta <- init
   delta <- rep(0, length(y))
   chain_theta <- matrix(NA, nrow = total_iter, ncol = length(init))# + 1)
-  colnames(chain_theta) <- c("g", "h0", "sigma_sq_err", "alpha", "psi_delta", "k")#, "alpha_prime")
+  colnames(chain_theta) <- c("g", "h0", "sigma_sq_err", "alpha", "psi_delta", "k")
   chain_delta <- matrix(NA, nrow = total_iter, ncol = length(y))
   chain_zeta <- matrix(NA, nrow = total_iter, ncol = length(y))
   
@@ -18,35 +18,34 @@ mcmc_step6 <- function(y, t, n_iter, init, sigma_proposals,
   
   for (iter in 1:total_iter) {
     g <- theta[1]; h0 <- theta[2]; sigma_sq_err <- theta[3]
-    alpha_param <- theta[4]; psi_delta <- theta[5]; k <- theta[6] #; alpha_prime <- theta[7]
+    alpha_param <- theta[4]; psi_delta <- theta[5]; k <- theta[6]
     sigma_sq_delta <- sigma_sq_err / k
     
     Sigma_delta <- GP_covariance(t, sigma_sq_delta, psi_delta)
     f_theta <- balldropg(t, c(g, h0))
     mean1 <- f_theta
     mean2 <- f_theta + delta
+    #-------------------------------- probability of the zeta --------------------------------# 
     
-    # log_sum_exp <- function(x, y) {
-    #   m <- pmax(x, y)
-    #   m + log(exp(x - m) + exp(y - m))
-    # }
+    # Method1 for calculate the probability of the zeta:
+    # prob_zeta <- 1 / (1 + (alpha_param * dnorm(y, mean1, sqrt(sigma_sq_err))) /
+    #                     ((1 - alpha_param) * dnorm(y, mean2, sqrt(sigma_sq_err)))) #P(M2) = ((1-alpha)*M2)/((alpha*M1)+(1-alpha)*M2)
+    # zeta <- 1 + (runif(length(y)) < prob_zeta)
+    # chain_zeta[iter, ] = zeta
     
-    # log-weights
+    #I don't use Method1 for computing prob_zeta,because this direct probability 
+    #computation is numerically unstable, when the parameter sigma_sq_err is small 
+    #(sigma_sq_err = 0.01), it leads to overflow and produces NaN/NA probabilities, 
+    #and these NA values then propagate into zeta and later cause singular matrices 
+    #and when computing solve(A), leading to errors.
+    
+    # Method2 for calculate the probability of the zeta:(log_sum_exp: https://rpubs.com/FJRubio/LSE and https://en.wikipedia.org/wiki/LogSumExp)
+    
     log_w1 <- log(alpha_param) + dnorm(y, mean1, sqrt(sigma_sq_err), log = TRUE) # comp 1
     log_w2 <- log(1 - alpha_param) + dnorm(y, mean2, sqrt(sigma_sq_err), log = TRUE) # comp 2
     log_max <- pmax(log_w1, log_w2)
     log_den <- log_max + log(exp(log_w1 - log_max) + exp(log_w2 - log_max))
     
-    # if (seuil) {
-    #   prob_zeta_base <- exp(log_w1 - log_den)
-    #   prob_zeta <- prob_zeta_base * (abs(delta) > s)
-    #   zeta <- ifelse(runif(length(y)) < prob_zeta, 1, 2)
-    #   #zeta <- 1 + (runif(length(y)) < prob_zeta)
-    # } else {
-    #   prob_zeta <- exp(log_w2 - log_den)
-    #   #zeta <- 1 + (runif(length(y)) < prob_zeta)
-    #   zeta <- ifelse(runif(length(y)) < prob_zeta, 2, 1)
-    # }
     if (seuil) {
       prob_zeta_base <- exp(log_w2 - log_den)
       prob_zeta <- prob_zeta_base * (abs(delta) > s)
@@ -60,41 +59,15 @@ mcmc_step6 <- function(y, t, n_iter, init, sigma_proposals,
     
     chain_zeta[iter, ] <- zeta
     
+    #-------------------------------- log_likelihood --------------------------------#   
     
     log_likelihood <- sum(log(ifelse(zeta == 1,
                                      alpha_param * dnorm(y, mean1, sqrt(sigma_sq_err)),
                                      (1 - alpha_param) * dnorm(y, mean2, sqrt(sigma_sq_err)))))
     loglik_chain[iter] <- log_likelihood
     
+    #-------------------------------- delta(discrepancy) --------------------------------#  
     
-    # ---- Update delta ----
-    # if(seuil){
-    #   zeta_2_indices <- which(zeta == 2)
-    #   if (length(zeta_2_indices) > 0) {
-    #     y_m <- y[zeta_2_indices]
-    #     Sigma_delta_ymym <- sigma_sq_err * diag(length(zeta_2_indices)) +
-    #       Sigma_delta[zeta_2_indices, zeta_2_indices, drop = FALSE]
-    #     Sigma_delta_ym <- Sigma_delta[, zeta_2_indices, drop = FALSE]
-    #     Sigma_inv <- tryCatch(solve(Sigma_delta_ymym), error = function(e) diag(1, nrow(Sigma_delta_ymym)))
-    #     mu_delta_hat <- rep(0, n) + Sigma_delta_ym %*% Sigma_inv %*% (y_m - f_theta[zeta_2_indices])
-    #     Sigma_delta_hat <- Sigma_delta - Sigma_delta_ym %*% Sigma_inv %*% t(Sigma_delta_ym)
-    #     delta <- as.vector(rmvnorm(1, mean = mu_delta_hat, sigma = Sigma_delta_hat))
-    #   }
-    #   else delta = as.vector(rmvnorm(1, rep(0, n), sigma = Sigma_delta))
-    # }
-    # else{
-    #   zeta_2_indices <- which(zeta == 2)
-    #   if (length(zeta_2_indices) > 0) {
-    #     y_m <- y[zeta_2_indices]
-    #     Sigma_delta_ymym <- sigma_sq_err * diag(length(zeta_2_indices)) +
-    #       Sigma_delta[zeta_2_indices, zeta_2_indices, drop = FALSE]
-    #     Sigma_delta_ym <- Sigma_delta[, zeta_2_indices, drop = FALSE]
-    #     Sigma_inv <- tryCatch(solve(Sigma_delta_ymym), error = function(e) diag(1, nrow(Sigma_delta_ymym)))
-    #     mu_delta_hat <- rep(0, n) + Sigma_delta_ym %*% Sigma_inv %*% (y_m - f_theta[zeta_2_indices])
-    #     Sigma_delta_hat <- Sigma_delta - Sigma_delta_ym %*% Sigma_inv %*% t(Sigma_delta_ym)
-    #     delta <- as.vector(rmvnorm(1, mean = mu_delta_hat, sigma = Sigma_delta_hat))
-    #   }
-    # }
     zeta_2_indices <- which(zeta == 2)
     if (length(zeta_2_indices) > 0) {
       y_m <- y[zeta_2_indices]
@@ -109,8 +82,8 @@ mcmc_step6 <- function(y, t, n_iter, init, sigma_proposals,
     }
     else delta = as.vector(rmvnorm(1, rep(0, n), sigma = Sigma_delta))
     
+    #-------------------------------- Gibbs step for theta --------------------------------# 
     
-    # Gibbs for theta
     # zeta_1_indices <- which(zeta == 1)
     # zeta_2_indices <- which(zeta == 2)
     # X <- cbind(1, -0.5 * (t * t_range + t_min)^2)
@@ -130,8 +103,10 @@ mcmc_step6 <- function(y, t, n_iter, init, sigma_proposals,
     # Mupost_theta <- Sigmapost_theta %*% B
     # theta_sample <- rmvnorm(1, mean = Mupost_theta, sigma = Sigmapost_theta)
     # h0 <- theta_sample[1];  g <- theta_sample[2]
-    # 
+
+    #-------------------------------- Page 22 - part 8.1 --------------------------------#     
     # flat prior on theta 
+    
     zeta_1_indices <- which(zeta == 1)
     zeta_2_indices <- which(zeta == 2)
     
@@ -163,27 +138,13 @@ mcmc_step6 <- function(y, t, n_iter, init, sigma_proposals,
     if(h0_init){
       h0 <- init[2]
     }else{h0 <- theta_sample[1]}
+
+    #-------------------------------- Gibbs step for sigma_sq_err(lambda^2) --------------------------------#   
+    #-------------------------------- Page 23 - part 8.2 --------------------------------#     
     
-    ## g = fixer
-    #if (mcmc_parameters[1] == FALSE) {
-    #  g <- init[1]
-    #  h0 <- theta_sample[1]
-    #}
-    
-    ## h0 = fixed
-    #if (mcmc_parameters[1] == FALSE) {
-    #  h0 <- init[2] 
-    #  g <- theta_sample[2] 
-    #}
-    
-    
-    
-    #if(mcmc_parameters[2] == FALSE){
-    #  sigma_sq_err <- init[3]
-    #}
     if(sig2er_init){
       sigma_sq_err <- init[3]
-    }else{# Gibbs for sigma_sq_err
+    }else{
       R <- outer(t, t, function(ti, tj) exp(-abs(ti - tj) / psi_delta))
       if(n > 0){
         R_inv <- tryCatch(solve(R), error = function(e) diag(1, n))
@@ -202,16 +163,22 @@ mcmc_step6 <- function(y, t, n_iter, init, sigma_proposals,
       residual2 <- y[idx2] - f_theta[idx2] - delta[idx2]
       rss2   <- sum(residual2^2)
       
+      # When we consider the Jeffreys prior, I use the following code:
       rate_err <- 0.5 * (( rss1 + rss2 + (theta[6] * quad_form_delta)))
-      
       shape_err <- n + 1/2 #n + 1#/2 #4 + n
+      # When the prior is the sigma parameter of the "inverse gamma distribution", I use the following code:
+      # rate_err <- 1 + (0.5 * ( rss1 + rss2 + (k * quad_form_delta)))
+      # shape_err <- 2 + n
       sigma_sq_err <- rinvgamma(1, shape = shape_err, rate = rate_err)}
     
     
+    #-------------------------------- Gibbs step for psi_delta --------------------------------#   
+    
+    # When the prior is the psi_delta of the "uniform(0.1, 1)", I use the following code:
     
     if(psi_init){
       psi_delta <- init[5]
-    }else{# MH for psi_delta
+    }else{
       psi_prop <- rtruncnorm(1, a = 0.1, b = 1, mean = psi_delta, sd = sigma_proposals[5])
       sigma_sq_delta_prop <- sigma_sq_err / k
       Sigma_delta <- GP_covariance(t, sigma_sq_delta_prop, psi_delta)
@@ -229,24 +196,12 @@ mcmc_step6 <- function(y, t, n_iter, init, sigma_proposals,
         accept_psi <- accept_psi + 1
       }}
     
+    #-------------------------------- Gibbs step for k --------------------------------#   
+    #-------------------------------- Page 24-part 8.3 --------------------------------#     
     
-    # if(k_init){
-    #   k <- init[6]
-    # }else{# Gibbs for k
-    #   alpha_k <- (n / 2) + 1
-    #   beta_k <- (1 / (2 * sigma_sq_err)) * quad_form_delta
-    #   for (try_k in 1:100) {
-    #     k_prop <- rgamma(1, shape = alpha_k, rate = beta_k)
-    #     #if (k_prop >= 0.1 && k_prop <= 0.9) {
-    #     if (k_prop > 0 && k_prop < 1) {
-    #       k <- k_prop
-    #       theta[6] <- k
-    #       break
-    #     }
-    #   }}
     if(k_init){
       k <- init[6]
-    }else{# Gibbs for k
+    }else{
       alpha_k <- (n / 2) + 1
       beta_k <- (1 / (2 * sigma_sq_err)) * quad_form_delta
       for (try_k in 1:100) {
@@ -259,6 +214,8 @@ mcmc_step6 <- function(y, t, n_iter, init, sigma_proposals,
         }
       }}
     
+    #-------------------------------- Gibbs step for alpha --------------------------------#   
+    #-------------------------------- Page 25 - part 8.4 --------------------------------#     
     
     if (alpha_init) {
       alpha_param <- init[4]
@@ -268,19 +225,18 @@ mcmc_step6 <- function(y, t, n_iter, init, sigma_proposals,
         zetabis[abs(delta) < s] <- 0
         #alpha_prime <- rbeta(1, sum(zetabis == 1) + 0.5, sum(zetabis == 2) + 0.5)
         alpha_param <- rbeta(1, sum(zetabis == 1) + 0.5, sum(zetabis == 2) + 0.5)
-        #alpha_param <- alpha_prime
       } else {
         alpha_param <- rbeta(1, sum(zeta == 1) + 0.5, sum(zeta == 2) + 0.5)
       }
       theta[4] <- alpha_param
     }
     
-    theta <- c(g, h0, sigma_sq_err, alpha_param, psi_delta, k)#, alpha_prime)
+    theta <- c(g, h0, sigma_sq_err, alpha_param, psi_delta, k)
     chain_theta[iter, ] <- theta
     chain_delta[iter, ] <- delta
     
   }
-  
+  #----------------------------------------------------------------#   
   # Remove burn-in samples if n_burnin > 0
   if (n_burnin > 0) {
     keep_indices <- (n_burnin + 1):total_iter

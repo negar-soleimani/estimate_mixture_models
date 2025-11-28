@@ -363,7 +363,7 @@ mcmc_step6 <- function(y, t, n_iter, init, sigma_proposals, mcmc_parameters, Sig
 # zeta_chain <- results_real_sh5$zeta
 # loglik_chain <- results_real_sh5$loglik
 # accept_rate_psi <- results_real_sh5$accept_rate_psi
-# 
+
 # par(mfrow = c(1, 1))
 # boxplot(results_real_sh5$delta, col = "#CCDAFF")
 # title(ylab = expression(delta), xlab = "n", line = 1.75)
