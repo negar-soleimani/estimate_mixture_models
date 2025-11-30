@@ -282,6 +282,98 @@ ggplot(df_alpha, aes(x = alpha)) +
 ###################### Results for model 2 ######################################
 #################################################################################
 #################################################################################
+set.seed(12345)
+
+k <- 0.2
+sigma_sq_err   <- 0.01
+sigma_sq_delta <- sigma_sq_err / k
+
+n_samples <- 3
+n_iter    <- 20000
+burn_in   <- 5000
+
+# (g, h0), sigma, psi, k, alpha
+mcmc_parameters <- c(TRUE, TRUE, TRUE, TRUE, TRUE)
+Sigma_theta     <- matrix(c(0.5, 0, 0, 0.5), nrow = 2)
+
+psi_vec <- c(0.01, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9)
+
+results_list <- vector("list", length(psi_vec))
+names(results_list) <- paste0("psi", 1:length(psi_vec))
+
+for (i in seq_along(psi_vec)) {
+  sim_psi_delta <- psi_vec[i]
+  cat("Running psi_delta =", sim_psi_delta, "\n")
+  
+  sigma_props <- c(NA, NA, NA, NA, 0.4, NA)
+  init        <- c(9.8, 46.46, 0.01, 0.5, 0.2, 0.2)
+  # if (i == 1) {
+  #   # Psi1
+  #   sigma_props <- c(NA, NA, NA, NA, 0.02, NA)
+  # } else if (i == 10) {
+  #   # Psi10
+  #   sigma_props <- c(NA, NA, NA, NA, 0.3, NA)
+  # } else {
+  #   # Psi2 ... Psi9
+  #   sigma_props <- c(NA, NA, NA, NA, 0.4, NA)
+  # }
+  
+  g_chain     <- matrix(NA, n_iter, n_samples)
+  h0_chain    <- matrix(NA, n_iter, n_samples)
+  sigma_chain <- matrix(NA, n_iter, n_samples)
+  alpha_chain <- matrix(NA, n_iter, n_samples)
+  psi_chain   <- matrix(NA, n_iter, n_samples)
+  k_chain     <- matrix(NA, n_iter, n_samples)
+  loglik_mat  <- matrix(NA, n_iter, n_samples)
+  delta_list  <- vector("list", n_samples)
+  zeta_list   <- vector("list", n_samples)
+  accept_rate <- numeric(n_samples)
+  
+  y_obs <- matrix(NA, n, n_samples)
+  
+  for (v in 1:n_samples) {
+    Sigma_delta <- GP_covariance(t, sigma_sq_delta, sim_psi_delta)
+    delta <- as.vector(rmvnorm(1, rep(0, n), Sigma_delta))
+    y_1 <- balldropg(t, c(9.8, 46.46)) + rnorm(n, 0, sqrt(sigma_sq_err)) + delta
+    y_obs[, v] <- y_1
+    
+    res <- mcmc_step6(
+      y_1, t, n_iter, init,
+      sigma_props, mcmc_parameters,
+      Sigma_theta, n_burnin = burn_in
+    )
+    
+    g_chain[, v]     <- res$theta[, 1]
+    h0_chain[, v]    <- res$theta[, 2]
+    sigma_chain[, v] <- res$theta[, 3]
+    alpha_chain[, v] <- res$theta[, 4]
+    psi_chain[, v]   <- res$theta[, 5]
+    k_chain[, v]     <- res$theta[, 6]
+    
+    delta_list[[v]] <- res$delta
+    zeta_list[[v]]  <- res$zeta
+    loglik_mat[, v] <- res$loglik
+    accept_rate[v]  <- res$accept_rate_psi
+  }
+  
+  results_list[[i]] <- list(
+    g_chain     = g_chain,
+    h0_chain    = h0_chain,
+    sigma_chain = sigma_chain,
+    alpha_chain = alpha_chain,
+    psi_chain   = psi_chain,
+    k_chain     = k_chain,
+    delta_list  = delta_list,
+    zeta_list   = zeta_list,
+    loglik_mat  = loglik_mat,
+    accept_rate = accept_rate,
+    y_obs       = y_obs,
+    psi_delta   = sim_psi_delta
+  )
+  
+  # save(results_list[[i]], file = paste0("/Users/negarsoleimani/Documents/phd/paper1/", "result_m2_sh2_psi", i, "_simple1.RData"))
+}
+
 # Define a function to plot boxplots for each parameter
 plot_boxplot <- function(results_all, param_index, ylab, abline_value, ylim_value = NULL) {
   results_list <- lapply(1:10, function(i) results_all[[i]][[param_index]])
