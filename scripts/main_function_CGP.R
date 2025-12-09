@@ -167,7 +167,7 @@ mcmc_step6 <- function(y, t, n_iter, init, sigma_proposals, mcmc_parameters, Sig
     
     # When we consider the Jeffreys prior, I use the following code:
     rate_err <- (0.5 * ( rss1 + rss2 + (k * quad_form_delta)))
-    shape_err <- n + 1/2
+    shape_err <- n + 1#/2
     # When the prior is the sigma parameter of the "inverse gamma distribution", I use the following code:
     # rate_err <- 1 + (0.5 * ( rss1 + rss2 + (k * quad_form_delta)))
     # shape_err <- 2 + n
@@ -225,8 +225,10 @@ mcmc_step6 <- function(y, t, n_iter, init, sigma_proposals, mcmc_parameters, Sig
     #-------------------------------- Gibbs step for k --------------------------------#   
     #-------------------------------- Page 24-part 8.3 --------------------------------#     
     
-    alpha_k <- (n / 2) + 1
-    beta_k <- (1 / (2 * sigma_sq_err)) * quad_form_delta
+    alpha_k <- (n / 2) + 10
+    beta_k <- 300 + (1 / (2 * sigma_sq_err)) * quad_form_delta
+    # alpha_k <- (n / 2) + 1
+    # beta_k <- (1 / (2 * sigma_sq_err)) * quad_form_delta
     for (try_k in 1:100) {
       k_prop <- rgamma(1, shape = alpha_k, rate = beta_k)
       #if (k_prop >= 0.1 && k_prop <= 0.9) {

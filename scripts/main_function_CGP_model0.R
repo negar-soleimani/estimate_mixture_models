@@ -75,53 +75,53 @@ mcmc_step6 <- function(y, t, n_iter, init, sigma_proposals, mcmc_parameters, Sig
     #-------------------------------- Gibbs step for theta --------------------------------# 
     
     # prior Normal distribution
-    zeta_1_indices <- which(zeta == 1)
-    zeta_2_indices <- which(zeta == 2)
-    X <- cbind(1, -0.5 * (t * t_range)^2) #cbind(1, -0.5 * (t * t_range + t_min)^2)
-    x1 <- X[zeta_1_indices, , drop = FALSE]
-    x2 <- X[zeta_2_indices, , drop = FALSE]
-    theta_hat     <- matrix(c(46.46, 9.8), ncol = 1)
-    inv_sigma_theta <- solve(Sigma_theta)
-    A <- ((t(x1) %*% x1) / sigma_sq_err) + ((t(x2) %*% x2) / sigma_sq_err) + inv_sigma_theta
-    Sigmapost_theta <- solve(A)
-    y1 <- matrix(y[zeta_1_indices], ncol = 1)
-    y2 <- matrix(y[zeta_2_indices], ncol = 1)
-    d2 <- matrix(delta[zeta_2_indices], ncol = 1)
-    B <- (t(x1) %*% y1) / sigma_sq_err +
-      (t(x2) %*% y2) / sigma_sq_err -
-      (t(x2) %*% d2) / sigma_sq_err +
-      inv_sigma_theta %*% theta_hat
-    Mupost_theta <- Sigmapost_theta %*% B
-    theta_sample <- rmvnorm(1, mean = Mupost_theta, sigma = Sigmapost_theta)
-    h0 <- theta_sample[1];  g <- theta_sample[2]
-    theta[1] <- g
-    theta[2] <- h0
-    
-    #-------------------------------- Page 22 - part 8.1 --------------------------------#     
-    # # flat prior on theta 
     # zeta_1_indices <- which(zeta == 1)
     # zeta_2_indices <- which(zeta == 2)
-    # 
-    # X <- cbind(1, -0.5 * (t * t_range)^2)
+    # X <- cbind(1, -0.5 * (t * t_range)^2) #cbind(1, -0.5 * (t * t_range + t_min)^2)
     # x1 <- X[zeta_1_indices, , drop = FALSE]
     # x2 <- X[zeta_2_indices, , drop = FALSE]
-    # 
+    # theta_hat     <- matrix(c(46.46, 9.8), ncol = 1)
+    # inv_sigma_theta <- solve(Sigma_theta)
+    # A <- ((t(x1) %*% x1) / sigma_sq_err) + ((t(x2) %*% x2) / sigma_sq_err) + inv_sigma_theta
+    # Sigmapost_theta <- solve(A)
     # y1 <- matrix(y[zeta_1_indices], ncol = 1)
     # y2 <- matrix(y[zeta_2_indices], ncol = 1)
     # d2 <- matrix(delta[zeta_2_indices], ncol = 1)
-    # 
-    # A <- (t(x1) %*% x1 + t(x2) %*% x2) / sigma_sq_err
-    # B <- (t(x1) %*% y1 + t(x2) %*% y2 - t(x2) %*% d2) / sigma_sq_err
-    # 
-    # Sigmapost_theta <- solve(A)             
-    # Mupost_theta    <- Sigmapost_theta %*% B 
-    # 
-    # theta_sample <- rmvnorm(1, mean = Mupost_theta,
-    #                         sigma = Sigmapost_theta)
-    # 
+    # B <- (t(x1) %*% y1) / sigma_sq_err +
+    #   (t(x2) %*% y2) / sigma_sq_err -
+    #   (t(x2) %*% d2) / sigma_sq_err +
+    #   inv_sigma_theta %*% theta_hat
+    # Mupost_theta <- Sigmapost_theta %*% B
+    # theta_sample <- rmvnorm(1, mean = Mupost_theta, sigma = Sigmapost_theta)
     # h0 <- theta_sample[1];  g <- theta_sample[2]
     # theta[1] <- g
     # theta[2] <- h0
+    
+    #-------------------------------- Page 22 - part 8.1 --------------------------------#     
+    # flat prior on theta
+    zeta_1_indices <- which(zeta == 1)
+    zeta_2_indices <- which(zeta == 2)
+
+    X <- cbind(1, -0.5 * (t * t_range)^2)
+    x1 <- X[zeta_1_indices, , drop = FALSE]
+    x2 <- X[zeta_2_indices, , drop = FALSE]
+
+    y1 <- matrix(y[zeta_1_indices], ncol = 1)
+    y2 <- matrix(y[zeta_2_indices], ncol = 1)
+    d2 <- matrix(delta[zeta_2_indices], ncol = 1)
+
+    A <- (t(x1) %*% x1 + t(x2) %*% x2) / sigma_sq_err
+    B <- (t(x1) %*% y1 + t(x2) %*% y2 - t(x2) %*% d2) / sigma_sq_err
+
+    Sigmapost_theta <- solve(A)
+    Mupost_theta    <- Sigmapost_theta %*% B
+
+    theta_sample <- rmvnorm(1, mean = Mupost_theta,
+                            sigma = Sigmapost_theta)
+
+    h0 <- theta_sample[1];  g <- theta_sample[2]
+    theta[1] <- g
+    theta[2] <- h0
     
     
     if(mcmc_parameters[1] == FALSE){
@@ -166,11 +166,11 @@ mcmc_step6 <- function(y, t, n_iter, init, sigma_proposals, mcmc_parameters, Sig
     rss2   <- sum(residual2^2)
     
     # When we consider the Jeffreys prior, I use the following code:
-    #rate_err <- (0.5 * ( rss1 + rss2 + (k * quad_form_delta)))
-    #shape_err <- n + 1#/2
+    rate_err <- (0.5 * ( rss1 + rss2 + (k * quad_form_delta)))
+    shape_err <- n + 1#/2
     # When the prior is the sigma parameter of the "inverse gamma distribution", I use the following code:
-    rate_err <- 1 + (0.5 * ( rss1 + rss2 + (k * quad_form_delta)))
-    shape_err <- 2 + n
+    # rate_err <- 1 + (0.5 * ( rss1 + rss2 + (k * quad_form_delta)))
+    # shape_err <- 2 + n
     # sigma_sq_err <- rinvgamma(1, shape = shape_err, scale = rate_err)
     sigma_sq_err <- rinvgamma(1, shape = shape_err, rate = rate_err)
     theta[3] <- sigma_sq_err
@@ -225,8 +225,10 @@ mcmc_step6 <- function(y, t, n_iter, init, sigma_proposals, mcmc_parameters, Sig
     #-------------------------------- Gibbs step for k --------------------------------#   
     #-------------------------------- Page 24-part 8.3 --------------------------------#     
     
-    alpha_k <- (n / 2) + 1
-    beta_k <- (1 / (2 * sigma_sq_err)) * quad_form_delta
+    alpha_k <- (n / 2) + 10
+    beta_k <- 300 + (1 / (2 * sigma_sq_err)) * quad_form_delta
+    # alpha_k <- (n / 2) + 1
+    # beta_k <- (1 / (2 * sigma_sq_err)) * quad_form_delta
     for (try_k in 1:100) {
       k_prop <- rgamma(1, shape = alpha_k, rate = beta_k)
       #if (k_prop >= 0.1 && k_prop <= 0.9) {

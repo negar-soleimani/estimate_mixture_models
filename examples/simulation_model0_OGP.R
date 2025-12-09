@@ -2,7 +2,7 @@
 set.seed(12345)
 Sigma_theta <- matrix(c(0.5,0,0,0.5), nrow = 2)
 # c(g, h0, sig2err, alpha, psidelta, k)
-init <- c(9.8, 46.45, 0.1, 0.5, 0.2, 0.2)
+init <- c(9.8, 46.45, 0.01, 0.5, 0.2, 0.2)
 sigma_proposals <- c(NA, NA, NA, NA, 0.5, NA)
 n_samples       <- 3
 burn_in         <- 10000
@@ -24,7 +24,7 @@ for (v in 1:n_samples) {
 
   Sigma_delta <- GP_covariance_star_complete(t, sigma_sq_err, k, psi_delta)
   delta <- as.vector(rmvnorm(1, rep(0, n), Sigma_delta))
-  y_1 = balldropg(t,c(9.8, 46.45)) + rnorm(n, 0, 0.01) + delta
+  y_1 = balldropg(t,c(9.8, 46.45)) + rnorm(n, 0, sqrt(0.01)) + delta
   y_obs[,v] <- y_1
   
   results <- mcmc_step6(y_1, t, n_iter, init, sigma_proposals, g_init=FALSE, h0_init= FALSE, sig2er_init = FALSE,
@@ -45,7 +45,7 @@ result_m1_sh2_presentation <- list(g, h0, sigma_sq_err, alpha, psi_delta, k, y_o
 set.seed(12345)
 k = 0.2
 sim_psi_delta <- 0.01
-sigma_sq_err <- 0.1
+sigma_sq_err <- 0.01
 sigma_sq_delta <- sigma_sq_err / k
 n_samples <- 10
 n_iter <- 20000
@@ -55,7 +55,7 @@ sigma_props <- c(NA, NA, NA, NA, 0.02, NA)
 #(g,h0), sigma, psi, k, alpha
 mcmc_parameters <- c(TRUE, TRUE, TRUE, TRUE, TRUE)
 Sigma_theta <- matrix(c(0.5, 0, 0, 0.5), nrow = 2)
-init <- c(9.8, 46.46, 0.1, 0.5, 0.2, 0.2)
+init <- c(9.8, 46.46, 0.01, 0.5, 0.2, 0.2)
 # 
 g_chain     <- matrix(NA, n_iter, n_samples)
 h0_chain    <- matrix(NA, n_iter, n_samples)

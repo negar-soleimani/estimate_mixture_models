@@ -4,7 +4,7 @@ source("scripts/main_function_CGP.R")
 set.seed(12345)
 Sigma_theta <- matrix(c(0.5,0,0,0.5), nrow = 2)
 # c(g, h0, sig2err, alpha, psidelta, k)
-init <- c(9.8, 46.45, 0.1, 0.5, 0.2, 0.2)
+init <- c(9.8, 46.45, 0.01, 0.5, 0.2, 0.2)
 sigma_proposals <- c(NA, NA, NA, NA, 0.5, NA)
 n_samples       <- 3
 burn_in         <- 10000
@@ -23,7 +23,7 @@ k            <- matrix(NA, n_iter, n_samples, byrow = FALSE)
 
 y_obs <- matrix(NA, length(t), n_samples, byrow = FALSE)
 for (v in 1:n_samples) {
-  y_1 = balldropg(t,c(9.8, 46.45)) + rnorm(n, 0, 0.01)
+  y_1 = balldropg(t,c(9.8, 46.45)) + rnorm(n, 0, sqrt(0.01))
   y_obs[,v] <- y_1
   
   #results <- mcmc_step6(y_1, t, n_iter, init, sigma_proposals, g_init=FALSE, h0_init= FALSE, sig2er_init = FALSE,
@@ -37,5 +37,5 @@ for (v in 1:n_samples) {
   k[,v] <- results$theta[,6]
 }
 
-result_m1_sh2_presentation <- list(g, h0, sigma_sq_err, alpha, psi_delta, k, y_obs = y_obs)
-y_obs_m1_sh2_presentation <- y_obs
+result_m1_sh2 <- list(g, h0, sigma_sq_err, alpha, psi_delta, k, y_obs = y_obs)
+y_obs_m1_sh2 <- y_obs
