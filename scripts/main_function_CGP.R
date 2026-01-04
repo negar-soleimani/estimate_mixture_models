@@ -1,6 +1,8 @@
 mcmc_step6 <- function(y, t, n_iter, init, sigma_proposals, mcmc_parameters, Sigma_theta, n_burnin=1000) {
   # mcmc_parameters : c(theta(g, h0) = "TRUE", sigma_sq_err = "T", psi_delta = "T", k = "T", alpha = "T")
   
+  freeze_delta_zeta <- mcmc_parameters[6]
+  
   # Total iterations = burn-in + desired samples
   total_iter <- n_burnin + n_iter
   
@@ -47,6 +49,13 @@ mcmc_step6 <- function(y, t, n_iter, init, sigma_proposals, mcmc_parameters, Sig
     prob_zeta_2 <- exp(log_w2 - log_den)  #  P(zeta=2|y)
     #zeta <- ifelse(runif(length(y)) < prob_zeta_1, 1, 2)
     zeta <- ifelse(runif(length(y)) < prob_zeta_2, 2, 1) #= zeta <- 1 + (runif(length(y)) < prob_zeta_1) # sample zeta: 2 with prob post_p2, otherwise 1
+    
+    #--------------------
+    if (freeze_delta_zeta) {
+      zeta <- rep(1, length(y))
+    }
+    #--------------------
+    
     chain_zeta[iter, ] = zeta
     
     #-------------------------------- log_likelihood --------------------------------#   
@@ -69,8 +78,14 @@ mcmc_step6 <- function(y, t, n_iter, init, sigma_proposals, mcmc_parameters, Sig
       Sigma_delta_hat <- Sigma_delta - Sigma_delta_ym %*% Sigma_inv %*% t(Sigma_delta_ym)
       Sigma_delta_hat <- 0.5 * (Sigma_delta_hat + t(Sigma_delta_hat))
       delta <- as.vector(rmvnorm(1, mean = mu_delta_hat, sigma = Sigma_delta_hat))
+    } else {
+      delta = as.vector(rmvnorm(1, rep(0, n), sigma = Sigma_delta))}
+    
+    #--------------------
+    if (freeze_delta_zeta) {
+      delta <- rep(0, n)
     }
-    else delta = as.vector(rmvnorm(1, rep(0, n), sigma = Sigma_delta))
+    #--------------------
     
     #-------------------------------- Gibbs step for theta --------------------------------# 
     
@@ -154,27 +169,35 @@ mcmc_step6 <- function(y, t, n_iter, init, sigma_proposals, mcmc_parameters, Sig
       quad_form_delta <- 0
     }
     
-    f_theta <- balldropg(t, c(g, h0))
-    idx1 <- which(zeta == 1)
-    idx2 <- which(zeta == 2)
-    n1   <- length(idx1)
-    n2   <- length(idx2)
-    residual1 <- y[idx1] - f_theta[idx1]
-    rss1   <- sum(residual1^2)
-    
-    residual2 <- y[idx2] - f_theta[idx2] - delta[idx2]
-    rss2   <- sum(residual2^2)
-    
-    # When we consider the Jeffreys prior, I use the following code:
-    rate_err <- (0.5 * ( rss1 + rss2 + (k * quad_form_delta)))
-    shape_err <- n + 1#/2
-    # When the prior is the sigma parameter of the "inverse gamma distribution", I use the following code:
-    # rate_err <- 1 + (0.5 * ( rss1 + rss2 + (k * quad_form_delta)))
-    # shape_err <- 2 + n
-    # sigma_sq_err <- rinvgamma(1, shape = shape_err, scale = rate_err)
-    sigma_sq_err <- rinvgamma(1, shape = shape_err, rate = rate_err)
+    if (freeze_delta_zeta){
+      f_theta <- balldropg(t, c(g, h0))
+      idx1 <- which(zeta == 1)
+      idx2 <- which(zeta == 2)
+      n1   <- length(idx1)
+      n2   <- length(idx2)
+      residual1 <- y[idx1] - f_theta[idx1]
+      rss1   <- sum(residual1^2)
+      shape_err <- (n / 2) + 1
+      rate_err  <- 0.5 * rss1
+    } else {
+      f_theta <- balldropg(t, c(g, h0))
+      idx1 <- which(zeta == 1)
+      idx2 <- which(zeta == 2)
+      n1   <- length(idx1)
+      n2   <- length(idx2)
+      residual1 <- y[idx1] - f_theta[idx1]
+      rss1   <- sum(residual1^2)
+      
+      residual2 <- y[idx2] - f_theta[idx2] - delta[idx2]
+      rss2   <- sum(residual2^2)
+      d <- 2
+      # When we consider the Jeffreys prior, I use the following code:
+      rate_err <- (0.5 * ( rss1 + rss2 + (k * quad_form_delta)))
+      shape_err <- n + (d/2)
+    }
+    sigma_sq_err <- 1/rgamma(1, shape = shape_err, rate = rate_err)
     theta[3] <- sigma_sq_err
-    # 
+    
     if(mcmc_parameters[2] == FALSE){
       sigma_sq_err <- init[3]
       theta[3] <- sigma_sq_err
@@ -225,8 +248,8 @@ mcmc_step6 <- function(y, t, n_iter, init, sigma_proposals, mcmc_parameters, Sig
     #-------------------------------- Gibbs step for k --------------------------------#   
     #-------------------------------- Page 24-part 8.3 --------------------------------#     
     
-    alpha_k <- (n / 2) + 10
-    beta_k <- 300 + (1 / (2 * sigma_sq_err)) * quad_form_delta
+    alpha_k <- (n / 2) + 1
+    beta_k <- (1 / (2 * sigma_sq_err)) * quad_form_delta
     # alpha_k <- (n / 2) + 1
     # beta_k <- (1 / (2 * sigma_sq_err)) * quad_form_delta
     for (try_k in 1:100) {
