@@ -1,3 +1,5 @@
+# helper function for when we want to use the "orthogonal exponential kernel function" in the covariance matrix related to the model discrepancy:
+# Page 5 in the article
 
 J_x <- function(x, psi_delta) {
   psi <- psi_delta
