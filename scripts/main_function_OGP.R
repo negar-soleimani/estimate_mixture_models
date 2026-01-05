@@ -163,9 +163,10 @@ mcmc_step6 <- function(y, t, n_iter, init, sigma_proposals, mcmc_parameters, Sig
     residual2 <- y[idx2] - f_theta[idx2] - delta[idx2]
     rss2 <- sum(residual2^2)
     
+    d <- 2
     # When we consider the Jeffreys prior, I use the following code:
     rate_err <- (0.5 * ( rss1 + rss2 + (k * quad_form_delta)))
-    shape_err <- n + 1#/2
+    shape_err <- n + (d/2)
     # When the prior is the sigma parameter of the "inverse gamma distribution", I use the following code:
     # rate_err <- 1 + (0.5 * ( rss1 + rss2 + (k * quad_form_delta)))
     # shape_err <- 2 + n
