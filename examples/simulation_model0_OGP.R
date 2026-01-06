@@ -40,7 +40,7 @@ for (v in 1:n_samples) {
 result_m1_sh2_presentation <- list(g, h0, sigma_sq_err, alpha, psi_delta, k, y_obs = y_obs)
 
 
-#simulation classical_GP
+#simulation orthogonal_GP
 ### Psi1 ####################################################
 set.seed(12345)
 k = 0.2
@@ -70,11 +70,11 @@ accept_rate <- numeric(n_samples)
 # 
 y_obs <- matrix(NA, n, n_samples)
 for (v in 1:n_samples) {
-  #Sigma_delta <- GP_covariance(t, sigma_sq_delta, sim_psi_delta)
+  Sigma_delta <- GP_covariance(t, sigma_sq_delta, sim_psi_delta)
   
-  #delta <- as.vector(rmvnorm(1, rep(0, n), Sigma_delta))
+  delta <- as.vector(rmvnorm(1, rep(0, n), Sigma_delta))
   
-  y_1 <- balldropg(t, c(9.8, 46.46)) + rnorm(n, 0, sqrt(sigma_sq_err)) #+ delta
+  y_1 <- balldropg(t, c(9.8, 46.46)) + rnorm(n, 0, sqrt(sigma_sq_err)) + delta
   y_obs[, v] <- y_1
   res <- mcmc_step6(y_1, t, n_iter, init, sigma_props, mcmc_parameters,
                     Sigma_theta, n_burnin = burn_in)
@@ -125,11 +125,11 @@ accept_rate <- numeric(n_samples)
 
 y_obs <- matrix(NA, n, n_samples)
 for (v in 1:n_samples) {
-  # Sigma_delta <- GP_covariance(t, sigma_sq_delta, sim_psi_delta)
+   Sigma_delta <- GP_covariance(t, sigma_sq_delta, sim_psi_delta)
   
-  # delta <- as.vector(rmvnorm(1, rep(0, n), Sigma_delta))
+   delta <- as.vector(rmvnorm(1, rep(0, n), Sigma_delta))
   
-  y_1 <- balldropg(t, c(9.8, 46.46)) + rnorm(n, 0, sqrt(sigma_sq_err)) #+ delta
+  y_1 <- balldropg(t, c(9.8, 46.46)) + rnorm(n, 0, sqrt(sigma_sq_err)) + delta
   y_obs[, v] <- y_1
   
   res <- mcmc_step6(y_1, t, n_iter, init, sigma_props, mcmc_parameters,
@@ -179,11 +179,11 @@ accept_rate <- numeric(n_samples)
 
 y_obs <- matrix(NA, n, n_samples)
 for (v in 1:n_samples) {
-  #Sigma_delta <- GP_covariance(t, sigma_sq_delta, sim_psi_delta)
+  Sigma_delta <- GP_covariance(t, sigma_sq_delta, sim_psi_delta)
   
-  #delta <- as.vector(rmvnorm(1, rep(0, n), Sigma_delta))
+  delta <- as.vector(rmvnorm(1, rep(0, n), Sigma_delta))
   
-  y_1 <- balldropg(t, c(9.8, 46.46)) + rnorm(n, 0, sqrt(sigma_sq_err)) #+ delta
+  y_1 <- balldropg(t, c(9.8, 46.46)) + rnorm(n, 0, sqrt(sigma_sq_err)) + delta
   y_obs[, v] <- y_1
   
   res <- mcmc_step6(y_1, t, n_iter, init, sigma_props, mcmc_parameters,
@@ -235,11 +235,11 @@ accept_rate <- numeric(n_samples)
 
 y_obs <- matrix(NA, n, n_samples)
 for (v in 1:n_samples) {
-  #Sigma_delta <- GP_covariance(t, sigma_sq_delta, sim_psi_delta)
+  Sigma_delta <- GP_covariance(t, sigma_sq_delta, sim_psi_delta)
   
-  #delta <- as.vector(rmvnorm(1, rep(0, n), Sigma_delta))
+  delta <- as.vector(rmvnorm(1, rep(0, n), Sigma_delta))
   
-  y_1 <- balldropg(t, c(9.8, 46.46)) + rnorm(n, 0, sqrt(sigma_sq_err)) #+ delta
+  y_1 <- balldropg(t, c(9.8, 46.46)) + rnorm(n, 0, sqrt(sigma_sq_err)) + delta
   y_obs[, v] <- y_1
   
   res <- mcmc_step6(y_1, t, n_iter, init, sigma_props, mcmc_parameters,
@@ -290,11 +290,11 @@ accept_rate <- numeric(n_samples)
 
 y_obs <- matrix(NA, n, n_samples)
 for (v in 1:n_samples) {
-  #Sigma_delta <- GP_covariance(t, sigma_sq_delta, sim_psi_delta)
+  Sigma_delta <- GP_covariance(t, sigma_sq_delta, sim_psi_delta)
   
-  #delta <- as.vector(rmvnorm(1, rep(0, n), Sigma_delta))
+  delta <- as.vector(rmvnorm(1, rep(0, n), Sigma_delta))
   
-  y_1 <- balldropg(t, c(9.8, 46.46)) + rnorm(n, 0, sqrt(sigma_sq_err)) #+ delta
+  y_1 <- balldropg(t, c(9.8, 46.46)) + rnorm(n, 0, sqrt(sigma_sq_err)) + delta
   y_obs[, v] <- y_1
   
   res <- mcmc_step6(y_1, t, n_iter, init, sigma_props, mcmc_parameters,
@@ -346,11 +346,11 @@ accept_rate <- numeric(n_samples)
 
 y_obs <- matrix(NA, n, n_samples)
 for (v in 1:n_samples) {
-  #Sigma_delta <- GP_covariance(t, sigma_sq_delta, sim_psi_delta)
+  Sigma_delta <- GP_covariance(t, sigma_sq_delta, sim_psi_delta)
   
-  #delta <- as.vector(rmvnorm(1, rep(0, n), Sigma_delta))
+  delta <- as.vector(rmvnorm(1, rep(0, n), Sigma_delta))
   
-  y_1 <- balldropg(t, c(9.8, 46.46)) + rnorm(n, 0, sqrt(sigma_sq_err)) #+ delta
+  y_1 <- balldropg(t, c(9.8, 46.46)) + rnorm(n, 0, sqrt(sigma_sq_err)) + delta
   y_obs[, v] <- y_1
   
   res <- mcmc_step6(y_1, t, n_iter, init, sigma_props, mcmc_parameters,
@@ -402,11 +402,11 @@ accept_rate <- numeric(n_samples)
 
 y_obs <- matrix(NA, n, n_samples)
 for (v in 1:n_samples) {
-  #Sigma_delta <- GP_covariance(t, sigma_sq_delta, sim_psi_delta)
+  Sigma_delta <- GP_covariance(t, sigma_sq_delta, sim_psi_delta)
   
-  #delta <- as.vector(rmvnorm(1, rep(0, n), Sigma_delta))
+  delta <- as.vector(rmvnorm(1, rep(0, n), Sigma_delta))
   
-  y_1 <- balldropg(t, c(9.8, 46.46)) + rnorm(n, 0, sqrt(sigma_sq_err)) #+ delta
+  y_1 <- balldropg(t, c(9.8, 46.46)) + rnorm(n, 0, sqrt(sigma_sq_err)) + delta
   y_obs[, v] <- y_1
   
   res <- mcmc_step6(y_1, t, n_iter, init, sigma_props, mcmc_parameters,
@@ -458,11 +458,11 @@ accept_rate <- numeric(n_samples)
 
 y_obs <- matrix(NA, n, n_samples)
 for (v in 1:n_samples) {
-  #Sigma_delta <- GP_covariance(t, sigma_sq_delta, sim_psi_delta)
+  Sigma_delta <- GP_covariance(t, sigma_sq_delta, sim_psi_delta)
   
-  #delta <- as.vector(rmvnorm(1, rep(0, n), Sigma_delta))
+  delta <- as.vector(rmvnorm(1, rep(0, n), Sigma_delta))
   
-  y_1 <- balldropg(t, c(9.8, 46.46)) + rnorm(n, 0, sqrt(sigma_sq_err)) #+ delta
+  y_1 <- balldropg(t, c(9.8, 46.46)) + rnorm(n, 0, sqrt(sigma_sq_err)) + delta
   y_obs[, v] <- y_1
   
   res <- mcmc_step6(y_1, t, n_iter, init, sigma_props, mcmc_parameters,
@@ -514,11 +514,11 @@ accept_rate <- numeric(n_samples)
 
 y_obs <- matrix(NA, n, n_samples)
 for (v in 1:n_samples) {
-  #Sigma_delta <- GP_covariance(t, sigma_sq_delta, sim_psi_delta)
+  Sigma_delta <- GP_covariance(t, sigma_sq_delta, sim_psi_delta)
   
-  #delta <- as.vector(rmvnorm(1, rep(0, n), Sigma_delta))
+  delta <- as.vector(rmvnorm(1, rep(0, n), Sigma_delta))
   
-  y_1 <- balldropg(t, c(9.8, 46.46)) + rnorm(n, 0, sqrt(sigma_sq_err)) #+ delta
+  y_1 <- balldropg(t, c(9.8, 46.46)) + rnorm(n, 0, sqrt(sigma_sq_err)) + delta
   y_obs[, v] <- y_1
   
   res <- mcmc_step6(y_1, t, n_iter, init, sigma_props, mcmc_parameters,
@@ -570,11 +570,11 @@ accept_rate <- numeric(n_samples)
 
 y_obs <- matrix(NA, n, n_samples)
 for (v in 1:n_samples) {
-  #Sigma_delta <- GP_covariance(t, sigma_sq_delta, sim_psi_delta)
+  Sigma_delta <- GP_covariance(t, sigma_sq_delta, sim_psi_delta)
   
-  #delta <- as.vector(rmvnorm(1, rep(0, n), Sigma_delta))
+  delta <- as.vector(rmvnorm(1, rep(0, n), Sigma_delta))
   
-  y_1 <- balldropg(t, c(9.8, 46.46)) + rnorm(n, 0, sqrt(sigma_sq_err)) #+ delta
+  y_1 <- balldropg(t, c(9.8, 46.46)) + rnorm(n, 0, sqrt(sigma_sq_err)) + delta
   y_obs[, v] <- y_1
   
   res <- mcmc_step6(y_1, t, n_iter, init, sigma_props, mcmc_parameters,
