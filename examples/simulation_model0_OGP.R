@@ -4,7 +4,7 @@ Sigma_theta <- matrix(c(0.5,0,0,0.5), nrow = 2)
 # c(g, h0, sig2err, alpha, psidelta, k)
 init <- c(9.8, 46.45, 0.01, 0.5, 0.2, 0.2)
 sigma_proposals <- c(NA, NA, NA, NA, 0.5, NA)
-n_samples       <- 3
+n_samples       <- 50
 burn_in         <- 10000
 n_iter          <- 1000
 # FALSE= fixed parameter
@@ -47,11 +47,11 @@ k = 0.2
 sim_psi_delta <- 0.01
 sigma_sq_err <- 0.01
 sigma_sq_delta <- sigma_sq_err / k
-n_samples <- 10
-n_iter <- 20000
-burn_in <- 5000
+n_samples <- 50
+n_iter <- 10000
+burn_in <- 2000
 # 
-sigma_props <- c(NA, NA, NA, NA, 0.02, NA)
+sigma_props <- c(NA, NA, NA, NA, 0.5, NA)
 #(g,h0), sigma, psi, k, alpha
 mcmc_parameters <- c(TRUE, TRUE, TRUE, TRUE, TRUE)
 Sigma_theta <- matrix(c(0.5, 0, 0, 0.5), nrow = 2)
@@ -102,11 +102,11 @@ k = 0.2
 sim_psi_delta <- 0.1 
 sigma_sq_err <- (0.1)^2
 sigma_sq_delta <- sigma_sq_err / k
-n_samples <- 10
-n_iter <- 20000
-burn_in <- 5000
+n_samples <- 50
+n_iter <- 10000
+burn_in <- 2000
 
-sigma_props <- c(NA, NA, NA, NA, 0.4, NA) 
+sigma_props <- c(NA, NA, NA, NA, 0.5, NA) 
 #(g,h0), sigma, psi, k, alpha
 mcmc_parameters <- c(TRUE, TRUE, TRUE, TRUE, TRUE)
 Sigma_theta <- matrix(c(0.5, 0, 0, 0.5), nrow = 2)
@@ -156,11 +156,11 @@ k = 0.2
 sim_psi_delta <- 0.2 
 sigma_sq_err <- (0.1)^2
 sigma_sq_delta <- sigma_sq_err / k
-n_samples <- 10
-n_iter <- 20000
-burn_in <- 5000
+n_samples <- 50
+n_iter <- 10000
+burn_in <- 2000
 
-sigma_props <- c(NA, NA, NA, NA, 0.4, NA) 
+sigma_props <- c(NA, NA, NA, NA, 0.5, NA) 
 #(g,h0), sigma, psi, k, alpha
 mcmc_parameters <- c(TRUE, TRUE, TRUE, TRUE, TRUE)
 Sigma_theta <- matrix(c(0.5, 0, 0, 0.5), nrow = 2)
@@ -212,11 +212,11 @@ k = 0.2
 sim_psi_delta <- 0.3 
 sigma_sq_err <- 0.01
 sigma_sq_delta <- sigma_sq_err / k
-n_samples <- 10
-n_iter <- 20000
-burn_in <- 5000
+n_samples <- 50
+n_iter <- 10000
+burn_in <- 2000
 
-sigma_props <- c(NA, NA, NA, NA, 0.4, NA) 
+sigma_props <- c(NA, NA, NA, NA, 0.5, NA) 
 #(g,h0), sigma, psi, k, alpha
 mcmc_parameters <- c(TRUE, TRUE, TRUE, TRUE, TRUE)
 Sigma_theta <- matrix(c(0.5, 0, 0, 0.5), nrow = 2)
@@ -267,11 +267,11 @@ k = 0.2
 sim_psi_delta <- 0.4 
 sigma_sq_err <- 0.01
 sigma_sq_delta <- sigma_sq_err / k
-n_samples <- 10
-n_iter <- 20000
-burn_in <- 5000
+n_samples <- 50
+n_iter <- 10000
+burn_in <- 2000
 
-sigma_props <- c(NA, NA, NA, NA, 0.4, NA) 
+sigma_props <- c(NA, NA, NA, NA, 0.5, NA) 
 #(g,h0), sigma, psi, k, alpha
 mcmc_parameters <- c(TRUE, TRUE, TRUE, TRUE, TRUE)
 Sigma_theta <- matrix(c(0.5, 0, 0, 0.5), nrow = 2)
@@ -323,11 +323,11 @@ k = 0.2
 sim_psi_delta <- 0.5 
 sigma_sq_err <- 0.01
 sigma_sq_delta <- sigma_sq_err / k
-n_samples <- 10
-n_iter <- 20000
-burn_in <- 5000
+n_samples <- 50
+n_iter <- 10000
+burn_in <- 2000
 
-sigma_props <- c(NA, NA, NA, NA, 0.4, NA) 
+sigma_props <- c(NA, NA, NA, NA, 0.5, NA) 
 #(g,h0), sigma, psi, k, alpha
 mcmc_parameters <- c(TRUE, TRUE, TRUE, TRUE, TRUE)
 Sigma_theta <- matrix(c(0.5, 0, 0, 0.5), nrow = 2)
@@ -379,11 +379,11 @@ k = 0.2
 sim_psi_delta <- 0.6 
 sigma_sq_err <- 0.01
 sigma_sq_delta <- sigma_sq_err / k
-n_samples <- 10
-n_iter <- 20000
-burn_in <- 5000
+n_samples <- 50
+n_iter <- 10000
+burn_in <- 2000
 
-sigma_props <- c(NA, NA, NA, NA, 0.4, NA) 
+sigma_props <- c(NA, NA, NA, NA, 0.5, NA) 
 #(g,h0), sigma, psi, k, alpha
 mcmc_parameters <- c(TRUE, TRUE, TRUE, TRUE, TRUE)
 Sigma_theta <- matrix(c(0.5, 0, 0, 0.5), nrow = 2)
@@ -435,11 +435,11 @@ k = 0.2
 sim_psi_delta <- 0.7 
 sigma_sq_err <- 0.01
 sigma_sq_delta <- sigma_sq_err / k
-n_samples <- 10
-n_iter <- 20000
-burn_in <- 5000
+n_samples <- 50
+n_iter <- 10000
+burn_in <- 2000
 
-sigma_props <- c(NA, NA, NA, NA, 0.4, NA) 
+sigma_props <- c(NA, NA, NA, NA, 0.5, NA) 
 #(g,h0), sigma, psi, k, alpha
 mcmc_parameters <- c(TRUE, TRUE, TRUE, TRUE, TRUE)
 Sigma_theta <- matrix(c(0.5, 0, 0, 0.5), nrow = 2)
@@ -491,11 +491,11 @@ k = 0.2
 sim_psi_delta <- 0.8 
 sigma_sq_err <- 0.01
 sigma_sq_delta <- sigma_sq_err / k
-n_samples <- 10
-n_iter <- 20000
-burn_in <- 5000
+n_samples <- 50
+n_iter <- 10000
+burn_in <- 2000
 
-sigma_props <- c(NA, NA, NA, NA, 0.4, NA) 
+sigma_props <- c(NA, NA, NA, NA, 0.5, NA) 
 #(g,h0), sigma, psi, k, alpha
 mcmc_parameters <- c(TRUE, TRUE, TRUE, TRUE, TRUE)
 Sigma_theta <- matrix(c(0.5, 0, 0, 0.5), nrow = 2)
@@ -547,9 +547,9 @@ k = 0.2
 sim_psi_delta <- 0.9
 sigma_sq_err <- 0.01
 sigma_sq_delta <- sigma_sq_err / k
-n_samples <- 10
-n_iter <- 20000
-burn_in <- 5000
+n_samples <- 50
+n_iter <- 10000
+burn_in <- 2000
 # 
 sigma_props <- c(NA, NA, NA, NA, 0.4, NA)
 #(g,h0), sigma, psi, k, alpha
