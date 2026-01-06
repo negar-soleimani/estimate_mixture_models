@@ -6,11 +6,11 @@ k = 0.2
 sim_psi_delta <- 0.01
 sigma_sq_err <- 0.01
 sigma_sq_delta <- sigma_sq_err / k
-n_samples <- 3
-n_iter <- 20000
-burn_in <- 5000
+n_samples <- 50
+n_iter <- 10000
+burn_in <- 2000
 # 
-sigma_props <- c(NA, NA, NA, NA, 0.02, NA)
+sigma_props <- c(NA, NA, NA, NA, 0.5, NA)
 #(g,h0), sigma, psi, k, alpha
 mcmc_parameters <- c(TRUE, TRUE, TRUE, TRUE, TRUE)
 Sigma_theta <- matrix(c(0.5, 0, 0, 0.5), nrow = 2)
@@ -29,11 +29,8 @@ accept_rate <- numeric(n_samples)
 # 
 y_obs <- matrix(NA, n, n_samples)
 for (v in 1:n_samples) {
-  Sigma_delta <- GP_covariance(t, sigma_sq_delta, sim_psi_delta)
   
-  delta <- as.vector(rmvnorm(1, rep(0, n), Sigma_delta))
-  
-  y_1 <- balldropg(t, c(9.8, 46.46)) + rnorm(n, 0, sqrt(sigma_sq_err)) + delta
+  y_1 <- balldropg(t, c(9.8, 46.46)) + rnorm(n, 0, sqrt(sigma_sq_err)) 
   y_obs[, v] <- y_1
   res <- mcmc_step6(y_1, t, n_iter, init, sigma_props, mcmc_parameters,
                     Sigma_theta, n_burnin = burn_in)
@@ -62,11 +59,11 @@ k = 0.2
 sim_psi_delta <- 0.1 
 sigma_sq_err <- 0.01
 sigma_sq_delta <- sigma_sq_err / k
-n_samples <- 3
-n_iter <- 20000
-burn_in <- 5000
+n_samples <- 50
+n_iter <- 10000
+burn_in <- 2000
 
-sigma_props <- c(NA, NA, NA, NA, 0.4, NA) 
+sigma_props <- c(NA, NA, NA, NA, 0.5, NA) 
 #(g,h0), sigma, psi, k, alpha
 mcmc_parameters <- c(TRUE, TRUE, TRUE, TRUE, TRUE)
 Sigma_theta <- matrix(c(0.5, 0, 0, 0.5), nrow = 2)
@@ -85,11 +82,8 @@ accept_rate <- numeric(n_samples)
 
 y_obs <- matrix(NA, n, n_samples)
 for (v in 1:n_samples) {
-  Sigma_delta <- GP_covariance(t, sigma_sq_delta, sim_psi_delta)
   
-  delta <- as.vector(rmvnorm(1, rep(0, n), Sigma_delta))
-  
-  y_1 <- balldropg(t, c(9.8, 46.46)) + rnorm(n, 0, sqrt(sigma_sq_err)) + delta
+  y_1 <- balldropg(t, c(9.8, 46.46)) + rnorm(n, 0, sqrt(sigma_sq_err)) 
   y_obs[, v] <- y_1
   
   res <- mcmc_step6(y_1, t, n_iter, init, sigma_props, mcmc_parameters,
@@ -117,11 +111,11 @@ k = 0.2
 sim_psi_delta <- 0.2
 sigma_sq_err <- 0.01
 sigma_sq_delta <- sigma_sq_err / k
-n_samples <- 3
-n_iter <- 20000
-burn_in <- 5000
+n_samples <- 50
+n_iter <- 10000
+burn_in <- 2000
 
-sigma_props <- c(NA, NA, NA, NA, 0.4, NA) 
+sigma_props <- c(NA, NA, NA, NA, 0.5, NA) 
 #(g,h0), sigma, psi, k, alpha
 mcmc_parameters <- c(TRUE, TRUE, TRUE, TRUE, TRUE)
 Sigma_theta <- matrix(c(0.5, 0, 0, 0.5), nrow = 2)
@@ -140,11 +134,8 @@ accept_rate <- numeric(n_samples)
 
 y_obs <- matrix(NA, n, n_samples)
 for (v in 1:n_samples) {
-  Sigma_delta <- GP_covariance(t, sigma_sq_delta, sim_psi_delta)
   
-  delta <- as.vector(rmvnorm(1, rep(0, n), Sigma_delta))
-  
-  y_1 <- balldropg(t, c(9.8, 46.46)) + rnorm(n, 0, sqrt(sigma_sq_err)) + delta
+  y_1 <- balldropg(t, c(9.8, 46.46)) + rnorm(n, 0, sqrt(sigma_sq_err))
   y_obs[, v] <- y_1
   res <- mcmc_step6(y_1, t, n_iter, init, sigma_props, mcmc_parameters,
                     Sigma_theta, n_burnin = burn_in)
@@ -173,11 +164,11 @@ k = 0.2
 sim_psi_delta <- 0.3 
 sigma_sq_err <- 0.01
 sigma_sq_delta <- sigma_sq_err / k
-n_samples <- 3
-n_iter <- 20000
-burn_in <- 5000
+n_samples <- 50
+n_iter <- 10000
+burn_in <- 2000
 
-sigma_props <- c(NA, NA, NA, NA, 0.4, NA) 
+sigma_props <- c(NA, NA, NA, NA, 0.5, NA) 
 #(g,h0), sigma, psi, k, alpha
 mcmc_parameters <- c(TRUE, TRUE, TRUE, TRUE, TRUE)
 Sigma_theta <- matrix(c(0.5, 0, 0, 0.5), nrow = 2)
@@ -196,11 +187,8 @@ accept_rate <- numeric(n_samples)
 
 y_obs <- matrix(NA, n, n_samples)
 for (v in 1:n_samples) {
-  Sigma_delta <- GP_covariance(t, sigma_sq_delta, sim_psi_delta)
   
-  delta <- as.vector(rmvnorm(1, rep(0, n), Sigma_delta))
-  
-  y_1 <- balldropg(t, c(9.8, 46.46)) + rnorm(n, 0, sqrt(sigma_sq_err)) + delta
+  y_1 <- balldropg(t, c(9.8, 46.46)) + rnorm(n, 0, sqrt(sigma_sq_err)) 
   y_obs[, v] <- y_1
   res <- mcmc_step6(y_1, t, n_iter, init, sigma_props, mcmc_parameters,
                     Sigma_theta, n_burnin = burn_in)
@@ -229,11 +217,11 @@ k = 0.2
 sim_psi_delta <- 0.4
 sigma_sq_err <- 0.01
 sigma_sq_delta <- sigma_sq_err / k
-n_samples <- 3
-n_iter <- 20000
-burn_in <- 5000
+n_samples <- 50
+n_iter <- 10000
+burn_in <- 2000
 
-sigma_props <- c(NA, NA, NA, NA, 0.4, NA) 
+sigma_props <- c(NA, NA, NA, NA, 0.5, NA) 
 #(g,h0), sigma, psi, k, alpha
 mcmc_parameters <- c(TRUE, TRUE, TRUE, TRUE, TRUE)
 Sigma_theta <- matrix(c(0.5, 0, 0, 0.5), nrow = 2)
@@ -252,11 +240,8 @@ accept_rate <- numeric(n_samples)
 
 y_obs <- matrix(NA, n, n_samples)
 for (v in 1:n_samples) {
-  Sigma_delta <- GP_covariance(t, sigma_sq_delta, sim_psi_delta)
   
-  delta <- as.vector(rmvnorm(1, rep(0, n), Sigma_delta))
-  
-  y_1 <- balldropg(t, c(9.8, 46.46)) + rnorm(n, 0, sqrt(sigma_sq_err)) + delta
+  y_1 <- balldropg(t, c(9.8, 46.46)) + rnorm(n, 0, sqrt(sigma_sq_err)) 
   y_obs[, v] <- y_1
   
   res <- mcmc_step6(y_1, t, n_iter, init, sigma_props, mcmc_parameters,
@@ -286,11 +271,11 @@ k = 0.2
 sim_psi_delta <- 0.5 
 sigma_sq_err <- 0.01
 sigma_sq_delta <- sigma_sq_err / k
-n_samples <- 3
-n_iter <- 20000
-burn_in <- 5000
+n_samples <- 50
+n_iter <- 10000
+burn_in <- 2000
 
-sigma_props <- c(NA, NA, NA, NA, 0.4, NA) 
+sigma_props <- c(NA, NA, NA, NA, 0.5, NA) 
 #(g,h0), sigma, psi, k, alpha
 mcmc_parameters <- c(TRUE, TRUE, TRUE, TRUE, TRUE)
 Sigma_theta <- matrix(c(0.5, 0, 0, 0.5), nrow = 2)
@@ -309,11 +294,8 @@ accept_rate <- numeric(n_samples)
 
 y_obs <- matrix(NA, n, n_samples)
 for (v in 1:n_samples) {
-  Sigma_delta <- GP_covariance(t, sigma_sq_delta, sim_psi_delta)
   
-  delta <- as.vector(rmvnorm(1, rep(0, n), Sigma_delta))
-  
-  y_1 <- balldropg(t, c(9.8, 46.46)) + rnorm(n, 0, sqrt(sigma_sq_err)) + delta
+  y_1 <- balldropg(t, c(9.8, 46.46)) + rnorm(n, 0, sqrt(sigma_sq_err)) 
   y_obs[, v] <- y_1
   
   res <- mcmc_step6(y_1, t, n_iter, init, sigma_props, mcmc_parameters,
@@ -343,11 +325,11 @@ k = 0.2
 sim_psi_delta <- 0.6 
 sigma_sq_err <- 0.01
 sigma_sq_delta <- sigma_sq_err / k
-n_samples <- 3
-n_iter <- 20000
-burn_in <- 5000
+n_samples <- 50
+n_iter <- 10000
+burn_in <- 2000
 
-sigma_props <- c(NA, NA, NA, NA, 0.4, NA) 
+sigma_props <- c(NA, NA, NA, NA, 0.5, NA) 
 #(g,h0), sigma, psi, k, alpha
 mcmc_parameters <- c(TRUE, TRUE, TRUE, TRUE, TRUE)
 Sigma_theta <- matrix(c(0.5, 0, 0, 0.5), nrow = 2)
@@ -366,11 +348,8 @@ accept_rate <- numeric(n_samples)
 
 y_obs <- matrix(NA, n, n_samples)
 for (v in 1:n_samples) {
-  Sigma_delta <- GP_covariance(t, sigma_sq_delta, sim_psi_delta)
   
-  delta <- as.vector(rmvnorm(1, rep(0, n), Sigma_delta))
-  
-  y_1 <- balldropg(t, c(9.8, 46.46)) + rnorm(n, 0, sqrt(sigma_sq_err)) + delta
+  y_1 <- balldropg(t, c(9.8, 46.46)) + rnorm(n, 0, sqrt(sigma_sq_err)) 
   y_obs[, v] <- y_1
   
   res <- mcmc_step6(y_1, t, n_iter, init, sigma_props, mcmc_parameters,
@@ -400,11 +379,11 @@ k = 0.2
 sim_psi_delta <- 0.7 
 sigma_sq_err <- 0.01
 sigma_sq_delta <- sigma_sq_err / k
-n_samples <- 3
-n_iter <- 20000
-burn_in <- 5000
+n_samples <- 50
+n_iter <- 10000
+burn_in <- 2000
 
-sigma_props <- c(NA, NA, NA, NA, 0.4, NA) 
+sigma_props <- c(NA, NA, NA, NA, 0.5, NA) 
 #(g,h0), sigma, psi, k, alpha
 mcmc_parameters <- c(TRUE, TRUE, TRUE, TRUE, TRUE)
 Sigma_theta <- matrix(c(0.5, 0, 0, 0.5), nrow = 2)
@@ -423,11 +402,8 @@ accept_rate <- numeric(n_samples)
 
 y_obs <- matrix(NA, n, n_samples)
 for (v in 1:n_samples) {
-  Sigma_delta <- GP_covariance(t, sigma_sq_delta, sim_psi_delta)
   
-  delta <- as.vector(rmvnorm(1, rep(0, n), Sigma_delta))
-  
-  y_1 <- balldropg(t, c(9.8, 46.46)) + rnorm(n, 0, sqrt(sigma_sq_err)) + delta
+  y_1 <- balldropg(t, c(9.8, 46.46)) + rnorm(n, 0, sqrt(sigma_sq_err)) 
   y_obs[, v] <- y_1
   
   res <- mcmc_step6(y_1, t, n_iter, init, sigma_props, mcmc_parameters,
@@ -457,11 +433,11 @@ k = 0.2
 sim_psi_delta <- 0.8 
 sigma_sq_err <- 0.01
 sigma_sq_delta <- sigma_sq_err / k
-n_samples <- 3
-n_iter <- 20000
-burn_in <- 5000
+n_samples <- 50
+n_iter <- 10000
+burn_in <- 2000
 
-sigma_props <- c(NA, NA, NA, NA, 0.4, NA) 
+sigma_props <- c(NA, NA, NA, NA, 0.5, NA) 
 #(g,h0), sigma, psi, k, alpha
 mcmc_parameters <- c(TRUE, TRUE, TRUE, TRUE, TRUE)
 Sigma_theta <- matrix(c(0.5, 0, 0, 0.5), nrow = 2)
@@ -480,11 +456,8 @@ accept_rate <- numeric(n_samples)
 
 y_obs <- matrix(NA, n, n_samples)
 for (v in 1:n_samples) {
-  Sigma_delta <- GP_covariance(t, sigma_sq_delta, sim_psi_delta)
   
-  delta <- as.vector(rmvnorm(1, rep(0, n), Sigma_delta))
-  
-  y_1 <- balldropg(t, c(9.8, 46.46)) + rnorm(n, 0, sqrt(sigma_sq_err)) + delta
+  y_1 <- balldropg(t, c(9.8, 46.46)) + rnorm(n, 0, sqrt(sigma_sq_err))
   y_obs[, v] <- y_1
   
   res <- mcmc_step6(y_1, t, n_iter, init, sigma_props, mcmc_parameters,
@@ -514,11 +487,11 @@ k = 0.2
 sim_psi_delta <- 0.9
 sigma_sq_err <- 0.01
 sigma_sq_delta <- sigma_sq_err / k
-n_samples <- 3
-n_iter <- 20000
-burn_in <- 5000
+n_samples <- 50
+n_iter <- 10000
+burn_in <- 2000
 # 
-sigma_props <- c(NA, NA, NA, NA, 0.4, NA)
+sigma_props <- c(NA, NA, NA, NA, 0.5, NA)
 #(g,h0), sigma, psi, k, alpha
 mcmc_parameters <- c(TRUE, TRUE, TRUE, TRUE, TRUE)
 Sigma_theta <- matrix(c(0.5, 0, 0, 0.5), nrow = 2)
@@ -537,11 +510,8 @@ accept_rate <- numeric(n_samples)
 # 
 y_obs <- matrix(NA, n, n_samples)
 for (v in 1:n_samples) {
-  Sigma_delta <- GP_covariance(t, sigma_sq_delta, sim_psi_delta)
   
-  delta <- as.vector(rmvnorm(1, rep(0, n), Sigma_delta))
-  
-  y_1 <- balldropg(t, c(9.8, 46.46)) + rnorm(n, 0, sqrt(sigma_sq_err)) + delta
+  y_1 <- balldropg(t, c(9.8, 46.46)) + rnorm(n, 0, sqrt(sigma_sq_err))
   y_obs[, v] <- y_1
   
   res <- mcmc_step6(y_1, t, n_iter, init, sigma_props, mcmc_parameters,
