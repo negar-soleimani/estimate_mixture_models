@@ -464,15 +464,15 @@ psi <- res[[5]]
 k <- res[[6]]
 #
 par(mfrow = c(2,3))
-plot(g, type = "l")
+boxplot(colMeans(g), type = "l")
 abline(h = 9.8, col = "red")
-plot(h, type = "l")
+boxplot(colMeans(h), type = "l")
 abline(h = 46.46, col = "red")
-plot(sig, type = "l")
+boxplot(colMeans(sig), type = "l")
 abline(h = 0.01, col = "red")
-plot(alpha, type = "l")
-plot(psi, type = "l")
-plot(k, type = "l")
+boxplot(colMeans(alpha), type = "l")
+boxplot(colMeans(psi), type = "l")
+boxplot(colMeans(k), type = "l")
 abline(h = 0.2, col = "red")
 
 hist(alpha)
