@@ -112,7 +112,7 @@ mcmc_step6 <- function(y, t, n_iter, init, sigma_proposals, mcmc_parameters, Sig
     #prob_zeta_1 <- exp(log_w1 - log_den)  #  P(zeta=1|y)
     prob_zeta_2 <- exp(log_w2 - log_den)  #  P(zeta=2|y)
     #zeta <- ifelse(runif(length(y)) < prob_zeta_1, 1, 2)
-    zeta <- ifelse(runif(length(y)) < prob_zeta_2, 2, 1) #= zeta <- 1 + (runif(length(y)) < prob_zeta_1) # sample zeta: 2 with prob post_p2, otherwise 1
+    zeta <- ifelse(runif(length(y)) < prob_zeta_2, 1, 0) #= zeta <- 1 + (runif(length(y)) < prob_zeta_1) # sample zeta: 2 with prob post_p2, otherwise 1
     #} else {
       
     #  zeta <- rep(1, length(y))   # MODEL WITHOUT DISCREPANCY
@@ -128,21 +128,21 @@ mcmc_step6 <- function(y, t, n_iter, init, sigma_proposals, mcmc_parameters, Sig
     
     #-------------------------------- log_likelihood --------------------------------#   
     
-    log_likelihood <- sum(log(ifelse(zeta == 1,
+    log_likelihood <- sum(log(ifelse(zeta == 0,
                                      alpha_param * dnorm(y, mean1, sqrt(sigma_sq_err)),
                                      (1 - alpha_param) * dnorm(y, mean2, sqrt(sigma_sq_err)))))
     loglik_chain[iter] <- log_likelihood
     
     #-------------------------------- delta(discrepancy) --------------------------------#  
     #if (use_discrepancy) {
-    zeta_2_indices <- which(zeta == 2)
-    if (length(zeta_2_indices) > 0) {
-      y_m <- y[zeta_2_indices]
-      Sigma_delta_ymym <- sigma_sq_err * diag(length(zeta_2_indices)) +
-        Sigma_delta[zeta_2_indices, zeta_2_indices, drop = FALSE]
-      Sigma_delta_ym <- Sigma_delta[, zeta_2_indices, drop = FALSE]
+    zeta_1_indices <- which(zeta == 1)
+    if (length(zeta_1_indices) > 0) {
+      y_m <- y[zeta_1_indices]
+      Sigma_delta_ymym <- sigma_sq_err * diag(length(zeta_1_indices)) +
+        Sigma_delta[zeta_1_indices, zeta_1_indices, drop = FALSE]
+      Sigma_delta_ym <- Sigma_delta[, zeta_1_indices, drop = FALSE]
       Sigma_inv <- tryCatch(solve(Sigma_delta_ymym), error = function(e) diag(1, nrow(Sigma_delta_ymym)))
-      mu_delta_hat <- rep(0, n) + Sigma_delta_ym %*% Sigma_inv %*% (y_m - f_theta[zeta_2_indices])
+      mu_delta_hat <- rep(0, n) + Sigma_delta_ym %*% Sigma_inv %*% (y_m - f_theta[zeta_1_indices])
       Sigma_delta_hat <- Sigma_delta - Sigma_delta_ym %*% Sigma_inv %*% t(Sigma_delta_ym)
       Sigma_delta_hat <- 0.5 * (Sigma_delta_hat + t(Sigma_delta_hat))
       delta <- as.vector(rmvnorm(1, mean = mu_delta_hat, sigma = Sigma_delta_hat))
@@ -183,16 +183,16 @@ mcmc_step6 <- function(y, t, n_iter, init, sigma_proposals, mcmc_parameters, Sig
     
     #-------------------------------- Page 22 - part 8.1 --------------------------------#     
     # flat prior on theta
+    zeta_0_indices <- which(zeta == 0)
     zeta_1_indices <- which(zeta == 1)
-    zeta_2_indices <- which(zeta == 2)
 
     X <- cbind(1, -0.5 * (t * t_range)^2)
-    x1 <- X[zeta_1_indices, , drop = FALSE]
-    x2 <- X[zeta_2_indices, , drop = FALSE]
+    x1 <- X[zeta_0_indices, , drop = FALSE]
+    x2 <- X[zeta_1_indices, , drop = FALSE]
 
-    y1 <- matrix(y[zeta_1_indices], ncol = 1)
-    y2 <- matrix(y[zeta_2_indices], ncol = 1)
-    d2 <- matrix(delta[zeta_2_indices], ncol = 1)
+    y1 <- matrix(y[zeta_0_indices], ncol = 1)
+    y2 <- matrix(y[zeta_1_indices], ncol = 1)
+    d2 <- matrix(delta[zeta_1_indices], ncol = 1)
 
     A <- (t(x1) %*% x1 + t(x2) %*% x2) / sigma_sq_err
     B <- (t(x1) %*% y1 + t(x2) %*% y2 - t(x2) %*% d2) / sigma_sq_err
@@ -276,24 +276,24 @@ mcmc_step6 <- function(y, t, n_iter, init, sigma_proposals, mcmc_parameters, Sig
     
     if (freeze_delta_zeta){
       f_theta <- balldropg(t, c(g, h0))
+      idx0 <- which(zeta == 0)
       idx1 <- which(zeta == 1)
-      idx2 <- which(zeta == 2)
+      n0   <- length(idx0)
       n1   <- length(idx1)
-      n2   <- length(idx2)
-      residual1 <- y[idx1] - f_theta[idx1]
+      residual1 <- y[idx0] - f_theta[idx0]
       rss1   <- sum(residual1^2)
       shape_err <- (n / 2) + 1
       rate_err  <- 0.5 * rss1
     } else {
       f_theta <- balldropg(t, c(g, h0))
+      idx0 <- which(zeta == 0)
       idx1 <- which(zeta == 1)
-      idx2 <- which(zeta == 2)
+      n0   <- length(idx0)
       n1   <- length(idx1)
-      n2   <- length(idx2)
-      residual1 <- y[idx1] - f_theta[idx1]
+      residual1 <- y[idx0] - f_theta[idx0]
       rss1   <- sum(residual1^2)
       
-      residual2 <- y[idx2] - f_theta[idx2] - delta[idx2]
+      residual2 <- y[idx1] - f_theta[idx1] - delta[idx1]
       rss2   <- sum(residual2^2)
       d <- 2
       # When we consider the Jeffreys prior, I use the following code:
@@ -373,7 +373,7 @@ mcmc_step6 <- function(y, t, n_iter, init, sigma_proposals, mcmc_parameters, Sig
     #-------------------------------- Gibbs step for alpha --------------------------------#   
     #-------------------------------- Page 25 - part 8.4 --------------------------------#     
     
-    alpha_param <- rbeta(1, sum(zeta == 1) + 7, sum(zeta == 2) + 1)
+    alpha_param <- rbeta(1, sum(zeta == 0) + 7, sum(zeta == 1) + 1)
     theta[4] <- alpha_param
     
     if(mcmc_parameters[5] == FALSE){
@@ -415,14 +415,14 @@ mcmc_step6 <- function(y, t, n_iter, init, sigma_proposals, mcmc_parameters, Sig
 set.seed(123)
 Sigma_theta <- matrix(c(0.5,0,0,0.5), nrow = 2)
 # c(g, h0, sig2err, alpha, psidelta, k)
-init <- c(9.8, 46.45, 0.01, 0.5, 0.4, 0.2)
+init <- c(9.8, 46.45, 0.01, 0.7, 0.5, 0.2)
 sigma_proposals <- c(NA, NA, NA, NA, 0.5, NA)
 n_samples       <- 30
 burn_in         <- 2000
 n_iter          <- 10000
 # FALSE= fixed parameter
 # mcmc parameter (g,h), sig2err, psidelta, k, alpha, freeze delta-zeta
-mcmc_parameters <- c(TRUE, TRUE, TRUE, TRUE, TRUE, TRUE)
+mcmc_parameters <- c(TRUE, TRUE, TRUE, TRUE, TRUE, FALSE)
 
 
 g            <- matrix(NA, n_iter, n_samples, byrow = FALSE)
