@@ -1,5 +1,4 @@
-# final model 1:
-# simulation = classic , algorithm = classic
+
 rm(list = ls())
 library(truncnorm)
 library(readxl)
@@ -274,13 +273,13 @@ mcmc_step_fix_delta <- function(y, t, n_iter, init, sigma_proposals, mcmc_parame
   return(list(theta = chain_theta, zeta = chain_zeta, loglik = loglik_chain, accept_rate_psi = accept_psi / n_iter))
 }
 
-# ----------------------------- Parameters & Run -------------------------------------#
+# -----------------------------------------------------------------#
 set.seed(12345)
 n_samples <- 50
 n_iter <- 20000
-burn_in <- 2000
+burn_in <- 5000
 #(g,h), sig, psi,k, alpha, freeze
-mcmc_parameters <- c(FALSE, FALSE, TRUE, TRUE, FALSE, FALSE)
+mcmc_parameters <- c(TRUE, TRUE, TRUE, TRUE, TRUE, FALSE)
 sigma_props <- c(NA, NA, NA, NA, 0.5, NA)
 #g, h, sig, alpha, psi, k
 init <- c(9.8, 46.46, 0.01, 0.5, 0.5, 0.2)
@@ -358,3 +357,7 @@ plot(psi, type = "l")
 abline(h = 0.5, col = "red")
 plot(k, type = "l")
 abline(h = 0.2, col = "red")
+#------------------------------------------------------------------------------#
+x <- t
+curve(dbeta(x, 1, 7))
+curve(dbeta(x, 7, 1))
