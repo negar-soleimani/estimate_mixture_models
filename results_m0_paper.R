@@ -373,7 +373,7 @@ mcmc_step6 <- function(y, t, n_iter, init, sigma_proposals, mcmc_parameters, Sig
     #-------------------------------- Gibbs step for alpha --------------------------------#   
     #-------------------------------- Page 25 - part 8.4 --------------------------------#     
     
-    alpha_param <- rbeta(1, sum(zeta == 0) + 7, sum(zeta == 1) + 1)
+    alpha_param <- rbeta(1, sum(zeta == 0) + 5, sum(zeta == 1) + 2)
     theta[4] <- alpha_param
     
     if(mcmc_parameters[5] == FALSE){
