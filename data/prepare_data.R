@@ -7,7 +7,7 @@ library(MASS)
 library(mvtnorm)
 library(invgamma)
 
-don <- read_xlsx("E:/Phd_Paris Saclay/10Sep2024_Cours Calibration/Ball_drops_data.xlsx", sheet = 2)
+don <- read_xlsx("/Users/negarsoleimani/Documents/phd/paper1/Ball_drops_data.xlsx", sheet = 2)
 names(don) <- c("drop", "time", "Height", "Velocity")
 don$drop <- as.factor(don$drop)
 don <- don[don$drop == 1, ]

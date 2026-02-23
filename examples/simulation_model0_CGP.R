@@ -1,3 +1,5 @@
+source("data/prepare_data.R")
+source("scripts/physics_model.R")
 source("scripts/helper_function_CGP.R")
 source("scripts/main_function_CGP.R")
 
