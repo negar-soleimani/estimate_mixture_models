@@ -6,7 +6,7 @@ source("scripts/main_function_CGP.R")
 set.seed(12345)
 Sigma_theta <- matrix(c(0.5,0,0,0.5), nrow = 2)
 # c(g, h0, sig2err, alpha, psidelta, k)
-init <- c(9.8, 46.45, 0.01, 0.5, 0.5, 0.2)
+init <- c(9.8, 46.45, 0.01, 0.5, 0.5, 0.1)
 sigma_proposals <- c(NA, NA, NA, NA, 0.5, NA)
 n_samples       <- 50
 burn_in         <- 2000
