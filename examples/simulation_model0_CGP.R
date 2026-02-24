@@ -13,7 +13,7 @@ burn_in         <- 2000
 n_iter          <- 10000
 # FALSE= fixed parameter
 # mcmc parameter (g,h), sig2err, psidelta, k, alpha, freeze delta-zeta
-mcmc_parameters <- c(TRUE, TRUE, TRUE, TRUE, TRUE, TRUE)
+mcmc_parameters <- c(TRUE, TRUE, TRUE, TRUE, TRUE, FALSE)
 
 g            <- matrix(NA, n_iter, n_samples, byrow = FALSE)
 h0           <- matrix(NA, n_iter, n_samples, byrow = FALSE)
