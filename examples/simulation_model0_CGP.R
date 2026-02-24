@@ -39,5 +39,9 @@ for (v in 1:n_samples) {
   k[,v] <- results$theta[,6]
 }
 
-result_m1_sh2 <- list(g, h0, sigma_sq_err, alpha, psi_delta, k, y_obs = y_obs)
-y_obs_m1_sh2 <- y_obs
+result_m0_sh2_classic_classic <- list(g, h0, sigma_sq_err, alpha, psi_delta, k, y_obs = y_obs)
+# y_obs_m1_sh2_ex <- y_obs
+# save(result_m0_sh2_classic_classic,file = "/Users/negarsoleimani/Documents/phd/paper1/Simulation/Model_1/final_results/result_m0_sh2_classic_classic.RData")
+# load("/Users/negarsoleimani/Documents/phd/paper1/Simulation/Model_1/final_results/result_m0_sh2_classic_classic.RData")
+View(result_m0_sh2_classic_classic)
+
