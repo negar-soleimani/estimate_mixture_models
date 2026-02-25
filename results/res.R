@@ -749,6 +749,259 @@ p_lambda2_95
 ###################### Results for model 2 ######################################
 #################################################################################
 #################################################################################
+
+
+load("/Users/negarsoleimani/Documents/phd/paper1/Simulation/Model_2/final_results/result_m2_sh2_psi1_simple.RData")
+load("/Users/negarsoleimani/Documents/phd/paper1/Simulation/Model_2/final_results/result_m2_sh2_psi2_simple.RData")
+load("/Users/negarsoleimani/Documents/phd/paper1/Simulation/Model_2/final_results/result_m2_sh2_psi3_simple.RData")
+load("/Users/negarsoleimani/Documents/phd/paper1/Simulation/Model_2/final_results/result_m2_sh2_psi4_simple.RData")
+load("/Users/negarsoleimani/Documents/phd/paper1/Simulation/Model_2/final_results/result_m2_sh2_psi5_simple.RData")
+load("/Users/negarsoleimani/Documents/phd/paper1/Simulation/Model_2/final_results/result_m2_sh2_psi6_simple.RData")
+load("/Users/negarsoleimani/Documents/phd/paper1/Simulation/Model_2/final_results/result_m2_sh2_psi7_simple.RData")
+load("/Users/negarsoleimani/Documents/phd/paper1/Simulation/Model_2/final_results/result_m2_sh2_psi8_simple.RData")
+load("/Users/negarsoleimani/Documents/phd/paper1/Simulation/Model_2/final_results/result_m2_sh2_psi9_simple.RData")
+load("/Users/negarsoleimani/Documents/phd/paper1/Simulation/Model_2/final_results/result_m2_sh2_psi10_simple.RData")
+
+boxplot(result_m2_sh2_psi8_simple[[7]][[1]])
+
+g1 <- result_m2_sh2_psi1_simple[[1]]
+g2 <- result_m2_sh2_psi2_simple[[1]]
+g3 <- result_m2_sh2_psi3_simple[[1]]
+g4 <- result_m2_sh2_psi4_simple[[1]]
+g5 <- result_m2_sh2_psi5_simple[[1]]
+g6 <- result_m2_sh2_psi6_simple[[1]]
+g7 <- result_m2_sh2_psi7_simple[[1]]
+g8 <- result_m2_sh2_psi8_simple[[1]]
+g9 <- result_m2_sh2_psi9_simple[[1]]
+g10 <- result_m2_sh2_psi10_simple[[1]]
+
+par(mfrow = c(2,3))
+boxplot(colMeans(g1), colMeans(g2), colMeans(g3), colMeans(g4), colMeans(g5), 
+        colMeans(g6), colMeans(g7), colMeans(g8), colMeans(g9), colMeans(g10),
+        names = c("0.01", "0.1","0.2","0.3","0.4", "0.5","0.6","0.7","0.8","0.9"),
+        xlab = expression(gamma[delta]),
+        ylab = "g",
+        col = "lightseagreen")
+abline(h=9.8, col = "orange")
+
+par(mgp = c(3, 0.7, 0)) 
+library(vioplot)
+
+vioplot(colMeans(g1), colMeans(g2), colMeans(g3), colMeans(g4), colMeans(g5),
+        colMeans(g6), colMeans(g7), colMeans(g8), colMeans(g9), colMeans(g10),
+        names = c("0.01","0.1","0.2","0.3","0.4","0.5","0.6","0.7","0.8","0.9"),
+        xlab = "",  
+        ylab = "",
+        col = "#E18E96")
+title(xlab = expression(gamma[delta]), line = 1.5)
+title(ylab = expression(g), line = 1.5)
+abline(h = 9.8, col = "#800020")
+
+
+
+
+h01 <- result_m2_sh2_psi1_simple[[2]]
+h02 <- result_m2_sh2_psi2_simple[[2]]
+h03 <- result_m2_sh2_psi3_simple[[2]]
+h04 <- result_m2_sh2_psi4_simple[[2]]
+h05 <- result_m2_sh2_psi5_simple[[2]]
+h06 <- result_m2_sh2_psi6_simple[[2]]
+h07 <- result_m2_sh2_psi7_simple[[2]]
+h08 <- result_m2_sh2_psi8_simple[[2]]
+h09 <- result_m2_sh2_psi9_simple[[2]]
+h010 <- result_m2_sh2_psi10_simple[[2]]
+
+boxplot(colMeans(h01), colMeans(h02), colMeans(h03), colMeans(h04), colMeans(h05),
+        colMeans(h06), colMeans(h07), colMeans(h08), colMeans(h09), colMeans(h010),
+        names = c("0.01", "0.1","0.2","0.3","0.4", "0.5","0.6","0.7","0.8","0.9"),
+        xlab = expression(gamma[delta]),
+        ylab = "h0",
+        col = "lightseagreen")
+abline(h = 46.45, col = "orange")
+
+vioplot(colMeans(h01), colMeans(h02), colMeans(h03), colMeans(h04), colMeans(h05), 
+        colMeans(h06), colMeans(h07), colMeans(h08), colMeans(h09), colMeans(h010),
+        names = c("0.01","0.1","0.2","0.3","0.4", "0.5","0.6","0.7","0.8","0.9"),
+        xlab = "",
+        ylab = "",
+        col = "#E18E96")
+title(xlab = expression(gamma[delta]), line = 1.5)
+title(ylab = expression(h), line = 1.5)
+abline(h = 46.45, col = "#800020")
+
+sigma1 <- result_m2_sh2_psi1_simple[[3]]
+sigma2 <- result_m2_sh2_psi2_simple[[3]]
+sigma3 <- result_m2_sh2_psi3_simple[[3]]
+sigma4 <- result_m2_sh2_psi4_simple[[3]]
+sigma5 <- result_m2_sh2_psi5_simple[[3]]
+sigma6 <- result_m2_sh2_psi6_simple[[3]]
+sigma7 <- result_m2_sh2_psi7_simple[[3]]
+sigma8 <- result_m2_sh2_psi8_simple[[3]]
+sigma9 <- result_m2_sh2_psi9_simple[[3]]
+sigma10 <- result_m2_sh2_psi10_simple[[3]]
+
+boxplot(colMeans(sigma1), colMeans(sigma2), colMeans(sigma3), colMeans(sigma4), colMeans(sigma5), 
+        colMeans(sigma6), colMeans(sigma7), colMeans(sigma8), colMeans(sigma9), colMeans(sigma10),
+        names = c("0.01", "0.1","0.2","0.3","0.4", "0.5","0.6","0.7","0.8","0.9"),
+        xlab = expression(gamma[delta]),
+        ylab = expression(lambda^2),
+        col = "lightseagreen")
+abline(h = 0.01, col = "orange")
+
+vioplot(colMeans(sigma1), colMeans(sigma2), colMeans(sigma3), colMeans(sigma4), colMeans(sigma5), 
+        colMeans(sigma6), colMeans(sigma7), colMeans(sigma8), colMeans(sigma9), colMeans(sigma10),
+        names = c("0.01","0.1","0.2","0.3","0.4", "0.5","0.6","0.7","0.8","0.9"),
+        xlab = "",
+        ylab = "",
+        col = "#E18E96")
+title(xlab = expression(gamma[delta]), line = 1.5)
+title(ylab = expression(lambda^2), line = 1.5)
+abline(h = 0.01, col = "#800020")
+
+alpha1 <- result_m2_sh2_psi1_simple[[4]]
+alpha2 <- result_m2_sh2_psi2_simple[[4]]
+alpha3 <- result_m2_sh2_psi3_simple[[4]]
+alpha4 <- result_m2_sh2_psi4_simple[[4]]
+alpha5 <- result_m2_sh2_psi5_simple[[4]]
+alpha6 <- result_m2_sh2_psi6_simple[[4]]
+alpha7 <- result_m2_sh2_psi7_simple[[4]]
+alpha8 <- result_m2_sh2_psi8_simple[[4]]
+alpha9 <- result_m2_sh2_psi9_simple[[4]]
+alpha10 <- result_m2_sh2_psi10_simple[[4]]
+
+boxplot(colMeans(alpha1), colMeans(alpha2), colMeans(alpha3), colMeans(alpha4), colMeans(alpha5), 
+        colMeans(alpha6), colMeans(alpha7), colMeans(alpha8), colMeans(alpha9), colMeans(alpha10),
+        names = c("0.01", "0.1","0.2","0.3","0.4", "0.5","0.6","0.7","0.8", "0.9"),
+        xlab = expression(gamma[delta]),
+        ylab = expression(alpha),
+        ylim = c(0,1),
+        col = "lightseagreen")
+
+vioplot(colMeans(alpha1), colMeans(alpha2), colMeans(alpha3), colMeans(alpha4), colMeans(alpha5), 
+        colMeans(alpha6), colMeans(alpha7), colMeans(alpha8), colMeans(alpha9), colMeans(alpha10),
+        names = c("0.01","0.1","0.2","0.3","0.4", "0.5","0.6","0.7","0.8", "0.9"),
+        xlab = "",
+        ylab = "",
+        ylim = c(0,1),
+        col = "#E18E96")
+title(xlab = expression(gamma[delta]), line = 1.5)
+title(ylab = expression(alpha), line = 1.5)
+
+psi1 <- result_m2_sh2_psi1_simple[[5]]
+psi2 <- result_m2_sh2_psi2_simple[[5]]
+psi3 <- result_m2_sh2_psi3_simple[[5]]
+psi4 <- result_m2_sh2_psi4_simple[[5]]
+psi5 <- result_m2_sh2_psi5_simple[[5]]
+psi6 <- result_m2_sh2_psi6_simple[[5]]
+psi7 <- result_m2_sh2_psi7_simple[[5]]
+psi8 <- result_m2_sh2_psi8_simple[[5]]
+psi9 <- result_m2_sh2_psi9_simple[[5]]
+psi10 <- result_m2_sh2_psi10_simple[[5]]
+
+boxplot(colMeans(psi1), colMeans(psi2), colMeans(psi3), colMeans(psi4), colMeans(psi5), 
+        colMeans(psi6), colMeans(psi7), colMeans(psi8), colMeans(psi9), colMeans(psi10),
+        names = c("0.01", "0.1","0.2","0.3","0.4", "0.5","0.6","0.7","0.8","0.9"),
+        xlab = expression(gamma[delta]),
+        ylab = expression(gamma[delta]),
+        col = "lightseagreen")
+
+vioplot(colMeans(psi1), colMeans(psi2), colMeans(psi3), colMeans(psi4), colMeans(psi5), 
+        colMeans(psi6), colMeans(psi7), colMeans(psi8), colMeans(psi9), colMeans(psi10),
+        names = c("0.01","0.1","0.2","0.3","0.4", "0.5","0.6","0.7","0.8","0.9"),
+        xlab = "",
+        ylab = "",
+        col = "#E18E96")
+title(xlab = expression(gamma[delta]), line = 1.5)
+title(ylab = expression(gamma[delta]), line = 1.5)
+
+k1 <- result_m2_sh2_psi1_simple[[6]]
+k2 <- result_m2_sh2_psi2_simple[[6]]
+k3 <- result_m2_sh2_psi3_simple[[6]]
+k4 <- result_m2_sh2_psi4_simple[[6]]
+k5 <- result_m2_sh2_psi5_simple[[6]]
+k6 <- result_m2_sh2_psi6_simple[[6]]
+k7 <- result_m2_sh2_psi7_simple[[6]]
+k8 <- result_m2_sh2_psi8_simple[[6]]
+k9 <- result_m2_sh2_psi9_simple[[6]]
+k10 <- result_m2_sh2_psi10_simple[[6]]
+
+boxplot(colMeans(k1), colMeans(k2), colMeans(k3), colMeans(k4), colMeans(k5), 
+        colMeans(k6), colMeans(k7), colMeans(k8), colMeans(k9), colMeans(k10),
+        names = c("0.01", "0.1","0.2","0.3","0.4","0.5","0.6","0.7","0.8","0.9"),
+        xlab = expression(gamma[delta]),
+        ylab = expression(k),
+        col = "lightseagreen")
+abline(h = 0.1, col = "orange")
+
+vioplot(colMeans(k1), colMeans(k2), colMeans(k3), colMeans(k4), colMeans(k5), 
+        colMeans(k6), colMeans(k7), colMeans(k8), colMeans(k9), colMeans(k10),
+        names = c("0.01","0.1","0.2","0.3","0.4","0.5","0.6","0.7","0.8","0.9"),
+        xlab = "",
+        ylab = "",
+        col = "#E18E96")
+title(xlab = expression(gamma[delta]), line = 1.5)
+title(ylab = expression(k), line = 1.5)
+abline(h = 0.2, col = "#800020")
+
+res_psi8 <- result_m2_sh2_psi8_simple
+g_psi8 <- result_m2_sh2_psi8_simple[[1]][,10]
+h0_psi8 <- result_m2_sh2_psi8_simple[[2]][,10]
+sigma_psi8 <- result_m2_sh2_psi8_simple[[3]][,10]
+alpha_psi8 <- result_m2_sh2_psi8_simple[[4]][,10]
+psi_psi8 <- result_m2_sh2_psi8_simple[[5]][,10]
+k_psi8 <- result_m2_sh2_psi8_simple[[6]][,10]
+
+par(mfrow = c(2,3))
+plot(g_psi8, type = "l", ylab = expression(g ~ " with " ~ psi == 0.7), xlab = "iteration")
+abline(h = 9.8, col = "red")
+
+plot(h0_psi8, type = "l", ylab = expression(h0 ~ " with " ~ psi == 0.7), xlab = "iteration")
+abline(h = 46.46, col = "red")
+
+plot(sigma_psi8, type = "l", ylab = expression(sigma ~ " with " ~ psi == 0.7), xlab = "iteration")
+abline(h = 0.1, col = "red")
+
+plot(alpha_psi8, type = "l", ylab = expression(alpha ~ " with " ~ psi == 0.7), xlab = "iteration")
+
+plot(psi_psi8, type = "l", ylab = expression(psi_delta ~ " with " ~ psi == 0.7), xlab = "iteration")
+abline(h = 0.7, col = "red")
+
+plot(k_psi8, type = "l", ylab = expression(k ~ " with " ~ psi == 0.7), xlab = "iteration")
+abline(h = 0.2, col = "red")
+
+
+res_psi9 <- result_m2_sh2_psi9_simple
+g_psi9 <- result_m2_sh2_psi9_simple[[1]][,10]
+h0_psi9 <- result_m2_sh2_psi9_simple[[2]][,10]
+sigma_psi9 <- result_m2_sh2_psi9_simple[[3]][,10]
+alpha_psi9 <- result_m2_sh2_psi9_simple[[4]][,10]
+psi_psi9 <- result_m2_sh2_psi9_simple[[5]][,10]
+k_psi9 <- result_m2_sh2_psi9_simple[[6]][,10]
+
+par(mfrow = c(2,3))
+plot(g_psi9, type = "l", ylab = expression(g ~ " with " ~ psi == 0.8), xlab = "iteration")
+abline(h = 9.8, col = "red")
+
+plot(h0_psi9, type = "l", ylab = expression(h0 ~ " with " ~ psi == 0.8), xlab = "iteration")
+abline(h = 46.46, col = "red")
+
+plot(sigma_psi9, type = "l", ylab = expression(sigma ~ " with " ~ psi == 0.8), xlab = "iteration")
+abline(h = 0.1, col = "red")
+
+plot(alpha_psi9, type = "l", ylab = expression(alpha ~ " with " ~ psi == 0.8), xlab = "iteration")
+
+plot(psi_psi9, type = "l", ylab = expression(psi_delta ~ " with " ~ psi == 0.8), xlab = "iteration")
+abline(h = 0.8, col = "red")
+
+plot(k_psi9, type = "l", ylab = expression(k ~ " with " ~ psi == 0.8), xlab = "iteration")
+abline(h = 0.2, col = "red")
+
+################################################################################
+################################################################################
+################################################################################
+################################################################################
+################################################################################
+################################################################################
 set.seed(12345)
 
 k <- 0.2
