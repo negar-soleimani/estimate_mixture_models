@@ -1,3 +1,7 @@
+# ============================================================
+# ORACLE DIAGNOSTIC (delta fixed) — 3 scenarios
+# ============================================================
+
 rm(list = ls())
 library(truncnorm)
 library(readxl)
@@ -16,11 +20,11 @@ don <- don[don$drop == 1, ]
 t <- don$time
 y <- don$Height
 n <- length(t)
+
 t_min <- min(t)
 t_range <- max(t) - min(t)
 t <- (t - t_min) / t_range
 n <- length(y)
-a <- t_range
 
 # ----------------------------- Helper functions ------------------------------
 GP_covariance <- function(t, sigma_sq_delta, psi_delta) {
@@ -39,7 +43,7 @@ balldropg <- function(t, theta) {
   return(as.vector(h))
 }
 
-# ----------------------------- MCMC Step -------------------------------------#
+# ----------------------------- MCMC Step (delta fixed) ---------------------#
 mcmc_step_fix_delta <- function(y, t, n_iter, init, sigma_proposals, mcmc_parameters,
                                 Sigma_theta, delta_true, n_burnin=1000) {
   
@@ -70,7 +74,7 @@ mcmc_step_fix_delta <- function(y, t, n_iter, init, sigma_proposals, mcmc_parame
     mean1 <- f_theta
     mean2 <- f_theta + delta
     
-    # --- sample zeta (mixture allocation) ---
+    # --- sample zeta  ---
     log_w1 <- log(alpha_param) + dnorm(y, mean1, sqrt(sigma_sq_err), log = TRUE)
     log_w2 <- log(1 - alpha_param) + dnorm(y, mean2, sqrt(sigma_sq_err), log = TRUE)
     log_max <- pmax(log_w1, log_w2)
@@ -226,88 +230,119 @@ mcmc_step_fix_delta <- function(y, t, n_iter, init, sigma_proposals, mcmc_parame
               accept_rate_psi = accept_psi / n_iter))
 }
 
-# -----------------------------------------------------------------#
+# ============================================================
+# simulation
+# ============================================================
 set.seed(12345)
 
-n_samples <- 50
-n_iter <- 20000
-burn_in <- 5000
-
-sigma_props <- c(NA, NA, NA, NA, 0.5, NA)
-
-# (g,h0), sig2err, psi, k, alpha, freeze_delta_zeta
-# In this diagnostic: freeze_delta_zeta = TRUE (force zeta=1), and fix alpha (set alpha update OFF)
-mcmc_parameters <- c(TRUE, TRUE, TRUE, TRUE, FALSE, TRUE)
-
-# g, h0, sig, alpha, psi, k
-init <- c(9.8, 46.45, 0.01, 0.5, 0.5, 0.1)
-Sigma_theta <- matrix(c(0.5, 0, 0, 0.5), nrow = 2)
-
-# True values for simulation
-k_true <- 0.1
+g_true <- 9.8
+h0_true <- 46.45
 sigma_sq_err_true <- 0.01
+k_true <- 0.1
 psi_delta_true <- 0.5
 sigma_sq_delta_true <- sigma_sq_err_true / k_true
 
-g_mean <- numeric(n_samples)
-h0_mean <- numeric(n_samples)
-sig_mean <- numeric(n_samples)
-psi_mean <- numeric(n_samples)
-k_mean <- numeric(n_samples)
+n_samples <- 50
+n_iter    <- 10000
+burn_in   <- 5000
 
-accept_rate <- numeric(n_samples)
+sigma_props <- c(NA, NA, NA, NA, 0.5, NA)
+Sigma_theta <- matrix(c(0.5, 0, 0, 0.5), nrow = 2)
+
+delta_list_ref <- vector("list", n_samples)
+y_list_ref     <- vector("list", n_samples)
+
+f_true <- balldropg(t, c(g_true, h0_true))
 
 for (v in 1:n_samples) {
-  
-  delta_true <- as.vector(rmvnorm(1, rep(0, n),
-                                  GP_covariance(t, sigma_sq_delta_true, psi_delta_true)))
-  
-  y_1 <- balldropg(t, c(9.8, 46.45)) + rnorm(n, 0, sqrt(sigma_sq_err_true)) + delta_true
-  
-  res <- mcmc_step_fix_delta(y_1, t, n_iter, init, sigma_props, mcmc_parameters,
-                             Sigma_theta, delta_true = delta_true, n_burnin = burn_in)
-  
-  theta_chain <- res$theta
-  
-  g_mean[v]   <- mean(theta_chain[,1])
-  h0_mean[v]  <- mean(theta_chain[,2])
-  sig_mean[v] <- mean(theta_chain[,3])
-  psi_mean[v] <- mean(theta_chain[,5])
-  k_mean[v]   <- mean(theta_chain[,6])
-  
-  accept_rate[v] <- res$accept_rate_psi
+  delta_list_ref[[v]] <- as.vector(rmvnorm(1, rep(0, n),
+                                           GP_covariance(t, sigma_sq_delta_true, psi_delta_true)))
+  eps_v <- rnorm(n, 0, sqrt(sigma_sq_err_true))
+  y_list_ref[[v]] <- f_true + eps_v + delta_list_ref[[v]]
 }
 
-cat("Mean acceptance rate psi_delta:", mean(accept_rate), "\n")
+delta_true_plot <- delta_list_ref[[1]]
 
-par(mfrow=c(2,3))
-boxplot(g_mean, ylab="k", col = "lightseagreen")
-abline(h=9.8, col="orange")
-boxplot(h0_mean, ylab="k", col = "lightseagreen")
-abline(h=46.45, col="orange")
-boxplot(sig_mean, ylab="k", col = "lightseagreen")
-abline(h=0.01, col="orange")
-boxplot(psi_mean, ylab=expression(gamma[delta]), col = "lightseagreen")
-abline(h=psi_delta_true, col="orange")
-boxplot(k_mean, ylab="k", col = "lightseagreen")
-abline(h=k_true, col="orange")
+# ============================================================
+# run scenario and compute posterior means per dataset
+# ============================================================
+run_scenario <- function(mcmc_parameters, init_vec) {
+  
+  g_mean   <- numeric(n_samples)
+  h0_mean  <- numeric(n_samples)
+  sig_mean <- numeric(n_samples)
+  psi_mean <- numeric(n_samples)
+  k_mean   <- numeric(n_samples)
+  
+  for (v in 1:n_samples) {
+    res <- mcmc_step_fix_delta(y_list_ref[[v]], t, n_iter, init_vec, sigma_props,
+                               mcmc_parameters, Sigma_theta,
+                               delta_true = delta_list_ref[[v]], n_burnin = burn_in)
+    
+    theta_chain <- res$theta
+    
+    g_mean[v]   <- mean(theta_chain[,1])
+    h0_mean[v]  <- mean(theta_chain[,2])
+    sig_mean[v] <- mean(theta_chain[,3])
+    psi_mean[v] <- mean(theta_chain[,5])
+    k_mean[v]   <- mean(theta_chain[,6])
+  }
+  
+  par(mfrow=c(1,3))
+  # boxplot(g_mean,   ylab="g", col = "lightseagreen")
+  # abline(h=g_true, col="orange", lwd=2)
+  # 
+  # boxplot(h0_mean,  ylab="h0", col = "lightseagreen")
+  # abline(h=h0_true, col="orange", lwd=2)
+  # 
+  # boxplot(sig_mean, ylab=expression(lambda^2), col = "lightseagreen")
+  # abline(h=sigma_sq_err_true, col="orange", lwd=2)
+  # 
+  boxplot(psi_mean, ylab=expression(gamma[delta]), col = "lightseagreen")
+  abline(h=psi_delta_true, col="orange", lwd=2)
+  
+  boxplot(k_mean,   ylab="k", col = "lightseagreen")
+  abline(h=k_true, col="orange", lwd=2)
+  
+  plot(delta_true_plot, type = "l", ylab = expression(delta[true]), col = "lightseagreen", xlab="Index", lwd=2)
+  
+  invisible(list(g_mean=g_mean, h0_mean=h0_mean, sig_mean=sig_mean, psi_mean=psi_mean, k_mean=k_mean))
+}
 
 
-# theta_chain <- res$theta
-# 
-# psi_delta_true <- 0.5 
-# k_true <- 0.1     
+# init = c(g, h0, sig, alpha, psi, k)
+init_base <- c(g_true, h0_true, sigma_sq_err_true, 0.5, psi_delta_true, k_true)
 
-par(mfrow = c(1,2))
+# ============================================================
+# Scenario A: delta fixed, estimate k and psi_delta
+#   freeze_delta_zeta = TRUE
+#   alpha fixed (OFF)  => mcmc_parameters[5]=FALSE
+# ============================================================
+mcmc_A <- c(TRUE, TRUE, TRUE, TRUE, FALSE, TRUE)
+init_A <- init_base
+out_A  <- run_scenario(mcmc_A, init_A)
 
-# Trace plot for psi_delta
-plot(theta_chain[,5], type = "l",
-     xlab = "iteration", ylab = expression(psi_delta),
-     main = expression("Trace plot: " * psi_delta))
-abline(h = psi_delta_true, col = "orange", lwd = 2)
+# ============================================================
+# Scenario B: delta fixed, k fixed = k_true, estimate psi_delta
+#   k fixed => mcmc_parameters[4] = FALSE
+#   freeze_delta_zeta = TRUE
+#   alpha fixed (OFF)
+# ============================================================
+mcmc_B <- c(TRUE, TRUE, TRUE, FALSE, FALSE, TRUE)
+init_B <- init_base
+init_B[6] <- k_true
+out_B  <- run_scenario(mcmc_B, init_B)
 
-# Trace plot for k
-plot(theta_chain[,6], type = "l",
-     xlab = "iteration", ylab = "k",
-     main = "Trace plot: k")
-abline(h = k_true, col = "orange", lwd = 2)
+# ============================================================
+# Scenario C: delta fixed, psi fixed = psi_true, estimate k
+#   psi fixed => mcmc_parameters[3] = FALSE
+#   freeze_delta_zeta = TRUE
+#   alpha fixed (OFF)
+# ============================================================
+mcmc_C <- c(TRUE, TRUE, FALSE, TRUE, FALSE, TRUE)
+init_C <- init_base
+init_C[5] <- psi_delta_true
+out_C  <- run_scenario(mcmc_C, init_C)
+
+# ============================================================
+cat("Range of fixed plotted delta:", range(delta_true_plot), "\n")
