@@ -221,7 +221,7 @@ burn_in         <- 100
 results_real_sh2 <- mcmc_step6(
   y = y, t = t,
   n_iter = n_iter,
-  init   = init_base,
+  init   = init,
   sigma_proposals = sigma_proposals,
   mcmc_parameters = mcmc_parameters,
   Sigma_theta     = Sigma_theta,

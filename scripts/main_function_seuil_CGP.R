@@ -128,8 +128,8 @@ mcmc_step6 <- function(y, t, n_iter, init, sigma_proposals,
                             sigma = Sigmapost_theta)
     
     h0 <- theta_sample[1];  g <- theta_sample[2]
-    # theta[1] <- g
-    # theta[2] <- h0
+    theta[1] <- g
+    theta[2] <- h0
     
     if(g_init){
       g <- init[1]
@@ -162,10 +162,10 @@ mcmc_step6 <- function(y, t, n_iter, init, sigma_proposals,
       
       residual2 <- y[idx2] - f_theta[idx2] - delta[idx2]
       rss2   <- sum(residual2^2)
-      
+      d <- 2
       # When we consider the Jeffreys prior, I use the following code:
-      rate_err <- 0.5 * (( rss1 + rss2 + (theta[6] * quad_form_delta)))
-      shape_err <- n + 1/2 #n + 1#/2 #4 + n
+      rate_err <- (0.5 * ( rss1 + rss2 + (theta[6] * quad_form_delta)))
+      shape_err <- n + (d/2) #n + 1#/2 #4 + n
       # When the prior is the sigma parameter of the "inverse gamma distribution", I use the following code:
       # rate_err <- 1 + (0.5 * ( rss1 + rss2 + (k * quad_form_delta)))
       # shape_err <- 2 + n

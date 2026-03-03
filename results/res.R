@@ -312,7 +312,8 @@ boxplot(
 abline(h = 46.45045, lty = 2)
 
 boxplot(
-  sigma_sq_err_sh2[, 50],
+  colMeans(sigma_sq_err_sh2),
+  #sigma_sq_err_sh2[, 50],
   ylab = expression(lambda^2),
   #ylim = c(0.01, 0.0452),
   #xlab = "",
@@ -360,6 +361,9 @@ ggplot(df_alpha, aes(x = alpha)) +
 plot(sigma_sq_err_sh2[ , 50], type = "l", col = "#4CCDC9")
 abline(h = 0.01)
 
+g_median <- apply(g_sh2, 2, median)
+h0_median <- apply(h0_sh2, 2, median)
+sigma_median <- apply(sigma_sq_err_sh2, 2, median)
 
 g_mat <- result_m0_sh2_classic_classic[[1]]
 h0_mat <- result_m0_sh2_classic_classic[[2]]
@@ -395,7 +399,64 @@ legend(x=4.2, y=47, legend=c("Simulated data", "Predictions",
                              "True code"), lwd=rep(2,2), col=c("gold", "orange2","blue"), 
        cex=1, pch=c(19,NA,NA), lty=c(0,1,1))
 
+##-------------------------------------------------
+## Mode
+##-------------------------------------------------
 
+# ---- posterior mode (statistical) from kernel density ----
+post_mode <- function(x, bounds = NULL, log_scale = FALSE, adjust = 1) {
+  x <- x[is.finite(x)]
+  if (length(x) < 5) return(NA_real_)
+  
+  if (log_scale) {
+    x <- x[x > 0]
+    lx <- log(x)
+    d  <- density(lx, adjust = adjust)
+    return(exp(d$x[which.max(d$y)]))
+  } else {
+    if (!is.null(bounds)) {
+      d <- density(x, from = bounds[1], to = bounds[2], cut = 0, adjust = adjust)
+    } else {
+      d <- density(x, adjust = adjust)
+    }
+    return(d$x[which.max(d$y)])
+  }
+}
+
+g_mode   <- apply(g_sh2, 2, post_mode) 
+h0_mode  <- apply(h0_sh2, 2, post_mode)
+sig_mode <- apply(sigma_sq_err_sh2, 2, post_mode, log_scale=TRUE) 
+
+alpha_mode <- apply(alpha_sh2,     2, post_mode, bounds=c(0,1))  
+psi_mode   <- apply(psi_delta_sh2, 2, post_mode, bounds=c(0.1,1)) 
+k_mode     <- apply(k_sh2,         2, post_mode, bounds=c(0,1)) 
+
+par(mfrow = c(1, 3),
+    mar   = c(3, 4, 1, 1))
+
+boxplot(
+  g_mode,
+  ylab = "g",
+  col  = "lightseagreen",
+  main = ""
+)
+abline(h = 9.8, lty = 2)
+
+boxplot(
+  h0_mode,
+  ylab = "h0",
+  col  = "lightseagreen",
+  main = ""
+)
+abline(h = 46.45045, lty = 2)
+
+boxplot(
+  sig_mode,
+  ylab = expression(lambda^2),
+  col  = "lightseagreen",
+  main = ""
+)
+abline(h = 0.01, lty = 2)
 ##-------------------------------------------------
 ## Empirical coverage of 50% and 95% credible CIs
 ##-------------------------------------------------
