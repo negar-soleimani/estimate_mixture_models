@@ -312,8 +312,8 @@ boxplot(
 abline(h = 46.45045, lty = 2)
 
 boxplot(
-  colMeans(sigma_sq_err_sh2),
-  #sigma_sq_err_sh2[, 50],
+  #colMeans(sigma_sq_err_sh2),
+  sigma_sq_err_sh2[, 50],
   ylab = expression(lambda^2),
   #ylim = c(0.01, 0.0452),
   #xlab = "",
@@ -364,6 +364,8 @@ abline(h = 0.01)
 g_median <- apply(g_sh2, 2, median)
 h0_median <- apply(h0_sh2, 2, median)
 sigma_median <- apply(sigma_sq_err_sh2, 2, median)
+
+sigma_median <- apply(sigma_sq_err_sh2, 2, mode)
 
 g_mat <- result_m0_sh2_classic_classic[[1]]
 h0_mat <- result_m0_sh2_classic_classic[[2]]
@@ -1060,9 +1062,91 @@ abline(h = 0.2, col = "red")
 ################################################################################
 ################################################################################
 ################################################################################
+###########################  seuil  ############################################
+################################################################################
+################################################################################
+# posterior density of alpha (aggregated draws over all datasets)
+alpha_vec <- as.vector(alpha_chain)
+df_alpha <- data.frame(alpha = alpha_vec)
+
+p_alpha <- ggplot(df_alpha, aes(x = alpha)) +
+  geom_density(fill = "#4CCDC9", color = "lightseagreen", alpha = 0.6, linewidth = 1) +
+  labs(
+    x = expression(alpha),
+    y = "Density",
+    title = "Posterior density of α (Scenario II: thresholded allocations)"
+  ) +
+  theme_minimal(base_size = 13) +
+  theme(plot.title = element_text(hjust = 0.5))
+
+
+v <- 1
+delta_chain_v <- delta_list[[v]]     # (iter x n)
+zeta_chain_v  <- zeta_list[[v]]      # (iter x n)
+
+# pointwise inclusion probabilities
+p_hat <- colMeans(zeta_chain_v == 2)
+
+# posterior summary for delta
+delta_mean <- colMeans(delta_chain_v)
+delta_ci   <- t(apply(delta_chain_v, 2, quantile, probs = c(0.025, 0.975)))
+
+df_loc <- data.frame(
+  i = 1:n,
+  p_hat = p_hat,
+  d_mean = delta_mean,
+  d_low  = delta_ci[, 1],
+  d_high = delta_ci[, 2]
+)
+
+library(ggplot2)
+library(gridExtra)
+
+p_delta <- ggplot(df_loc, aes(x = i, y = d_mean)) +
+  geom_ribbon(aes(ymin = d_low, ymax = d_high), fill = "lightseagreen", alpha = 0.25) +
+  geom_line(color = "lightseagreen", linewidth = 0.9) +
+  geom_hline(yintercept = 0, linetype = "dashed") +
+  geom_vline(xintercept = ndis + 0.5, linetype = "dashed") +
+  labs(
+    x = "Index i",
+    y = expression(delta(x[i])),
+    title = expression("Posterior summary of " * delta(x[i]))
+  ) +
+  theme_minimal(base_size = 13) +
+  theme(plot.title = element_text(hjust = 0.5))
+
+p_zeta <- ggplot(df_loc, aes(x = i, y = p_hat)) +
+  geom_col(fill = "lightseagreen") +
+  geom_vline(xintercept = ndis + 0.5, linetype = "dashed") +
+  labs(
+    x = "Index i",
+    y = expression(hat(p)[i]),
+    title = expression(hat(p)[i] == P(zeta[i] == 1 ~ "|" ~ Y))
+  ) +
+  ylim(0, 1) +
+  theme_minimal(base_size = 13) +
+  theme(plot.title = element_text(hjust = 0.5))
+
+# Bottom block = delta + pointwise inclusion probabilities
+bottom_block <- arrangeGrob(
+  p_delta, p_zeta,
+  ncol = 1,
+  heights = c(1, 1)
+)
+
+grid.arrange(
+  p_alpha,
+  bottom_block,
+  ncol = 1,
+  heights = c(0.9, 2.1)
+)
 ################################################################################
 ################################################################################
 ################################################################################
+################################################################################
+################################################################################
+################################################################################
+
 set.seed(12345)
 
 k <- 0.2
