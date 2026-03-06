@@ -217,9 +217,15 @@ k <- 0.1
 sim_psi_delta <- 0.5
 sigma_sq_err <- 0.01
 sigma_sq_delta <- sigma_sq_err / k
+n_iter <- 10000
+burn_in <- 2500
+sigma_props <- c(NA, NA, NA, NA, 0.5, NA)
+
+# init = c(g, h0, sig2err, alpha, psidelta, k)
+init <- c(9.8, 46.45, 0.01, 0.5, 0.5, 0.1)
 
 res <- mcmc_step6(
-  y = y_1, t = t, n_iter = n_iter, init = init, sigma_proposals = sigma_props,
+  y = y, t = t, n_iter = n_iter, init = init, sigma_proposals = sigma_props,
   g_init = FALSE, 
   h0_init = FALSE,
   sig2er_init = FALSE,
@@ -231,6 +237,30 @@ res <- mcmc_step6(
   seuil = FALSE,  
   s = 0.3       
 )
+
+View(res)
+g <- res[["theta"]][ ,1]
+h0 <- res[["theta"]][ ,2]
+sigma <- res[["theta"]][ ,3]
+alpha <- res[["theta"]][ ,4]
+psi <- res[["theta"]][ ,5]
+k <- res[["theta"]][ ,6]
+
+boxplot(g)
+abline(h = 9.8)
+boxplot(h0)
+abline(h = 45.45)
+boxplot(sigma)
+abline(h = 0.01)
+boxplot(alpha)
+boxplot(psi)
+abline(h = 0.5)
+boxplot(k)
+abline(h = 0.1)
+
+delta <- res[["delta"]]
+boxplot(delta)
+zeta <- res[["zeta"]]
 
 # init_base       <- c(9.8, 46.45, 0.08, 0.7, 0.5, 0.2)
 # sigma_proposals <- c(NA,NA,NA,NA,0.5,NA)
