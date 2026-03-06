@@ -207,26 +207,47 @@ mcmc_step6 <- function(y, t, n_iter, init, sigma_proposals, mcmc_parameters, Sig
   return(list(theta = chain_theta, delta = chain_delta, zeta = chain_zeta, loglik = loglik_chain, accept_rate_psi = accept_psi / n_iter))
 }
 
+source("data/prepare_data.R")
+source("scripts/physics_model.R")
+source("scripts/helper_function_CGP.R")
+source("scripts/main_function_seuil_CGP.R")
 
 set.seed(12345)
+k <- 0.1
+sim_psi_delta <- 0.5
+sigma_sq_err <- 0.01
+sigma_sq_delta <- sigma_sq_err / k
 
-init_base       <- c(9.8, 46.45, 0.08, 0.7, 0.5, 0.2)
-sigma_proposals <- c(NA,NA,NA,NA,0.5,NA)
-mcmc_parameters <- c(FALSE, TRUE, TRUE, TRUE, TRUE)
-#Sigma_theta     <- matrix(c(0.1,0,0,0.1),2)
-Sigma_theta     <- matrix(c(0.5,0,0,0.5),2)
-n_iter          <- 5000
-burn_in         <- 100
-
-results_real_sh2 <- mcmc_step6(
-  y = y, t = t,
-  n_iter = n_iter,
-  init   = init,
-  sigma_proposals = sigma_proposals,
-  mcmc_parameters = mcmc_parameters,
-  Sigma_theta     = Sigma_theta,
-  n_burnin        = burn_in
+res <- mcmc_step6(
+  y = y_1, t = t, n_iter = n_iter, init = init, sigma_proposals = sigma_props,
+  g_init = FALSE, 
+  h0_init = FALSE,
+  sig2er_init = FALSE,
+  alpha_init = FALSE,
+  psi_init = FALSE,
+  k_init = FALSE,
+  Sigma_theta = matrix(c(0.5, 0, 0, 0.5), 2),
+  n_burnin = burn_in,
+  seuil = FALSE,  
+  s = 0.3       
 )
+
+# init_base       <- c(9.8, 46.45, 0.08, 0.7, 0.5, 0.2)
+# sigma_proposals <- c(NA,NA,NA,NA,0.5,NA)
+# mcmc_parameters <- c(FALE, TRUE, TRUE, TRUE, TRUE)
+# #Sigma_theta     <- matrix(c(0.1,0,0,0.1),2)
+# Sigma_theta     <- matrix(c(0.5,0,0,0.5),2)
+# n_iter          <- 5000
+# burn_in         <- 100
+# results_real_sh2 <- mcmc_step6(
+#   y = y, t = t,
+#   n_iter = n_iter,
+#   init   = init,
+#   sigma_proposals = sigma_proposals,
+#   mcmc_parameters = mcmc_parameters,
+#   Sigma_theta     = Sigma_theta,
+#   n_burnin        = burn_in
+# )
 
 g_chain <- results_real_sh2$theta[,1]
 h0_chain <- results_real_sh2$theta[,2]
