@@ -61,7 +61,8 @@ GP_correlation <- function(t, psi_delta) {
   if (is.null(H_inv)) return(NULL)
   
   K_star <- R_se - h_mat %*% H_inv %*% t(h_mat)
-  #K_star <- 0.5 * (K_star + t(K_star))  # symmetrize
+  K_star <- 0.5 * (K_star + t(K_star))  # symmetrize
+  K_star <- K_star + diag(1e-10, nrow(K_star))
   K_star
 }
 
@@ -72,3 +73,47 @@ GP_covariance_star_complete <- function(t, sigma_sq_err, k, psi_delta) {
   }
   (sigma_sq_err / k) * K_star
 }
+
+symm <- function(M) 0.5 * (M + t(M))
+
+# Adaptive-jitter Cholesky:
+# تلاش می‌کند chol(M + jitter I) را پاس کند. jitter را ضربی زیاد می‌کند.
+# اگر باز هم fail شد، eigen-fallback می‌زند و SPD می‌کند.
+chol_adapt <- function(M,
+                       jitter0 = 1e-10,
+                       mult    = 10,
+                       max_tries = 12,
+                       jitter_max = 1e-2) {
+  M <- symm(M)
+  n <- nrow(M)
+  jitter <- jitter0
+  
+  for (i in 1:max_tries) {
+    R <- tryCatch(chol(M + diag(jitter, n)),
+                  error = function(e) NULL)
+    if (!is.null(R)) {
+      return(list(chol = R,
+                  Mpd  = M + diag(jitter, n),
+                  jitter = jitter,
+                  tries = i,
+                  fallback = FALSE))
+    }
+    jitter <- jitter * mult
+    if (jitter > jitter_max) break
+  }
+  
+  # Fallback: eigenvalue floor
+  eig <- eigen(M, symmetric = TRUE)
+  vals <- pmax(eig$values, jitter0)
+  Mpd <- eig$vectors %*% diag(vals, length(vals)) %*% t(eig$vectors)
+  Mpd <- symm(Mpd)
+  R <- chol(Mpd)
+  
+  list(chol = R,
+       Mpd  = Mpd,
+       jitter = NA_real_,
+       tries = max_tries,
+       fallback = TRUE)
+}
+
+inv_from_chol <- function(cholR) chol2inv(cholR)

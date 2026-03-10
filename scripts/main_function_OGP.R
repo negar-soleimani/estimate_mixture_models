@@ -144,16 +144,25 @@ mcmc_step6 <- function(y, t, n_iter, init, sigma_proposals, mcmc_parameters, Sig
     
     #-------------------------------- Gibbs step for sigma_sq_err --------------------------------#   
     
+    # K_star_psi <- GP_correlation(t, psi_delta)
+    # inv_Kstar_psi <- tryCatch(chol2inv(chol(K_star_psi)), error = function(e) NULL)
+    # 
+    # if (is.null(inv_Kstar_psi)) {
+    #   quad_form_delta <- -Inf
+    # } else {
+    #   quad_form_delta <- as.numeric(t(delta) %*% inv_Kstar_psi %*% delta)
+    # }
+    # 
+    # if (quad_form_delta == -Inf) next
+    
     K_star_psi <- GP_correlation(t, psi_delta)
-    inv_Kstar_psi <- tryCatch(chol2inv(chol(K_star_psi)), error = function(e) NULL)
     
-    if (is.null(inv_Kstar_psi)) {
-      quad_form_delta <- -Inf
-    } else {
-      quad_form_delta <- as.numeric(t(delta) %*% inv_Kstar_psi %*% delta)
-    }
+    Kpd <- chol_adapt(K_star_psi, jitter0 = 1e-10, jitter_max = 1e-2)
+    inv_Kstar_psi <- inv_from_chol(Kpd$chol)
     
-    if (quad_form_delta == -Inf) next
+    quad_form_delta <- as.numeric(t(delta) %*% inv_Kstar_psi %*% delta)
+    
+    quad_form_delta <- max(quad_form_delta, 0)
     
     f_theta <- balldropg(t, c(g, h0))
     idx1 <- which(zeta == 1)
@@ -212,7 +221,11 @@ mcmc_step6 <- function(y, t, n_iter, init, sigma_proposals, mcmc_parameters, Sig
     
     K_star_prop <- GP_correlation(t, psi_prop)
     Sigma_delta_cur  <- GP_covariance_star_complete(t, sigma_sq_err, k, psi_delta)
+    Sigma_delta_cur <- 0.5 * ( Sigma_delta_cur + t( Sigma_delta_cur))
+    Sigma_delta_cur <-  Sigma_delta_cur + diag(1e-10, nrow(Sigma_delta_cur))
     Sigma_delta_prop <- GP_covariance_star_complete(t, sigma_sq_err, k, psi_prop)
+    Sigma_delta_prop <- 0.5 * (Sigma_delta_prop + t(Sigma_delta_prop))
+    Sigma_delta_prop <- Sigma_delta_prop + diag(1e-10, nrow(Sigma_delta_prop))
     log_prop_current <- log(dtruncnorm(psi_delta, a = 0.1, b = 1, mean = psi_prop,  sd = sigma_proposals[5]))
     log_prop_prop    <- log(dtruncnorm(psi_prop,  a = 0.1, b = 1, mean = psi_delta, sd = sigma_proposals[5]))
     log_prior_current <- dunif(psi_delta, min = 0.1, max = 1, log = TRUE)
