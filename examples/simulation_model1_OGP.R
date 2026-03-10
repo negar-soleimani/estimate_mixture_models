@@ -1,3 +1,66 @@
+source("data/prepare_data.R")
+source("scripts/physics_model.R")
+source("scripts/helper_function_OGP.R")
+source("scripts/main_function_OGP.R")
+set.seed(12345)
+n_iter <- 10000
+burn_in <- 2500
+sigma_proposals <- c(NA, NA, NA, NA, 0.5, NA)
+a <- t_range
+# init = c(g, h0, sig2err, alpha, psidelta, k)
+init <- c(9.8, 46.45, 0.01, 0.5, 0.5, 0.1)
+# (g, h0), sigma, psi, k, alpha
+mcmc_parameters <- c(TRUE, TRUE, TRUE, TRUE, TRUE)
+Sigma_theta     <- matrix(c(0.5, 0, 0, 0.5), nrow = 2)
+
+# res <- mcmc_step6(
+#   y = y, t = t, n_iter = n_iter, init = init, sigma_proposals = sigma_props,
+#   g_init = TRUE, 
+#   h0_init = FALSE,
+#   sig2er_init = FALSE,
+#   alpha_init = FALSE,
+#   psi_init = FALSE,
+#   k_init = FALSE,
+#   Sigma_theta = matrix(c(0.5, 0, 0, 0.5), 2),
+#   n_burnin = burn_in,
+#   seuil = TRUE,  
+#   s = 0.3       
+# )
+result <- mcmc_step6(y, t, n_iter, init, sigma_proposals, mcmc_parameters, Sigma_theta, n_burnin=1000, a_psi, b_psi)
+#View(result)
+
+g <- result[["theta"]][, 1]
+h0 <- result[["theta"]][, 2]
+sig <- result[["theta"]][, 3]
+alpha <- result[["theta"]][, 4]
+psi <- result[["theta"]][, 5]
+k <- result[["theta"]][, 6]
+
+delta <- result[["delta"]]
+zeta <- result[["zeta"]]
+
+boxplot(delta)
+
+par(mfrow = c(2,3))
+boxplot(g)
+boxplot(h0)
+boxplot(sig)
+boxplot(alpha)
+boxplot(psi)
+boxplot(k)
+
+
+g1 <- rep(1, n)
+g2 <- -0.5 * (t * t_range)^2
+
+w <- rep(1/n, n)
+
+proj1 <- apply(delta, 1, function(d) sum(w * g1 * d))
+proj2 <- apply(delta, 1, function(d) sum(w * g2 * d))
+
+summary(proj1)
+summary(proj2)
+#########################################
 set.seed(12345)
 
 k <- 0.2
