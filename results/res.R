@@ -312,8 +312,8 @@ boxplot(
 abline(h = 46.45045, lty = 2)
 
 boxplot(
-  #colMeans(sigma_sq_err_sh2),
-  sigma_sq_err_sh2[, 50],
+  colMeans(sigma_sq_err_sh2),
+  #sigma_sq_err_sh2[, 50],
   ylab = expression(lambda^2),
   #ylim = c(0.01, 0.0452),
   #xlab = "",
@@ -1066,6 +1066,7 @@ abline(h = 0.2, col = "red")
 ################################################################################
 ################################################################################
 # posterior density of alpha (aggregated draws over all datasets)
+
 alpha_vec <- as.vector(alpha_chain)
 df_alpha <- data.frame(alpha = alpha_vec)
 

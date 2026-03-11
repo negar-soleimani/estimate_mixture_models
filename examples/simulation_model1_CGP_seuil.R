@@ -5,7 +5,7 @@ source("scripts/main_function_seuil_CGP.R")
 
 # ------ Scenario (I): Baseline mixture inference without thresholding; seuil == FALSE -------------#
 # ------ Scenario (II): Thresholded allocations; seuil == TRUE -------------#
-# ------ Scenario (I): Effect of theta and delta confounding under thresholded allocations; seuil == TRUE, g, h0 == FALSE -------------#
+# ------ Scenario (III): Effect of theta and delta confounding under thresholded allocations; seuil == TRUE, g, h0 == FALSE -------------#
 
 set.seed(12345)
 k <- 0.1
@@ -31,7 +31,7 @@ make_envelope <- function(n, ndis, type = c("step","ramp")) {
 
 w <- make_envelope(n, ndis, envelope_type)
 
-n_samples <- 50
+n_samples <- 10
 n_iter <- 10000
 burn_in <- 2500
 sigma_props <- c(NA, NA, NA, NA, 0.5, NA)
@@ -66,7 +66,7 @@ for (v in 1:n_samples) {
   res <- mcmc_step6(
     y = y_1, t = t, n_iter = n_iter, init = init, sigma_proposals = sigma_props,
     g_init = TRUE, 
-    h0_init = TRUE,
+    h0_init = FALSE,
     sig2er_init = FALSE,
     alpha_init = FALSE,
     psi_init = FALSE,
