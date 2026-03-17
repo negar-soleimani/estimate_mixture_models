@@ -66,7 +66,7 @@ for (v in 1:n_samples) {
   res <- mcmc_step6(
     y = y_1, t = t, n_iter = n_iter, init = init, sigma_proposals = sigma_props,
     g_init = TRUE, 
-    h0_init = FALSE,
+    h0_init = TRUE,
     sig2er_init = FALSE,
     alpha_init = FALSE,
     psi_init = FALSE,
