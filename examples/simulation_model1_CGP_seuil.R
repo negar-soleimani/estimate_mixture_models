@@ -5,7 +5,7 @@ source("scripts/main_function_seuil_CGP.R")
 
 # ------ Scenario (I): Baseline mixture inference without thresholding; seuil == FALSE -------------#
 # ------ Scenario (II): Thresholded allocations; seuil == TRUE -------------#
-# ------ Scenario (III): Effect of theta and delta confounding under thresholded allocations; seuil == TRUE, g, h0 == FALSE -------------#
+# ------ Scenario (III): Effect of theta and delta confounding under thresholded allocations; seuil == TRUE, g, h0 == TRUE -------------#
 
 set.seed(12345)
 k <- 0.1
