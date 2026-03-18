@@ -845,7 +845,7 @@ boxplot(colMeans(g1), colMeans(g2), colMeans(g3), colMeans(g4), colMeans(g5),
         xlab = expression(gamma[delta]),
         ylab = "g",
         col = "lightseagreen")
-abline(h=9.8, col = "orange")
+abline(h=9.8, col = "orange", lwd = 2)
 
 par(mgp = c(3, 0.7, 0)) 
 library(vioplot)
@@ -880,7 +880,7 @@ boxplot(colMeans(h01), colMeans(h02), colMeans(h03), colMeans(h04), colMeans(h05
         xlab = expression(gamma[delta]),
         ylab = "h0",
         col = "lightseagreen")
-abline(h = 46.45, col = "orange")
+abline(h = 46.45, col = "orange", lwd = 2)
 
 vioplot(colMeans(h01), colMeans(h02), colMeans(h03), colMeans(h04), colMeans(h05), 
         colMeans(h06), colMeans(h07), colMeans(h08), colMeans(h09), colMeans(h010),
@@ -909,7 +909,7 @@ boxplot(colMeans(sigma1), colMeans(sigma2), colMeans(sigma3), colMeans(sigma4), 
         xlab = expression(gamma[delta]),
         ylab = expression(lambda^2),
         col = "lightseagreen")
-abline(h = 0.01, col = "orange")
+abline(h = 0.01, col = "orange", lwd = 2)
 
 vioplot(colMeans(sigma1), colMeans(sigma2), colMeans(sigma3), colMeans(sigma4), colMeans(sigma5), 
         colMeans(sigma6), colMeans(sigma7), colMeans(sigma8), colMeans(sigma9), colMeans(sigma10),
@@ -994,7 +994,7 @@ boxplot(colMeans(k1), colMeans(k2), colMeans(k3), colMeans(k4), colMeans(k5),
         xlab = expression(gamma[delta]),
         ylab = expression(k),
         col = "lightseagreen")
-abline(h = 0.1, col = "orange")
+abline(h = 0.1, col = "orange", lwd = 2)
 
 vioplot(colMeans(k1), colMeans(k2), colMeans(k3), colMeans(k4), colMeans(k5), 
         colMeans(k6), colMeans(k7), colMeans(k8), colMeans(k9), colMeans(k10),
@@ -1022,7 +1022,7 @@ plot(h0_psi8, type = "l", ylab = expression(h0 ~ " with " ~ psi == 0.7), xlab = 
 abline(h = 46.46, col = "red")
 
 plot(sigma_psi8, type = "l", ylab = expression(sigma ~ " with " ~ psi == 0.7), xlab = "iteration")
-abline(h = 0.1, col = "red")
+abline(h = 0.01, col = "red")
 
 plot(alpha_psi8, type = "l", ylab = expression(alpha ~ " with " ~ psi == 0.7), xlab = "iteration")
 
