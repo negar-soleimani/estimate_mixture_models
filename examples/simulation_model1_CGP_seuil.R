@@ -3,9 +3,10 @@ source("scripts/physics_model.R")
 source("scripts/helper_function_CGP.R")
 source("scripts/main_function_seuil_CGP.R")
 
-# ------ Scenario (I): Baseline mixture inference without thresholding; seuil == FALSE -------------#
-# ------ Scenario (II): Thresholded allocations; seuil == TRUE -------------#
-# ------ Scenario (III): Effect of theta and delta confounding under thresholded allocations; seuil == TRUE, g, h0 == TRUE -------------#
+# ------ Scenario (I):  seuil == FALSE, g == FALSE -------------#
+# ------ Scenario (II):  g == TRUE, seuil == FALSE -------------#
+# ------ Scenario (III): g == FALSE, seuil == TRUE -------------#
+# ------ Scenario (IIII): seuil == TRUE, g == TRUE -------------#
 
 set.seed(12345)
 k <- 0.1
@@ -65,15 +66,15 @@ for (v in 1:n_samples) {
   # -------- Scenario (I), (II), (III) --------
   res <- mcmc_step6(
     y = y_1, t = t, n_iter = n_iter, init = init, sigma_proposals = sigma_props,
-    g_init = FALSE, 
-    h0_init = FALSE,
+    g_init = TRUE, 
+    h0_init = TRUE,
     sig2er_init = FALSE,
     alpha_init = FALSE,
     psi_init = FALSE,
     k_init = FALSE,
     Sigma_theta = matrix(c(0.5, 0, 0, 0.5), 2),
     n_burnin = burn_in,
-    seuil = FALSE,  
+    seuil = TRUE,  
     s = 0.3       
   )
   
@@ -90,176 +91,453 @@ for (v in 1:n_samples) {
   accept_rate[v]   <- res$accept_rate_psi
 }
 
-result_scenario_I <- list(
-  g_chain, h0_chain, sigma_chain, alpha_chain, psi_chain, k_chain,
-  delta_list, zeta_list, loglik_mat, accept_rate, y_obs = y_obs,
+# ------ Scenario (I):  seuil == FALSE, g == FALSE -------------#
+# result_scenario_I <- list(
+#   g_chain = g_chain,
+#   h0_chain = h0_chain,
+#   sigma_chain = sigma_chain,
+#   alpha_chain = alpha_chain,
+#   psi_chain = psi_chain,
+#   k_chain = k_chain,
+#   delta_list = delta_list,
+#   zeta_list = zeta_list,
+#   loglik_mat = loglik_mat,
+#   accept_rate = accept_rate,
+#   y_obs = y_obs,
+#   envelope = w
+# )
+
+# ------ Scenario (II):  g == TRUE, seuil == FALSE -------------#
+# result_scenario_II <- list(
+#   g_chain = g_chain,
+#   h0_chain = h0_chain,
+#   sigma_chain = sigma_chain,
+#   alpha_chain = alpha_chain,
+#   psi_chain = psi_chain,
+#   k_chain = k_chain,
+#   delta_list = delta_list,
+#   zeta_list = zeta_list,
+#   loglik_mat = loglik_mat,
+#   accept_rate = accept_rate,
+#   y_obs = y_obs,
+#   envelope = w
+# )
+
+# ------ Scenario (III): g == FALSE, seuil == TRUE -------------#
+# result_scenario_III <- list(
+#   g_chain = g_chain,
+#   h0_chain = h0_chain,
+#   sigma_chain = sigma_chain,
+#   alpha_chain = alpha_chain,
+#   psi_chain = psi_chain,
+#   k_chain = k_chain,
+#   delta_list = delta_list,
+#   zeta_list = zeta_list,
+#   loglik_mat = loglik_mat,
+#   accept_rate = accept_rate,
+#   y_obs = y_obs,
+#   envelope = w
+# )
+
+# ------ Scenario (IIII): seuil == TRUE, g == TRUE -------------#
+result_scenario_IIII <- list(
+  g_chain = g_chain,
+  h0_chain = h0_chain,
+  sigma_chain = sigma_chain,
+  alpha_chain = alpha_chain,
+  psi_chain = psi_chain,
+  k_chain = k_chain,
+  delta_list = delta_list,
+  zeta_list = zeta_list,
+  loglik_mat = loglik_mat,
+  accept_rate = accept_rate,
+  y_obs = y_obs,
   envelope = w
 )
+#save(result_scenario_I, file = "/Users/negarsoleimani/Documents/phd/paper1/Simulation/Seuil_Simulation/result_scenario_I.RData")
+#save(result_scenario_II, file = "/Users/negarsoleimani/Documents/phd/paper1/Simulation/Seuil_Simulation/result_scenario_II.RData")
+#save(result_scenario_III, file = "/Users/negarsoleimani/Documents/phd/paper1/Simulation/Seuil_Simulation/result_scenario_III.RData")
+save(result_scenario_IIII, file = "/Users/negarsoleimani/Documents/phd/paper1/Simulation/Seuil_Simulation/result_scenario_IIII.RData")
 
-# result_scenario_II <- list(
-#   g_chain, h0_chain, sigma_chain, alpha_chain, psi_chain, k_chain,
-#   delta_list, zeta_list, loglik_mat, accept_rate, y_obs = y_obs,
-#   envelope = w
-# )
 
-# result_scenario_III <- list(
-#   g_chain, h0_chain, sigma_chain, alpha_chain, psi_chain, k_chain,
-#   delta_list, zeta_list, loglik_mat, accept_rate, y_obs = y_obs,
-#   envelope = w
-# )
-
-#save(res,file = "/Users/negarsoleimani/Documents/phd/paper1/Simulation/Seuil_Simulation/result_scenario_III.RData")
-#save(res,file = "/Users/negarsoleimani/Documents/phd/paper1/Simulation/Seuil_Simulation/result_scenario_II.RData")
-save(res,file = "/Users/negarsoleimani/Documents/phd/paper1/Simulation/Seuil_Simulation/result_scenario_I.RData")
-
+#load("/Users/negarsoleimani/Documents/phd/paper1/Simulation/Seuil_Simulation/result_scenario_I.RData")
+#load("/Users/negarsoleimani/Documents/phd/paper1/Simulation/Seuil_Simulation/result_scenario_II.RData")
+#load("/Users/negarsoleimani/Documents/phd/paper1/Simulation/Seuil_Simulation/result_scenario_III.RData")
+load("/Users/negarsoleimani/Documents/phd/paper1/Simulation/Seuil_Simulation/result_scenario_IIII.RData")
 
 ################################################################################
 ################################################################################
 ################################################################################
 ################################################################################
-################################################################################
-################################################################################
-################################################################################
-# set.seed(12345)
-# k <- 0.1
-# sim_psi_delta <- 0.5 
-# sigma_sq_err <- 0.01
-# sigma_sq_delta <- sigma_sq_err / k
-# 
-# n_samples <- 10
-# n_iter <- 10000
-# burn_in <- 2500
-# #n_flat <- 10
-# 
-# init <- c(9.8, 46.45, 0.01, 0.5, 0.5, 0.1)
-# 
-# g_chain     <- matrix(NA, n_iter, n_samples)
-# h0_chain    <- matrix(NA, n_iter, n_samples)
-# alpha_chain <- matrix(NA, n_iter, n_samples)
-# psi_chain   <- matrix(NA, n_iter, n_samples)
-# k_chain     <- matrix(NA, n_iter, n_samples)
-# sigma_chain <- matrix(NA, n_iter, n_samples)
-# zeta_list   <- vector("list", n_samples)
-# delta_list  <- vector("list", n_samples)
-# loglik_mat  <- matrix(NA, n_iter, n_samples)
-# accept_rate <- numeric(n_samples)
-# 
-# y_obs <- matrix(NA, n, n_samples)
-# 
-# for (v in 1:n_samples) {
-#   
-#   #Sigma_delta <- GP_covariance(t, sigma_sq_delta, sim_psi_delta)
-#   #delta <- as.vector(rmvnorm(1, rep(0, n), Sigma_delta))
-#   
-#   #delta[1:n_flat] <- 0
-#   
-#   #y_1 <- balldropg(t, c(9.8, 46.46)) + rnorm(n, 0, sqrt(sigma_sq_err)) + delta
-#   
-#   # y = balldropg(t, c(9.8, 46.45)) + rnorm(n, 0, sqrt(sigma_sq_err)) #+ delta
-#   # #for fig 1 rep 50 times
-#   # ndis <- 10
-#   # n <- length(y)
-#   # #y = y + (46-y)*.1# Fig 2:y = y + delta_i ; i = 45, when delta_i ~ GP(0, (sig2err/k)*exp(-(ti-tj)2/psi))
-#   # y_1 = y + (46-y)*.3 * c(rep(0, ndis), rep(1, length(y) - ndis))
-#   # #y_1 = y + 4 * c(rep(0, ndis), rep(1, length(y) - ndis))
-#   # 
-#   # y_obs[, v] <- y_1
-#   y = balldropg(t,c(9.8,46.45)) + rnorm(45,0,sqrt(.01)) # for fig 1 rep 50 times
-#   ndis <- 20
-#   y_1 = y + (46-y)*.1 * c(rep(0, ndis), rep(1, length(y) - ndis))
-#   y_obs[, v] <- y_1
-#   
-#   res <- mcmc_step6(y = y, t = t, n_iter = n_iter, init = init,
-#     sigma_proposals = c(NA, NA, NA, NA, 0.5, NA),
-#     g_init = FALSE,
-#     h0_init = FALSE,
-#     sig2er_init = FALSE,
-#     alpha_init = FALSE,
-#     psi_init = FALSE,
-#     k_init = FALSE,
-#     Sigma_theta = matrix(c(0.5, 0, 0, 0.5), 2),
-#     n_burnin = burn_in,
-#     seuil = FALSE,
-#     s = 0.3 
-#   )
-#   
-#   g_chain[, v]     <- res$theta[, 1]
-#   h0_chain[, v]    <- res$theta[, 2]
-#   sigma_chain[, v] <- res$theta[, 3]
-#   alpha_chain[, v] <- res$theta[, 4]
-#   psi_chain[, v]   <- res$theta[, 5]
-#   k_chain[, v]     <- res$theta[, 6]
-#   delta_list[[v]]  <- res$delta
-#   zeta_list[[v]]   <- res$zeta
-#   loglik_mat[, v]  <- res$loglik
-#   accept_rate[v]   <- res$accept_rate_psi
-# }
-# 
-# boxplot(res[["delta"]])
-# colMeans(res[["zeta"]] == 2)
-# colMeans(res[["zeta"]] == 1)
-# 
-# g <- res[["theta"]][,1]
-# h0 <- res[["theta"]][,2]
-# sigma <- res[["theta"]][,3]
-# alpha <- res[["theta"]][,4]
-# psi <- res[["theta"]][,5]
-# k <- res[["theta"]][,6]
-# 
-# par(mfrow=c(2,3))
-# boxplot(g)
-# boxplot(h0)
-# abline(h = 46.45)
-# boxplot(sigma)
-# abline(h = 0.01)
-# boxplot(alpha)
-# boxplot(psi)
-# boxplot(k)
-# abline(h = 0.1)
-# 
-# result_m2_sh2_psi1_simple_seuil <- list(g_chain, h0_chain, sigma_chain, alpha_chain, psi_chain, k_chain, delta_list, zeta_list, loglik_mat, accept_rate)
-# #save(result_m2_sh2_psi1_simple,file = "/Users/negarsoleimani/Documents/phd/paper1/result_m2_sh2_psi1_simple.RData")
-# 
-# par(mfrow=c(1,1))
-# boxplot(result_m2_sh2_psi1_simple_seuil[[7]][[1]])
-# abline(h=0)
-# 
-# # simulation des données
-# 
-# g <- result_m2_sh2_psi1_simple_seuil[[1]]
-# h0 <- result_m2_sh2_psi1_simple_seuil[[2]]
-# sig <- result_m2_sh2_psi1_simple_seuil[[3]]
-# alpha <- result_m2_sh2_psi1_simple_seuil[[4]]
-# psi <- result_m2_sh2_psi1_simple_seuil[[5]]
-# k <- result_m2_sh2_psi1_simple_seuil[[6]]
-# 
-# par(mfrow=c(2,3))
-# boxplot(colMeans(g))
-# abline(h=9.8, col = "orange")
-# boxplot(colMeans(h0))
-# abline(h=46.45, col = "orange")
-# boxplot(colMeans(sig))
-# abline(h=0.01, col = "orange")
-# boxplot(colMeans(alpha))
-# boxplot(colMeans(psi))
-# boxplot(colMeans(k))
-# abline(h=0.1, col = "orange")
-# 
-# prob_zeta_model2 <- colMeans(res$zeta == 2)
-# print(prob_zeta_model2)
-# 
-# par(mfrow=c(2,3))
-# plot(g[,50], type = "l")
-# abline(h=9.8, col = "orange")
-# plot(h0[,50], type = "l")
-# abline(h=46.45, col = "orange")
-# plot(sig[,50], type = "l")
-# abline(h=0.01, col = "orange")
-# plot(alpha[,50], type = "l")
-# plot(psi[,50], type = "l")
-# plot(k[,50], type = "l")
-# abline(h=0.2, col = "orange")
-# # 
-# 
-# 
-# 
+
+## =========================================================
+## Scenario IIII : seuil == TRUE , g == TRUE
+## =========================================================
+
+library(ggplot2)
+library(gridExtra)
+library(patchwork)
+
+res_obj <- result_scenario_IIII
+
+v <- 1
+
+g     <- res_obj$g_chain[, v]
+h0    <- res_obj$h0_chain[, v]
+sigma <- res_obj$sigma_chain[, v]
+alpha <- res_obj$alpha_chain[, v]
+psi   <- res_obj$psi_chain[, v]
+k     <- res_obj$k_chain[, v]
+
+delta_mat <- res_obj$delta_list[[v]]   # (n_iter x n)
+zeta_mat  <- res_obj$zeta_list[[v]]    # (n_iter x n)
+y         <- res_obj$y_obs[, v]
+
+n_iter_post <- length(g)
+n <- ncol(delta_mat)
+
+## numerical summaries for 1 dataset
+
+summ_param <- function(x){
+  c(mean   = mean(x),
+    median = median(x),
+    sd     = sd(x),
+    q025   = unname(quantile(x, 0.025)),
+    q975   = unname(quantile(x, 0.975)))
+}
+
+tab_sum <- rbind(
+  g     = summ_param(g),
+  h0    = summ_param(h0),
+  sigma = summ_param(sigma),
+  alpha = summ_param(alpha),
+  psi   = summ_param(psi),
+  k     = summ_param(k)
+)
+
+print(round(tab_sum, 4))
+
+
+par(mfrow = c(2, 3), mar = c(3,3,2,1))
+plot(g,     type = "l", main = "trace: g", xlab = "iter", ylab = "g")
+abline(h = 9.8, lty = 2)
+
+plot(h0,    type = "l", main = "trace: h0", xlab = "iter", ylab = "h0")
+plot(sigma, type = "l", main = expression("trace: " * lambda^2),
+     xlab = "iter", ylab = expression(lambda^2))
+plot(alpha, type = "l", main = expression("trace: " * alpha),
+     xlab = "iter", ylab = expression(alpha))
+plot(psi,   type = "l", main = expression("trace: " * psi[delta]),
+     xlab = "iter", ylab = expression(psi[delta]))
+plot(k,     type = "l", main = "trace: k", xlab = "iter", ylab = "k")
+
+
+## posterior densities for one dataset
+
+df_long <- rbind(
+  data.frame(value = g,     par = "g"),
+  data.frame(value = h0,    par = "h0"),
+  data.frame(value = sigma, par = "lambda2"),
+  data.frame(value = alpha, par = "alpha"),
+  data.frame(value = psi,   par = "psi_delta"),
+  data.frame(value = k,     par = "k")
+)
+
+p_dens_all <- ggplot(df_long, aes(x = value)) +
+  geom_density(fill = "#4CCDC9", color = "lightseagreen", alpha = 0.6, linewidth = 0.9) +
+  facet_wrap(~par, scales = "free", ncol = 3) +
+  labs(x = "", y = "Density",
+       title = "Posterior densities (Scenario IIII, one dataset)") +
+  theme_minimal(base_size = 12) +
+  theme(plot.title = element_text(hjust = 0.5))
+
+print(p_dens_all)
+
+
+## pooled posterior density of alpha across all datasets
+
+alpha_vec <- as.vector(res_obj$alpha_chain)
+
+df_alpha_pool <- data.frame(alpha = alpha_vec)
+
+p_alpha_pool <- ggplot(df_alpha_pool, aes(x = alpha)) +
+  geom_density(fill = "#4CCDC9", color = "lightseagreen",
+               alpha = 0.6, linewidth = 1) +
+  labs(x = expression(alpha), y = "Density",
+       title = "Pooled posterior density of alpha (Scenario IIII)") +
+  theme_minimal(base_size = 13) +
+  theme(plot.title = element_text(hjust = 0.5))
+
+print(p_alpha_pool)
+
+## zeta==2 means model with discrepancy
+
+p_hat <- colMeans(zeta_mat == 2)
+
+df_p <- data.frame(i = 1:n, x = t, p_hat = p_hat)
+
+p_zeta <- ggplot(df_p, aes(x = i, y = p_hat)) +
+  geom_col(fill = "lightseagreen") +
+  ylim(0, 1) +
+  labs(x = "Index i",
+       y = expression(hat(p)[i] == P(zeta[i] == 1 ~ "|" ~ Y)),
+       title = "Pointwise inclusion probabilities (Scenario IIII)") +
+  theme_minimal(base_size = 12) +
+  theme(plot.title = element_text(hjust = 0.5))
+
+print(p_zeta)
+
+
+## delta(x_i) 
+
+delta_mean <- colMeans(delta_mat)
+delta_ci   <- t(apply(delta_mat, 2, quantile, probs = c(0.025, 0.975)))
+
+df_delta <- data.frame(
+  i = 1:n,
+  x = t,
+  d_mean = delta_mean,
+  d_low  = delta_ci[, 1],
+  d_high = delta_ci[, 2]
+)
+
+p_delta <- ggplot(df_delta, aes(x = i, y = d_mean)) +
+  geom_ribbon(aes(ymin = d_low, ymax = d_high),
+              fill = "lightseagreen", alpha = 0.25) +
+  geom_line(color = "lightseagreen", linewidth = 0.9) +
+  geom_hline(yintercept = 0, linetype = "dashed") +
+  geom_vline(xintercept = ndis + 0.5, linetype = "dashed") +
+  labs(x = "Index i", y = expression(delta(x[i])),
+       title = expression("Posterior summary of " * delta(x[i]) ~ "(Scenario IIII)")) +
+  theme_minimal(base_size = 12) +
+  theme(plot.title = element_text(hjust = 0.5))
+
+print(p_delta)
+
+
+## posterior predictive for one dataset
+
+mu_mat <- matrix(NA, nrow = n_iter_post, ncol = n)
+
+for (tt in 1:n_iter_post) {
+  f_tt <- balldropg(t, c(g[tt], h0[tt]))
+  mu_mat[tt, ] <- f_tt + (1 - alpha[tt]) * delta_mat[tt, ]
+}
+
+pp_mean <- colMeans(mu_mat)
+pp_ci   <- t(apply(mu_mat, 2, quantile, probs = c(0.025, 0.975)))
+
+df_pp <- data.frame(
+  i  = 1:n,
+  x  = t,
+  y  = y,
+  m  = pp_mean,
+  lo = pp_ci[, 1],
+  hi = pp_ci[, 2]
+)
+
+p_pp <- ggplot(df_pp, aes(x = x, y = y)) +
+  geom_point(size = 1.4) +
+  geom_ribbon(aes(ymin = lo, ymax = hi),
+              alpha = 0.25, fill = "lightseagreen") +
+  geom_line(aes(y = m), linewidth = 0.9, color = "lightseagreen") +
+  labs(x = "Rescaled time x", y = "Height",
+       title = "Posterior predictive (Scenario IIII)") +
+  theme_minimal(base_size = 12) +
+  theme(plot.title = element_text(hjust = 0.5))
+
+print(p_pp)
+
+# =========================================================
+
+make_box <- function(x, ylab, ref = NULL) {
+  df <- data.frame(val = x)
+  p <- ggplot(df, aes(x = 1, y = val)) +
+    geom_boxplot(fill = "lightseagreen", width = 0.25, outlier.size = 1) +
+    labs(x = NULL, y = ylab) +
+    theme_minimal(base_size = 11) +
+    theme(
+      axis.text.x  = element_blank(),
+      axis.ticks.x = element_blank(),
+      plot.margin  = margin(3, 6, 3, 6)
+    )
+  if (!is.null(ref)) {
+    p <- p + geom_hline(yintercept = ref, linetype = "dashed",
+                        color = "orange", linewidth = 0.7)
+  }
+  p
+}
+
+p_g     <- make_box(g,     ylab = "g")
+p_h0    <- make_box(h0,    ylab = "h0")
+p_sig   <- make_box(sigma, ylab = expression(lambda^2))
+p_a_box <- make_box(alpha, ylab = expression(alpha))
+p_psi   <- make_box(psi,   ylab = expression(gamma[delta]))
+p_k     <- make_box(k,     ylab = "k")
+
+left_grid <- (p_g | p_h0) /
+  (p_sig | p_a_box) /
+  (p_psi | p_k)
+
+right_col <- p_alpha_pool / p_delta + plot_layout(heights = c(1, 1.25))
+
+fig_all <- left_grid | right_col
+fig_all <- fig_all + plot_layout(widths = c(1.05, 1.35))
+
+print(fig_all)
+
+
+## zeta==1 means model without discrepancy
+
+prob_zeta_model0 <- colMeans(zeta_mat == 1)
+
+df_p0 <- data.frame(
+  i = 1:length(prob_zeta_model0),
+  p0 = prob_zeta_model0
+)
+
+p_zeta0 <- ggplot(df_p0, aes(x = i, y = p0)) +
+  geom_col(fill = "lightseagreen") +
+  ylim(0, 1) +
+  labs(
+    x = "Index i",
+    y = expression(hat(p)[i] == P(zeta[i] == 0 ~ "|" ~ Y)),
+    title = expression("Pointwise allocation probabilities to " * M[0])
+  ) +
+  theme_minimal(base_size = 12) +
+  theme(plot.title = element_text(hjust = 0.5))
+
+print(p_zeta0)
+
+
+right_col2 <- p_alpha_pool / p_delta / p_zeta0 +
+  patchwork::plot_layout(heights = c(1, 1.25, 1))
+
+fig_all2 <- left_grid | right_col2
+fig_all2 <- fig_all2 + patchwork::plot_layout(widths = c(1.05, 1.45))
+
+print(fig_all2)
+
+
+right_col2 <- p_delta / p_zeta0 +
+  patchwork::plot_layout(heights = c(1, 1))
+
+fig_all2 <- left_grid | right_col2
+fig_all2 <- fig_all2 + patchwork::plot_layout(widths = c(1.05, 1.45))
+
+print(fig_all2)
+
+
+################################################
+################################################
+library(ggplot2)
+library(gridExtra)
+
+res_obj <- result_scenario_IIII 
+V <- length(res_obj$zeta_list)
+n <- ncol(res_obj$zeta_list[[1]])
+
+## p_hat_i^(v) و delta_mean_i^(v)
+p_hat_mat <- matrix(NA, nrow = n, ncol = V)
+delta_mean_mat <- matrix(NA, nrow = n, ncol = V)
+
+for (v in 1:V) {
+  zeta_mat  <- res_obj$zeta_list[[v]]   # iter x n
+  delta_mat <- res_obj$delta_list[[v]]  # iter x n
+  
+  # zeta==2 = with discrepancy
+  p_hat_mat[, v]      <- colMeans(zeta_mat == 2)
+  delta_mean_mat[, v] <- colMeans(delta_mat)
+}
+
+
+df_agg <- data.frame(
+  i = 1:n,
+  
+  p_mean = rowMeans(p_hat_mat),
+  p_med  = apply(p_hat_mat, 1, median),
+  p_q25  = apply(p_hat_mat, 1, quantile, probs = 0.25),
+  p_q75  = apply(p_hat_mat, 1, quantile, probs = 0.75),
+  p_q05  = apply(p_hat_mat, 1, quantile, probs = 0.05),
+  p_q95  = apply(p_hat_mat, 1, quantile, probs = 0.95),
+  
+  d_mean = rowMeans(delta_mean_mat),
+  d_med  = apply(delta_mean_mat, 1, median),
+  d_q25  = apply(delta_mean_mat, 1, quantile, probs = 0.25),
+  d_q75  = apply(delta_mean_mat, 1, quantile, probs = 0.75),
+  d_q05  = apply(delta_mean_mat, 1, quantile, probs = 0.05),
+  d_q95  = apply(delta_mean_mat, 1, quantile, probs = 0.95)
+)
+
+p_hat_agg <- ggplot(df_agg, aes(x = i, y = p_med)) +
+  geom_ribbon(aes(ymin = p_q25, ymax = p_q75), alpha = 0.25) +
+  geom_line(linewidth = 1) +
+  geom_vline(xintercept = ndis + 0.5, linetype = "dashed") +
+  ylim(0, 1) +
+  labs(
+    x = "Index i",
+    y = expression(hat(p)[i]),
+    title = expression("Aggregated pointwise inclusion probabilities across 50 datasets")
+  ) +
+  theme_minimal(base_size = 13)
+
+print(p_hat_agg)
+
+
+p_delta_agg <- ggplot(df_agg, aes(x = i, y = d_med)) +
+  geom_ribbon(aes(ymin = d_q25, ymax = d_q75), alpha = 0.25) +
+  geom_line(linewidth = 1) +
+  geom_hline(yintercept = 0, linetype = "dashed") +
+  geom_vline(xintercept = ndis + 0.5, linetype = "dashed") +
+  labs(
+    x = "Index i",
+    y = expression(delta(x[i])),
+    title = expression("Aggregated posterior mean of " * delta(x[i]) * " across 50 datasets")
+  ) +
+  theme_minimal(base_size = 13)
+
+print(p_delta_agg)
+
+
+
+grid.arrange(
+  p_delta_agg,
+  p_hat_agg,
+  ncol = 1,
+  heights = c(1, 1)
+)
+
+df_heat <- data.frame(
+  i = rep(1:n, times = V),
+  replication = rep(1:V, each = n),
+  p_hat = as.vector(t(p_hat_mat))
+)
+
+p_heat <- ggplot(df_heat, aes(x = i, y = replication, fill = p_hat)) +
+  geom_tile() +
+  geom_vline(xintercept = ndis + 0.5, linetype = "dashed") +
+  labs(
+    x = "Index i",
+    y = "Replication",
+    fill = expression(hat(p)[i]),
+    title = "Pointwise inclusion probabilities across replications"
+  ) +
+  theme_minimal(base_size = 13)
+
+print(p_heat)
+
+
+param_df <- data.frame(
+  replication = 1:V,
+  g     = colMeans(res_obj$g_chain),
+  h0    = colMeans(res_obj$h0_chain),
+  sigma = colMeans(res_obj$sigma_chain),
+  alpha = colMeans(res_obj$alpha_chain),
+  psi   = colMeans(res_obj$psi_chain),
+  k     = colMeans(res_obj$k_chain)
+)
+
+print(param_df)
+
+
+
