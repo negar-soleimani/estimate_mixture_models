@@ -2,7 +2,7 @@ source("data/prepare_data.R")
 source("scripts/physics_model.R")
 source("scripts/helper_function_CGP.R")
 source("scripts/main_function_seuil_CGP.R")
-
+n <- length(y)
 # ------ Scenario (I):  seuil == FALSE, g == FALSE -------------#
 # ------ Scenario (II):  g == TRUE, seuil == FALSE -------------#
 # ------ Scenario (III): g == FALSE, seuil == TRUE -------------#
