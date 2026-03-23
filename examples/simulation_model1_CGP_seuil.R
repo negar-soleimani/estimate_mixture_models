@@ -1,4 +1,26 @@
 source("data/prepare_data.R")
+rm(list = ls())
+library(truncnorm)
+library(readxl)
+library(ggplot2)
+library(tidyr)
+library(MASS)
+library(mvtnorm)
+library(invgamma)
+
+don <- read_xlsx("/Users/negar/Documents/phd/estimate_mixture_models-main/data/Ball_drops_data.xlsx", sheet = 2)
+names(don) <- c("drop", "time", "Height", "Velocity")
+don$drop <- as.factor(don$drop)
+don <- don[don$drop == 1, ]
+
+t <- don$time
+y <- don$Height
+length(t)
+t_min <- min(t)
+t_range <- max(t) - min(t)
+t <- (t - t_min) / t_range
+n <- length(y)
+a <- t_range
 source("scripts/physics_model.R")
 source("scripts/helper_function_CGP.R")
 source("scripts/main_function_seuil_CGP.R")
@@ -63,18 +85,18 @@ for (v in 1:n_samples) {
   y_1 <- y0 + delta_true
   y_obs[, v] <- y_1
   
-  # -------- Scenario (I), (II), (III) --------
+  # -------- Scenario (I), (II), (III), (IIII) --------
   res <- mcmc_step6(
     y = y_1, t = t, n_iter = n_iter, init = init, sigma_proposals = sigma_props,
     g_init = TRUE, 
-    h0_init = TRUE,
+    h0_init = FALSE,
     sig2er_init = FALSE,
     alpha_init = FALSE,
     psi_init = FALSE,
     k_init = FALSE,
     Sigma_theta = matrix(c(0.5, 0, 0, 0.5), 2),
     n_burnin = burn_in,
-    seuil = TRUE,  
+    seuil = FALSE,  
     s = 0.3       
   )
   
@@ -108,22 +130,22 @@ for (v in 1:n_samples) {
 # )
 
 # ------ Scenario (II):  g == TRUE, seuil == FALSE -------------#
-# result_scenario_II <- list(
-#   g_chain = g_chain,
-#   h0_chain = h0_chain,
-#   sigma_chain = sigma_chain,
-#   alpha_chain = alpha_chain,
-#   psi_chain = psi_chain,
-#   k_chain = k_chain,
-#   delta_list = delta_list,
-#   zeta_list = zeta_list,
-#   loglik_mat = loglik_mat,
-#   accept_rate = accept_rate,
-#   y_obs = y_obs,
-#   envelope = w
-# )
+result_scenario_II <- list(
+  g_chain = g_chain,
+  h0_chain = h0_chain,
+  sigma_chain = sigma_chain,
+  alpha_chain = alpha_chain,
+  psi_chain = psi_chain,
+  k_chain = k_chain,
+  delta_list = delta_list,
+  zeta_list = zeta_list,
+  loglik_mat = loglik_mat,
+  accept_rate = accept_rate,
+  y_obs = y_obs,
+  envelope = w
+)
 
-# ------ Scenario (III): g == FALSE, seuil == TRUE -------------#
+# # ------ Scenario (III): g == FALSE, seuil == TRUE -------------#
 # result_scenario_III <- list(
 #   g_chain = g_chain,
 #   h0_chain = h0_chain,
@@ -140,30 +162,30 @@ for (v in 1:n_samples) {
 # )
 
 # ------ Scenario (IIII): seuil == TRUE, g == TRUE -------------#
-result_scenario_IIII <- list(
-  g_chain = g_chain,
-  h0_chain = h0_chain,
-  sigma_chain = sigma_chain,
-  alpha_chain = alpha_chain,
-  psi_chain = psi_chain,
-  k_chain = k_chain,
-  delta_list = delta_list,
-  zeta_list = zeta_list,
-  loglik_mat = loglik_mat,
-  accept_rate = accept_rate,
-  y_obs = y_obs,
-  envelope = w
-)
+# result_scenario_IIII <- list(
+#   g_chain = g_chain,
+#   h0_chain = h0_chain,
+#   sigma_chain = sigma_chain,
+#   alpha_chain = alpha_chain,
+#   psi_chain = psi_chain,
+#   k_chain = k_chain,
+#   delta_list = delta_list,
+#   zeta_list = zeta_list,
+#   loglik_mat = loglik_mat,
+#   accept_rate = accept_rate,
+#   y_obs = y_obs,
+#   envelope = w
+# )
 #save(result_scenario_I, file = "/Users/negarsoleimani/Documents/phd/paper1/Simulation/Seuil_Simulation/result_scenario_I.RData")
 #save(result_scenario_II, file = "/Users/negarsoleimani/Documents/phd/paper1/Simulation/Seuil_Simulation/result_scenario_II.RData")
 #save(result_scenario_III, file = "/Users/negarsoleimani/Documents/phd/paper1/Simulation/Seuil_Simulation/result_scenario_III.RData")
-save(result_scenario_IIII, file = "/Users/negarsoleimani/Documents/phd/paper1/Simulation/Seuil_Simulation/result_scenario_IIII.RData")
+#save(result_scenario_IIII, file = "/Users/negarsoleimani/Documents/phd/paper1/Simulation/Seuil_Simulation/result_scenario_IIII.RData")
 
 
 #load("/Users/negarsoleimani/Documents/phd/paper1/Simulation/Seuil_Simulation/result_scenario_I.RData")
 #load("/Users/negarsoleimani/Documents/phd/paper1/Simulation/Seuil_Simulation/result_scenario_II.RData")
 #load("/Users/negarsoleimani/Documents/phd/paper1/Simulation/Seuil_Simulation/result_scenario_III.RData")
-load("/Users/negarsoleimani/Documents/phd/paper1/Simulation/Seuil_Simulation/result_scenario_IIII.RData")
+#load("/Users/negarsoleimani/Documents/phd/paper1/Simulation/Seuil_Simulation/result_scenario_IIII.RData")
 
 ################################################################################
 ################################################################################
@@ -178,9 +200,9 @@ library(ggplot2)
 library(gridExtra)
 library(patchwork)
 
-res_obj <- result_scenario_IIII
+res_obj <- result_scenario_II
 
-v <- 1
+v <- 50
 
 g     <- res_obj$g_chain[, v]
 h0    <- res_obj$h0_chain[, v]
@@ -217,6 +239,7 @@ tab_sum <- rbind(
 
 print(round(tab_sum, 4))
 
+hist(alpha)
 
 par(mfrow = c(2, 3), mar = c(3,3,2,1))
 plot(g,     type = "l", main = "trace: g", xlab = "iter", ylab = "g")
@@ -247,7 +270,7 @@ p_dens_all <- ggplot(df_long, aes(x = value)) +
   geom_density(fill = "#4CCDC9", color = "lightseagreen", alpha = 0.6, linewidth = 0.9) +
   facet_wrap(~par, scales = "free", ncol = 3) +
   labs(x = "", y = "Density",
-       title = "Posterior densities (Scenario IIII, one dataset)") +
+       title = "Posterior densities (Scenario II, one dataset)") +
   theme_minimal(base_size = 12) +
   theme(plot.title = element_text(hjust = 0.5))
 
@@ -264,7 +287,7 @@ p_alpha_pool <- ggplot(df_alpha_pool, aes(x = alpha)) +
   geom_density(fill = "#4CCDC9", color = "lightseagreen",
                alpha = 0.6, linewidth = 1) +
   labs(x = expression(alpha), y = "Density",
-       title = "Pooled posterior density of alpha (Scenario IIII)") +
+       title = "Pooled posterior density of alpha (Scenario II)") +
   theme_minimal(base_size = 13) +
   theme(plot.title = element_text(hjust = 0.5))
 
@@ -281,7 +304,7 @@ p_zeta <- ggplot(df_p, aes(x = i, y = p_hat)) +
   ylim(0, 1) +
   labs(x = "Index i",
        y = expression(hat(p)[i] == P(zeta[i] == 1 ~ "|" ~ Y)),
-       title = "Pointwise inclusion probabilities (Scenario IIII)") +
+       title = "Pointwise inclusion probabilities (Scenario II)") +
   theme_minimal(base_size = 12) +
   theme(plot.title = element_text(hjust = 0.5))
 
@@ -308,7 +331,7 @@ p_delta <- ggplot(df_delta, aes(x = i, y = d_mean)) +
   geom_hline(yintercept = 0, linetype = "dashed") +
   geom_vline(xintercept = ndis + 0.5, linetype = "dashed") +
   labs(x = "Index i", y = expression(delta(x[i])),
-       title = expression("Posterior summary of " * delta(x[i]) ~ "(Scenario IIII)")) +
+       title = expression("Posterior summary of " * delta(x[i]) ~ "(Scenario II)")) +
   theme_minimal(base_size = 12) +
   theme(plot.title = element_text(hjust = 0.5))
 
@@ -342,7 +365,7 @@ p_pp <- ggplot(df_pp, aes(x = x, y = y)) +
               alpha = 0.25, fill = "lightseagreen") +
   geom_line(aes(y = m), linewidth = 0.9, color = "lightseagreen") +
   labs(x = "Rescaled time x", y = "Height",
-       title = "Posterior predictive (Scenario IIII)") +
+       title = "Posterior predictive (Scenario II)") +
   theme_minimal(base_size = 12) +
   theme(plot.title = element_text(hjust = 0.5))
 
@@ -410,7 +433,7 @@ p_zeta0 <- ggplot(df_p0, aes(x = i, y = p0)) +
 print(p_zeta0)
 
 
-right_col2 <- p_alpha_pool / p_delta / p_zeta0 +
+right_col2 <- p_alpha_pool / p_delta / p_zeta +
   patchwork::plot_layout(heights = c(1, 1.25, 1))
 
 fig_all2 <- left_grid | right_col2
@@ -433,7 +456,7 @@ print(fig_all2)
 library(ggplot2)
 library(gridExtra)
 
-res_obj <- result_scenario_IIII 
+res_obj <- result_scenario_I 
 V <- length(res_obj$zeta_list)
 n <- ncol(res_obj$zeta_list[[1]])
 
@@ -538,6 +561,4 @@ param_df <- data.frame(
 )
 
 print(param_df)
-
-
 
