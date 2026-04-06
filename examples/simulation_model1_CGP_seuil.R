@@ -604,7 +604,7 @@ for (v in 1:n_samples) {
   accept_rate[v]   <- res$accept_rate_psi
 }
 
-result_scenario_III <- list(
+result_scenario_IIII <- list(
   g_chain = g_chain,
   h0_chain = h0_chain,
   sigma_chain = sigma_chain,
