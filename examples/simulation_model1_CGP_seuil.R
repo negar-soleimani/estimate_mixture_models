@@ -472,3 +472,20 @@ sigma_sq_err <- 0.01
 # Parameters used only to simulate delta_true
 sim_k <- 0.01
 sim_psi_delta <- 0.5
+
+# discrepancy is ~0 for first ndis points, then active afterwards
+ndis <- 20
+envelope_type <- "step"
+
+make_envelope <- function(n, ndis, type = c("step","ramp")) {
+  type <- match.arg(type)
+  if (type == "step") {
+    w <- c(rep(0, ndis), rep(1, n - ndis))
+  } else {
+    u <- seq(0, 1, length.out = n - ndis)
+    w <- c(rep(0, ndis), u)
+  }
+  return(w)
+}
+
+w <- make_envelope(n, ndis, envelope_type)
