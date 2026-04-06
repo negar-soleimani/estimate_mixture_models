@@ -509,4 +509,115 @@ delta_list  <- vector("list", n_samples)
 loglik_mat  <- matrix(NA, n_iter, n_samples)
 accept_rate <- numeric(n_samples)
 y_obs       <- matrix(NA, n, n_samples)
+delta_true_mat <- matrix(NA, n, n_samples)
 
+draw_delta_true <- function(t, w, sigma_sq_err, sim_k, sim_psi_delta,
+                            keep_same_sign = TRUE,
+                            force_positive = FALSE,
+                            s = 0.3,
+                            require_above_threshold = FALSE,
+                            max_try = 5000) {
+  
+  n <- length(t)
+  sigma_sq_delta <- sigma_sq_err / sim_k
+  Sigma_delta <- GP_covariance(t, sigma_sq_delta, sim_psi_delta)
+  
+  active_idx <- which(w > 0)
+  
+  for (iter in 1:max_try) {
+    tilde_delta <- as.vector(rmvnorm(1, rep(0, n), Sigma_delta))
+    delta_true  <- w * tilde_delta
+    d_act <- delta_true[active_idx]
+    
+    ok_sign <- TRUE
+    if (keep_same_sign) {
+      if (force_positive) {
+        ok_sign <- all(d_act >= 0)
+      } else {
+        ok_sign <- all(d_act >= 0) || all(d_act <= 0)
+      }
+    }
+    
+    ok_threshold <- TRUE
+    if (require_above_threshold) {
+      ok_threshold <- all(abs(d_act) > s)
+    }
+    
+    if (ok_sign && ok_threshold) {
+      return(delta_true)
+    }
+  }
+  
+  stop("No acceptable delta_true found after max_try draws. Try smaller sim_k or larger sim_psi_delta.")
+}
+
+for (v in 1:n_samples) {
+  
+  y0 <- balldropg(t, c(9.8, 46.45)) + rnorm(n, 0, sqrt(sigma_sq_err))
+  
+  # -----------------------------------------------------------
+  # Here we replace the old raw GP simulation
+  # with a version better suited to the threshold case
+  # -----------------------------------------------------------
+  delta_true <- draw_delta_true(
+    t = t,
+    w = w,
+    sigma_sq_err = sigma_sq_err,
+    sim_k = sim_k,
+    sim_psi_delta = sim_psi_delta,
+    keep_same_sign = TRUE,        # delta_true remains a single sign in the active zone
+    force_positive = TRUE,        # TRUE if impose delta_true > 0
+    s = 0.3,
+    require_above_threshold = TRUE,  # Set to TRUE if the entire active area is above the threshold
+    max_try = 5000
+  )
+  
+  y_1 <- y0 + delta_true
+  y_obs[, v] <- y_1
+  delta_true_mat[, v] <- delta_true
+  
+  # -------- Scenario (I), (II), (III), (IIII) --------
+  res <- mcmc_step6(
+    y = y_1, t = t, n_iter = n_iter, init = init, sigma_proposals = sigma_props,
+    g_init = TRUE,
+    h0_init = FALSE,
+    sig2er_init = FALSE,
+    alpha_init = FALSE,
+    psi_init = FALSE,
+    k_init = FALSE,
+    Sigma_theta = matrix(c(0.5, 0, 0, 0.5), 2),
+    n_burnin = burn_in,
+    seuil = TRUE,
+    s = 0.3
+  )
+  
+  g_chain[, v]     <- res$theta[, 1]
+  h0_chain[, v]    <- res$theta[, 2]
+  sigma_chain[, v] <- res$theta[, 3]
+  alpha_chain[, v] <- res$theta[, 4]
+  psi_chain[, v]   <- res$theta[, 5]
+  k_chain[, v]     <- res$theta[, 6]
+  
+  delta_list[[v]]  <- res$delta
+  zeta_list[[v]]   <- res$zeta
+  loglik_mat[, v]  <- res$loglik
+  accept_rate[v]   <- res$accept_rate_psi
+}
+
+result_scenario_III <- list(
+  g_chain = g_chain,
+  h0_chain = h0_chain,
+  sigma_chain = sigma_chain,
+  alpha_chain = alpha_chain,
+  psi_chain = psi_chain,
+  k_chain = k_chain,
+  delta_list = delta_list,
+  zeta_list = zeta_list,
+  loglik_mat = loglik_mat,
+  accept_rate = accept_rate,
+  y_obs = y_obs,
+  envelope = w,
+  delta_true_mat = delta_true_mat,
+  sim_k = sim_k,
+  sim_psi_delta = sim_psi_delta
+)
