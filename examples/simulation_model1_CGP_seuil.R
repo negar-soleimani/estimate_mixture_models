@@ -489,3 +489,24 @@ make_envelope <- function(n, ndis, type = c("step","ramp")) {
 }
 
 w <- make_envelope(n, ndis, envelope_type)
+
+n_samples <- 10
+n_iter <- 10000
+burn_in <- 2500
+sigma_props <- c(NA, NA, NA, NA, 0.5, NA)
+
+# init = c(g, h0, sig2err, alpha, psidelta, k)
+init <- c(9.8, 46.45, 0.01, 0.5, 0.5, 0.1)
+
+g_chain     <- matrix(NA, n_iter, n_samples)
+h0_chain    <- matrix(NA, n_iter, n_samples)
+sigma_chain <- matrix(NA, n_iter, n_samples)
+alpha_chain <- matrix(NA, n_iter, n_samples)
+psi_chain   <- matrix(NA, n_iter, n_samples)
+k_chain     <- matrix(NA, n_iter, n_samples)
+zeta_list   <- vector("list", n_samples)
+delta_list  <- vector("list", n_samples)
+loglik_mat  <- matrix(NA, n_iter, n_samples)
+accept_rate <- numeric(n_samples)
+y_obs       <- matrix(NA, n, n_samples)
+
