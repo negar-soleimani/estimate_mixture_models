@@ -468,3 +468,7 @@ set.seed(12345)
 # -------------------------------------------------------------
 k <- 0.1
 sigma_sq_err <- 0.01
+
+# Parameters used only to simulate delta_true
+sim_k <- 0.01
+sim_psi_delta <- 0.5
