@@ -1,3 +1,4 @@
+rm(list = ls())
 source("data/prepare_data.R")
 source("scripts/physics_model.R")
 source("scripts/helper_function_CGP.R")
