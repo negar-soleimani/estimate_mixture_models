@@ -1,7 +1,11 @@
+rm(list = ls())
+
 source("data/prepare_data.R")
 source("scripts/physics_model.R")
 source("scripts/helper_function_OGP.R")
+source("scripts/helper_function_CGP.R")
 source("scripts/main_function_OGP.R")
+
 set.seed(12345)
 n_iter <- 10000
 burn_in <- 2500
@@ -158,9 +162,9 @@ for (i in seq_along(psi_vec)) {
 set.seed(12345)
 Sigma_theta <- matrix(c(0.5,0,0,0.5), nrow = 2)
 # c(g, h0, sig2err, alpha, psidelta, k)
-init <- c(9.8, 46.45, 0.01, 0.5, 0.2, 0.2)
+init <- c(9.8, 46.45, 0.01, 0.5, 0.2, 0.1)
 sigma_proposals <- c(NA, NA, NA, NA, 0.5, NA)
-n_samples <- 50
+n_samples <- 10
 n_iter <- 10000
 burn_in <- 2000
 # FALSE= fixed parameter
@@ -478,12 +482,12 @@ result_m2_sh2_psi5_simple1 <- list(g_chain, h0_chain, sigma_chain, alpha_chain, 
 
 ## Psi6 ############################################
 set.seed(12345)
-k = 0.2
+k = 0.1
 #sigma_sq_delta <- 0.1 
 sim_psi_delta <- 0.5 
 sigma_sq_err <- 0.01
 sigma_sq_delta <- sigma_sq_err / k
-n_samples <- 50
+n_samples <- 10
 n_iter <- 10000
 burn_in <- 2000
 
@@ -491,7 +495,7 @@ sigma_props <- c(NA, NA, NA, NA, 0.5, NA)
 #(g,h0), sigma, psi, k, alpha
 mcmc_parameters <- c(TRUE, TRUE, TRUE, TRUE, TRUE)
 Sigma_theta <- matrix(c(0.5, 0, 0, 0.5), nrow = 2)
-init <- c(9.8, 46.46, 0.01, 0.5, 0.2, 0.2)
+init <- c(9.8, 46.46, 0.01, 0.5, 0.2, 0.1)
 
 g_chain     <- matrix(NA, n_iter, n_samples)
 h0_chain    <- matrix(NA, n_iter, n_samples)
