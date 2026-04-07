@@ -180,7 +180,8 @@ mcmc_step6 <- function(y, t, n_iter, init, sigma_proposals, mcmc_parameters, Sig
     # rate_err <- 1 + (0.5 * ( rss1 + rss2 + (k * quad_form_delta)))
     # shape_err <- 2 + n
     # sigma_sq_err <- rinvgamma(1, shape = shape_err, scale = rate_err)
-    sigma_sq_err <- rinvgamma(1, shape = shape_err, rate = rate_err)
+    # sigma_sq_err <- rinvgamma(1, shape = shape_err, rate = rate_err)
+    sigma_sq_err <- 1/rgamma(1, shape = shape_err, rate = rate_err)
     theta[3] <- sigma_sq_err
     
     if (mcmc_parameters[2] == FALSE) {
