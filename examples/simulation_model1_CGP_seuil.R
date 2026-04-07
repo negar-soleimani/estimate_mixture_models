@@ -206,7 +206,7 @@ library(patchwork)
 
 res_obj <- result_scenario_IIII
 
-v <- 10
+v <- 50
 
 g     <- res_obj$g_chain[, v]
 h0    <- res_obj$h0_chain[, v]
@@ -274,7 +274,7 @@ p_dens_all <- ggplot(df_long, aes(x = value)) +
   geom_density(fill = "#4CCDC9", color = "lightseagreen", alpha = 0.6, linewidth = 0.9) +
   facet_wrap(~par, scales = "free", ncol = 3) +
   labs(x = "", y = "Density",
-       title = "Posterior densities (Scenario IIII, one dataset)") +
+       title = "Posterior densities (Scenario IV, one dataset)") +
   theme_minimal(base_size = 12) +
   theme(plot.title = element_text(hjust = 0.5))
 
@@ -291,7 +291,7 @@ p_alpha_pool <- ggplot(df_alpha_pool, aes(x = alpha)) +
   geom_density(fill = "#E8C1CF", color = "#8E244D",
                alpha = 0.6, linewidth = 1) +
   labs(x = expression(alpha), y = "Density",
-       title = "Pooled posterior density of alpha (Scenario IIII)") +
+       title = "Pooled posterior density of alpha (Scenario IV)") +
   theme_minimal(base_size = 13) +
   theme(plot.title = element_text(hjust = 0.5))
 
@@ -308,7 +308,7 @@ p_zeta <- ggplot(df_p, aes(x = i, y = p_hat)) +
   ylim(0, 1) +
   labs(x = "Index i",
        y = expression(hat(p)[i] == P(zeta[i] == 1 ~ "|" ~ Y)),
-       title = "Pointwise inclusion probabilities (Scenario IIII)") +
+       title = "Pointwise inclusion probabilities (Scenario IV)") +
   theme_minimal(base_size = 12) +
   theme(plot.title = element_text(hjust = 0.5))
 
@@ -335,7 +335,7 @@ p_delta <- ggplot(df_delta, aes(x = i, y = d_mean)) +
   geom_hline(yintercept = 0, linetype = "dashed") +
   geom_vline(xintercept = ndis + 0.5, linetype = "dashed") +
   labs(x = "Index i", y = expression(delta(x[i])),
-       title = expression("Posterior summary of " * delta(x[i]) ~ "(Scenario IIII)")) +
+       title = expression("Posterior summary of " * delta(x[i]) ~ "(Scenario IV)")) +
   theme_minimal(base_size = 12) +
   theme(plot.title = element_text(hjust = 0.5))
 
@@ -369,7 +369,7 @@ p_pp <- ggplot(df_pp, aes(x = x, y = y)) +
               alpha = 0.25, fill = "lightseagreen") +
   geom_line(aes(y = m), linewidth = 0.9, color = "lightseagreen") +
   labs(x = "Rescaled time x", y = "Height",
-       title = "Posterior predictive (Scenario IIII)") +
+       title = "Posterior predictive (Scenario IV)") +
   theme_minimal(base_size = 12) +
   theme(plot.title = element_text(hjust = 0.5))
 
@@ -444,7 +444,7 @@ fig_all2 <- left_grid | right_col2
 fig_all2 <- fig_all2 + patchwork::plot_layout(widths = c(1.05, 1.45))
 
 print(fig_all2)
-
+print(right_col2)
 
 right_col2 <- p_delta / p_zeta0 +
   patchwork::plot_layout(heights = c(1, 1))
@@ -490,7 +490,7 @@ make_envelope <- function(n, ndis, type = c("step","ramp")) {
 
 w <- make_envelope(n, ndis, envelope_type)
 
-n_samples <- 10
+n_samples <- 50
 n_iter <- 10000
 burn_in <- 2500
 sigma_props <- c(NA, NA, NA, NA, 0.5, NA)
