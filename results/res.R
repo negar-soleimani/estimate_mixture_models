@@ -840,6 +840,22 @@ load("/Users/negarsoleimani/Documents/phd/paper1/Simulation/Model_2/final_result
 load("/Users/negarsoleimani/Documents/phd/paper1/Simulation/Model_2/final_results/result_m2_sh2_psi9_simple.RData")
 load("/Users/negarsoleimani/Documents/phd/paper1/Simulation/Model_2/final_results/result_m2_sh2_psi10_simple.RData")
 
+# View(result_m2_sh2_psi6_simple1)
+# g <- result_m2_sh2_psi6_simple1[[1]]
+# h0 <- result_m2_sh2_psi6_simple1[[2]]
+# sigma <- result_m2_sh2_psi6_simple1[[3]]
+# alpha <- result_m2_sh2_psi6_simple1[[4]]
+# psi <- result_m2_sh2_psi6_simple1[[5]]
+# k <- result_m2_sh2_psi6_simple1[[6]]
+# boxplot(colMeans(g))
+# boxplot(colMeans(h0))
+# boxplot(colMeans(sigma))
+# boxplot(colMeans(alpha))
+# boxplot(colMeans(psi))
+# boxplot(colMeans(k))
+
+boxplot(result_m2_sh2_psi6_simple1[[7]][[10]])
+
 boxplot(result_m2_sh2_psi8_simple[[7]][[1]])
 
 g1 <- result_m2_sh2_psi1_simple[[1]]
