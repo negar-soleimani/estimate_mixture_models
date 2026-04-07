@@ -8,6 +8,7 @@ mcmc_step6 <- function(y, t, n_iter, init, sigma_proposals, mcmc_parameters, Sig
   
   theta <- init
   delta <- rep(0, length(y))
+  
   chain_theta <- matrix(NA, nrow = total_iter, ncol = length(init))
   colnames(chain_theta) <- c("g", "h0", "sigma_sq_err", "alpha", "psi_delta", "k")
   chain_delta <- matrix(NA, nrow = total_iter, ncol = length(y))
@@ -22,6 +23,7 @@ mcmc_step6 <- function(y, t, n_iter, init, sigma_proposals, mcmc_parameters, Sig
     sigma_sq_delta <- sigma_sq_err / k
     
     Sigma_delta <- GP_covariance(t, sigma_sq_delta, psi_delta)
+    
     f_theta <- balldropg(t, c(g, h0))
     mean1 <- f_theta
     mean2 <- f_theta + delta
