@@ -61,6 +61,14 @@ alpha_sh2 <- result_m1_sh2_presentation[[4]]
 psi_delta_sh2 <- result_m1_sh2_presentation[[5]]
 k_sh2 <- result_m1_sh2_presentation[[6]]
 
+# g_sh2 <- result_m2_sh2_psi6_simple[[1]]
+# h0_sh2 <- result_m2_sh2_psi6_simple[[2]]
+# sigma_sq_err_sh2 <- result_m2_sh2_psi6_simple[[3]]
+# alpha_sh2 <- result_m2_sh2_psi6_simple[[4]]
+# psi_delta_sh2 <- result_m2_sh2_psi6_simple[[5]]
+# k_sh2 <- result_m2_sh2_psi6_simple[[6]]
+
+View(result_m2_sh2_psi6_simple)
 par(mfrow = c(1, 3),
     mar   = c(3, 4, 1, 1) 
 )
@@ -89,11 +97,11 @@ boxplot(
   col  = "#800020",
   main = NULL
 )
-abline(h = 0.0537, lty = 2)
+abline(h = 0.01, lty = 2)
 
 
 boxplot(
-  colMeans(alpha_sh5),
+  colMeans(alpha_sh2),
   ylab = expression(alpha),
   xlab = "",
   col  = "#800020",
@@ -101,8 +109,10 @@ boxplot(
 )
 abline(h = 0.7, lty = 2)
 
+hist(alpha_sh2)
+
 boxplot(
-  colMeans(psi_delta_sh5),
+  colMeans(psi_delta_sh2),
   ylab = expression(psi[delta]),
   xlab = "",
   col  = "#800020",
@@ -111,13 +121,18 @@ boxplot(
 abline(h = 0.3, lty = 2)
 
 boxplot(
-  colMeans(k_sh5),
+  colMeans(k_sh2),
   ylab = "k",
   xlab = "",
   col  = "#800020",
   main = NULL
 )
 abline(h = 0.2, lty = 2)
+
+# par(mfrow = c(1,1))
+# boxplot(result_m2_sh2_psi6_simple[[7]])
+# abline(h = 0)
+# table(result_m2_sh2_psi6_simple[[8]][[1]])
 
 don <- read_xlsx("E:/Phd_Paris Saclay/10Sep2024_Cours Calibration/Ball_drops_data.xls", sheet = 2)
 names(don) <- c("drop", "time", "Height", "Velocity")
