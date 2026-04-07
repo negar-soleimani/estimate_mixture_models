@@ -254,7 +254,7 @@ mcmc_step6 <- function(y, t, n_iter, init, sigma_proposals, mcmc_parameters, Sig
     inv_Kstar <- tryCatch(chol2inv(chol(K_star_psi)), 
                           error = function(e) NULL)
     alpha_k <- (n / 2) + 1
-    beta_k <- 300 + (1 / (2 * sigma_sq_err)) * quad_form_delta
+    beta_k <- (1 / (2 * sigma_sq_err)) * quad_form_delta
     # beta_k <- (1 / (2 * sigma_sq_err)) * quad_form_delta
     # alpha_k <- (n / 2) + 1
     for (try_k in 1:100) {
