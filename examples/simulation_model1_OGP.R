@@ -26,7 +26,7 @@ Sigma_theta     <- matrix(c(0.5, 0, 0, 0.5), nrow = 2)
 #   seuil = TRUE,  
 #   s = 0.3       
 # )
-result <- mcmc_step6(y, t, n_iter, init, sigma_proposals, mcmc_parameters, Sigma_theta, n_burnin=1000, a_psi, b_psi)
+result <- mcmc_step6(y, t, n_iter, init, sigma_proposals, mcmc_parameters, Sigma_theta, n_burnin=1000)
 #View(result)
 
 g <- result[["theta"]][, 1]
@@ -183,7 +183,7 @@ for (v in 1:n_samples) {
   y_obs[,v] <- y_1
   
   results <- mcmc_step6(y_1, t, n_iter, init, sigma_proposals, g_init=FALSE, h0_init= FALSE, sig2er_init = FALSE,
-                        alpha_init = FALSE, psi_init = FALSE, k_init = FALSE, Sigma_theta, n_burnin = burn_in, a_psi, b_psi, seuil = FALSE, s = 0.3)
+                        alpha_init = FALSE, psi_init = FALSE, k_init = FALSE, Sigma_theta, n_burnin = burn_in, seuil = FALSE, s = 0.3)
   g[,v] = results$theta[,1]
   h0[,v]=results$theta[,2]
   sigma_sq_err[,v]=results$theta[,3]
