@@ -60,7 +60,6 @@ n_samples <- 10
 n_iter <- 10000
 burn_in <- 2500
 sigma_props <- c(NA, NA, NA, NA, 0.5, NA)
-
 # init = c(g, h0, sig2err, alpha, psidelta, k)
 init <- c(9.8, 46.45, 0.01, 0.5, 0.5, 0.1)
 
@@ -75,6 +74,7 @@ delta_list  <- vector("list", n_samples)
 loglik_mat  <- matrix(NA, n_iter, n_samples)
 accept_rate <- numeric(n_samples)
 y_obs       <- matrix(NA, n, n_samples)
+
 
 for (v in 1:n_samples) {
 
@@ -206,7 +206,7 @@ library(patchwork)
 
 res_obj <- result_scenario_IIII
 
-v <- 50
+v <- 10
 
 g     <- res_obj$g_chain[, v]
 h0    <- res_obj$h0_chain[, v]
