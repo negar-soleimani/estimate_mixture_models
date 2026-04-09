@@ -940,7 +940,7 @@ boxplot(colMeans(sigma1), colMeans(sigma2), colMeans(sigma3), colMeans(sigma4), 
         xlab = expression(gamma[delta]),
         ylab = expression(lambda^2),
         col = "lightseagreen")
-abline(h = 0.01, col = "orange", lwd = 2)
+abline(h = 0.01, col = "orange", lwd = 1)
 
 vioplot(colMeans(sigma1), colMeans(sigma2), colMeans(sigma3), colMeans(sigma4), colMeans(sigma5), 
         colMeans(sigma6), colMeans(sigma7), colMeans(sigma8), colMeans(sigma9), colMeans(sigma10),

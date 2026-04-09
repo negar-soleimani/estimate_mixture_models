@@ -252,8 +252,8 @@ for (v in 1:n_samples) {
 }
 #result_m2_sh2_psi1_simple1 <- list(g_chain, h0_chain, sigma_chain, alpha_chain, psi_chain, k_chain, delta_list, zeta_list, loglik_mat, accept_rate)
 
-result_m2_sh2_psi1_simple <- list(g_chain, h0_chain, sigma_chain, alpha_chain, psi_chain, k_chain, delta_list, zeta_list, loglik_mat, accept_rate)
-# save(result_m2_sh2_psi1_simple,file = "/Users/negarsoleimani/Documents/phd/paper1/result_m2_sh2_psi1_simple.RData")
+result_m2_sh2_psi1_ortho <- list(g_chain, h0_chain, sigma_chain, alpha_chain, psi_chain, k_chain, delta_list, zeta_list, loglik_mat, accept_rate)
+save(result_m2_sh2_psi1_ortho,file = "/Users/negar/Documents/phd/Result/Model1/Orthogonality/result_m2_sh2_psi1_ortho.RData")
 
 
 ## Psi2 ############################################
@@ -307,10 +307,10 @@ for (v in 1:n_samples) {
   loglik_mat[, v]  <- res$loglik
   accept_rate[v]   <- res$accept_rate_psi
 }
-#result_m2_sh2_psi2_simple1 <- list(g_chain, h0_chain, sigma_chain, alpha_chain, psi_chain, k_chain, delta_list, zeta_list, loglik_mat, accept_rate)
+#result_m2_sh2_psi2_ortho1 <- list(g_chain, h0_chain, sigma_chain, alpha_chain, psi_chain, k_chain, delta_list, zeta_list, loglik_mat, accept_rate)
 
-result_m2_sh2_psi2_simple <- list(g_chain, h0_chain, sigma_chain, alpha_chain, psi_chain, k_chain, delta_list, zeta_list, loglik_mat, accept_rate)
-#save(result_m2_sh2_psi2_simple,file = "/Users/negarsoleimani/Documents/phd/paper1/result_m2_sh2_psi2_simple.RData")
+result_m2_sh2_psi2_ortho <- list(g_chain, h0_chain, sigma_chain, alpha_chain, psi_chain, k_chain, delta_list, zeta_list, loglik_mat, accept_rate)
+save(result_m2_sh2_psi2_ortho,file = "/Users/negar/Documents/phd/Result/Model1/Orthogonality/result_m2_sh2_psi2_ortho.RData")
 ## Psi3 ############################################
 set.seed(12345)
 k = 0.1
@@ -361,10 +361,10 @@ for (v in 1:n_samples) {
   loglik_mat[, v]  <- res$loglik
   accept_rate[v]   <- res$accept_rate_psi
 }
-#result_m2_sh2_psi3_simple1 <- list(g_chain, h0_chain, sigma_chain, alpha_chain, psi_chain, k_chain, delta_list, zeta_list, loglik_mat, accept_rate)
+#result_m2_sh2_psi3_ortho1 <- list(g_chain, h0_chain, sigma_chain, alpha_chain, psi_chain, k_chain, delta_list, zeta_list, loglik_mat, accept_rate)
 
-result_m2_sh2_psi3_simple <- list(g_chain, h0_chain, sigma_chain, alpha_chain, psi_chain, k_chain, delta_list, zeta_list, loglik_mat, accept_rate)
-#save(result_m2_sh2_psi3_simple,file = "/Users/negarsoleimani/Documents/phd/paper1/result_m2_sh2_psi3_simple.RData")
+result_m2_sh2_psi3_ortho <- list(g_chain, h0_chain, sigma_chain, alpha_chain, psi_chain, k_chain, delta_list, zeta_list, loglik_mat, accept_rate)
+save(result_m2_sh2_psi3_ortho,file = "/Users/negar/Documents/phd/Result/Model1/Orthogonality/result_m2_sh2_psi3_ortho.RData")
 
 
 ## Psi4 ############################################
@@ -417,10 +417,10 @@ for (v in 1:n_samples) {
   loglik_mat[, v]  <- res$loglik
   accept_rate[v]   <- res$accept_rate_psi
 }
-#result_m2_sh2_psi4_simple1 <- list(g_chain, h0_chain, sigma_chain, alpha_chain, psi_chain, k_chain, delta_list, zeta_list, loglik_mat, accept_rate)
+#result_m2_sh2_psi4_ortho1 <- list(g_chain, h0_chain, sigma_chain, alpha_chain, psi_chain, k_chain, delta_list, zeta_list, loglik_mat, accept_rate)
 
-result_m2_sh2_psi4_simple <- list(g_chain, h0_chain, sigma_chain, alpha_chain, psi_chain, k_chain, delta_list, zeta_list, loglik_mat, accept_rate)
-#save(result_m2_sh2_psi4_simple,file = "/Users/negarsoleimani/Documents/phd/paper1/result_m2_sh2_psi4_simple.RData")
+result_m2_sh2_psi4_ortho <- list(g_chain, h0_chain, sigma_chain, alpha_chain, psi_chain, k_chain, delta_list, zeta_list, loglik_mat, accept_rate)
+save(result_m2_sh2_psi4_ortho,file = "/Users/negar/Documents/phd/Result/Model1/Orthogonality/result_m2_sh2_psi4_ortho.RData")
 
 
 ## Psi5 ############################################
@@ -474,10 +474,10 @@ for (v in 1:n_samples) {
   loglik_mat[, v]  <- res$loglik
   accept_rate[v]   <- res$accept_rate_psi
 }
-#result_m2_sh2_psi5_simple1 <- list(g_chain, h0_chain, sigma_chain, alpha_chain, psi_chain, k_chain, delta_list, zeta_list, loglik_mat, accept_rate)
+#result_m2_sh2_psi5_ortho1 <- list(g_chain, h0_chain, sigma_chain, alpha_chain, psi_chain, k_chain, delta_list, zeta_list, loglik_mat, accept_rate)
 
-result_m2_sh2_psi5_simple <- list(g_chain, h0_chain, sigma_chain, alpha_chain, psi_chain, k_chain, delta_list, zeta_list, loglik_mat, accept_rate)
-#save(result_m2_sh2_psi5_simple,file = "/Users/negarsoleimani/Documents/phd/paper1/result_m2_sh2_psi5_simple.RData")
+result_m2_sh2_psi5_ortho <- list(g_chain, h0_chain, sigma_chain, alpha_chain, psi_chain, k_chain, delta_list, zeta_list, loglik_mat, accept_rate)
+save(result_m2_sh2_psi5_ortho,file = "/Users/negar/Documents/phd/Result/Model1/Orthogonality/result_m2_sh2_psi5_ortho.RData")
 
 
 ## Psi6 ############################################
@@ -531,10 +531,10 @@ for (v in 1:n_samples) {
   loglik_mat[, v]  <- res$loglik
   accept_rate[v]   <- res$accept_rate_psi
 }
-#result_m2_sh2_psi6_simple1 <- list(g_chain, h0_chain, sigma_chain, alpha_chain, psi_chain, k_chain, delta_list, zeta_list, loglik_mat, accept_rate)
+#result_m2_sh2_psi6_ortho1 <- list(g_chain, h0_chain, sigma_chain, alpha_chain, psi_chain, k_chain, delta_list, zeta_list, loglik_mat, accept_rate)
 
-result_m2_sh2_psi6_simple <- list(g_chain, h0_chain, sigma_chain, alpha_chain, psi_chain, k_chain, delta_list, zeta_list, loglik_mat, accept_rate)
-#save(result_m2_sh2_psi6_simple,file = "/Users/negarsoleimani/Documents/phd/paper1/result_m2_sh2_psi6_simple.RData")
+result_m2_sh2_psi6_ortho <- list(g_chain, h0_chain, sigma_chain, alpha_chain, psi_chain, k_chain, delta_list, zeta_list, loglik_mat, accept_rate)
+save(result_m2_sh2_psi6_ortho,file = "/Users/negar/Documents/phd/Result/Model1/Orthogonality/result_m2_sh2_psi6_ortho.RData")
 
 
 ## Psi7 ############################################
@@ -588,10 +588,10 @@ for (v in 1:n_samples) {
   loglik_mat[, v]  <- res$loglik
   accept_rate[v]   <- res$accept_rate_psi
 }
-#result_m2_sh2_psi7_simple1 <- list(g_chain, h0_chain, sigma_chain, alpha_chain, psi_chain, k_chain, delta_list, zeta_list, loglik_mat, accept_rate)
+#result_m2_sh2_psi7_ortho1 <- list(g_chain, h0_chain, sigma_chain, alpha_chain, psi_chain, k_chain, delta_list, zeta_list, loglik_mat, accept_rate)
 
-result_m2_sh2_psi7_simple <- list(g_chain, h0_chain, sigma_chain, alpha_chain, psi_chain, k_chain, delta_list, zeta_list, loglik_mat, accept_rate)
-#save(result_m2_sh2_psi7_simple,file = "/Users/negarsoleimani/Documents/phd/paper1/result_m2_sh2_psi7_simple.RData")
+result_m2_sh2_psi7_ortho <- list(g_chain, h0_chain, sigma_chain, alpha_chain, psi_chain, k_chain, delta_list, zeta_list, loglik_mat, accept_rate)
+save(result_m2_sh2_psi7_ortho,file = "/Users/negar/Documents/phd/Result/Model1/Orthogonality/result_m2_sh2_psi7_ortho.RData")
 
 
 ## Psi8 ############################################
@@ -645,10 +645,10 @@ for (v in 1:n_samples) {
   loglik_mat[, v]  <- res$loglik
   accept_rate[v]   <- res$accept_rate_psi
 }
-#result_m2_sh2_psi8_simple1 <- list(g_chain, h0_chain, sigma_chain, alpha_chain, psi_chain, k_chain, delta_list, zeta_list, loglik_mat, accept_rate)
+#result_m2_sh2_psi8_ortho1 <- list(g_chain, h0_chain, sigma_chain, alpha_chain, psi_chain, k_chain, delta_list, zeta_list, loglik_mat, accept_rate)
 
-result_m2_sh2_psi8_simple <- list(g_chain, h0_chain, sigma_chain, alpha_chain, psi_chain, k_chain, delta_list, zeta_list, loglik_mat, accept_rate)
-#save(result_m2_sh2_psi8_simple,file = "/Users/negarsoleimani/Documents/phd/paper1/result_m2_sh2_psi8_simple.RData")
+result_m2_sh2_psi8_ortho <- list(g_chain, h0_chain, sigma_chain, alpha_chain, psi_chain, k_chain, delta_list, zeta_list, loglik_mat, accept_rate)
+save(result_m2_sh2_psi8_ortho,file = "/Users/negar/Documents/phd/Result/Model1/Orthogonality/result_m2_sh2_psi8_ortho.RData")
 
 
 ## Psi9 ############################################
@@ -702,10 +702,10 @@ for (v in 1:n_samples) {
   loglik_mat[, v]  <- res$loglik
   accept_rate[v]   <- res$accept_rate_psi
 }
-#result_m2_sh2_psi9_simple1 <- list(g_chain, h0_chain, sigma_chain, alpha_chain, psi_chain, k_chain, delta_list, zeta_list, loglik_mat, accept_rate)
+#result_m2_sh2_psi9_ortho1 <- list(g_chain, h0_chain, sigma_chain, alpha_chain, psi_chain, k_chain, delta_list, zeta_list, loglik_mat, accept_rate)
 
-result_m2_sh2_psi9_simple <- list(g_chain, h0_chain, sigma_chain, alpha_chain, psi_chain, k_chain, delta_list, zeta_list, loglik_mat, accept_rate)
-#save(result_m2_sh2_psi9_simple,file = "/Users/negarsoleimani/Documents/phd/paper1/result_m2_sh2_psi9_simple.RData")
+result_m2_sh2_psi9_ortho <- list(g_chain, h0_chain, sigma_chain, alpha_chain, psi_chain, k_chain, delta_list, zeta_list, loglik_mat, accept_rate)
+save(result_m2_sh2_psi9_ortho,file = "/Users/negar/Documents/phd/Result/Model1/Orthogonality/result_m2_sh2_psi9_ortho.RData")
 
 
 ## Psi10 ############################################
@@ -759,8 +759,8 @@ for (v in 1:n_samples) {
   loglik_mat[, v]  <- res$loglik
   accept_rate[v]   <- res$accept_rate_psi
 }
-#result_m2_sh2_psi10_simple1 <- list(g_chain, h0_chain, sigma_chain, alpha_chain, psi_chain, k_chain, delta_list, zeta_list, loglik_mat, accept_rate)
+#result_m2_sh2_psi10_ortho1 <- list(g_chain, h0_chain, sigma_chain, alpha_chain, psi_chain, k_chain, delta_list, zeta_list, loglik_mat, accept_rate)
 
-result_m2_sh2_psi10_simple <- list(g_chain, h0_chain, sigma_chain, alpha_chain, psi_chain, k_chain, delta_list, zeta_list, loglik_mat, accept_rate)
-#save(result_m2_sh2_psi10_simple,file = "/Users/negarsoleimani/Documents/phd/paper1/m2_simplegp/result_m2_sh2_psi10_simple.RData")
+result_m2_sh2_psi10_ortho <- list(g_chain, h0_chain, sigma_chain, alpha_chain, psi_chain, k_chain, delta_list, zeta_list, loglik_mat, accept_rate)
+save(result_m2_sh2_psi10_ortho,file = "/Users/negar/Documents/phd/Result/Model1/Orthogonality//result_m2_sh2_psi10_ortho.RData")
 
