@@ -1,4 +1,5 @@
 # simulation: orthogonal_GP
+# Negar
 set.seed(12345)
 Sigma_theta <- matrix(c(0.5,0,0,0.5), nrow = 2)
 # c(g, h0, sig2err, alpha, psidelta, k)
