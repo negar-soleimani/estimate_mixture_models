@@ -210,6 +210,7 @@ sigma_sq_delta <- sigma_sq_err / k
 n_samples <- 50
 n_iter <- 10000
 burn_in <- 2000
+n <- length(y)
 # 
 sigma_props <- c(NA, NA, NA, NA, 0.5, NA)
 #(g,h0), sigma, psi, k, alpha
@@ -532,6 +533,8 @@ for (v in 1:n_samples) {
   accept_rate[v]   <- res$accept_rate_psi
 }
 #result_m2_sh2_psi6_ortho1 <- list(g_chain, h0_chain, sigma_chain, alpha_chain, psi_chain, k_chain, delta_list, zeta_list, loglik_mat, accept_rate)
+#simulation classic
+result_m2_sh2_psi6_sim_classic <- list(g_chain, h0_chain, sigma_chain, alpha_chain, psi_chain, k_chain, delta_list, zeta_list, loglik_mat, accept_rate)
 
 result_m2_sh2_psi6_ortho <- list(g_chain, h0_chain, sigma_chain, alpha_chain, psi_chain, k_chain, delta_list, zeta_list, loglik_mat, accept_rate)
 save(result_m2_sh2_psi6_ortho,file = "/Users/negar/Documents/phd/Result/Model1/Orthogonality/result_m2_sh2_psi6_ortho.RData")
