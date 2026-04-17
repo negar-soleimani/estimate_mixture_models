@@ -206,7 +206,11 @@ library(patchwork)
 
 res_obj <- result_scenario_IIII
 
+<<<<<<< HEAD
 v <- 10
+=======
+v <- 40
+>>>>>>> 318e8e1 (modify)
 
 g     <- res_obj$g_chain[, v]
 h0    <- res_obj$h0_chain[, v]
@@ -258,6 +262,7 @@ plot(psi,   type = "l", main = expression("trace: " * psi[delta]),
      xlab = "iter", ylab = expression(psi[delta]))
 plot(k,     type = "l", main = "trace: k", xlab = "iter", ylab = "k")
 
+hist(alpha)
 
 ## posterior densities for one dataset
 
