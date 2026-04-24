@@ -1,3 +1,5 @@
+## ------------------------------------ Model0 ------------------------------------ ##
+
 # =========================================================
 # Figure 1, (main = template2.tex), page 13
 # Simulation under M_0 (50 datasets, n = 45, Blue Basketball)
@@ -75,39 +77,14 @@ ggplot(df_alpha, aes(x = alpha)) +
 # Right: zoom on first 5 observations
 # =========================================================
 
+g_mat <- result_m0_sh2_classic_classic[[1]]
+h0_mat <- result_m0_sh2_classic_classic[[2]]
 
-
-
-don <- read_xlsx("E:/Phd_Paris Saclay/10Sep2024_Cours Calibration/Ball_drops_data.xls", sheet = 2)
-names(don) <- c("drop", "time", "Height", "Velocity")
-don$drop <- as.factor(don$drop)
-don <- don[don$drop == 1, ]
-
-t <- don$time
-y <- don$Height
-t_min <- min(t)
-t_range <- max(t) - min(t)
-t <- (t - t_min) / t_range
-n <- length(y)
-
-balldropg <- function(t, theta) {
-  g <- theta[1]
-  h0 <- theta[2]
-  theta_vec <- rbind(h0, g)
-  x_vec <- cbind(1, -0.5 * (t * t_range + t_min)^2)
-  h <- x_vec %*% theta_vec
-  h[h < 0] <- 0
-  return(as.vector(h))
-}
-
-g_mat <- result_m1_sh2_presentation[[1]]   # n_iter × n_sims
-h0_mat<- result_m1_sh2_presentation[[2]]
-
-g_last <- g_mat[, 30]
-h0_last <- h0_mat[, 30]
-y_obs <- result_m1_sh2_presentation$y_obs
-y_obs30 <- y_obs[,30]
-y_true <- balldropg(t, c(9.8, 46.45))
+g_last <- g_mat[, 50]
+h0_last <- h0_mat[, 50]
+y_obs <- result_m0_sh2_classic_classic$y_obs
+y_obs30 <- y_obs[,50]
+y_true <- balldropg(t, c(9.8, 46.46))
 
 y_pred <- matrix(NA, length(t), length(g_last), byrow = FALSE)
 
@@ -122,7 +99,7 @@ boxplot(y_pred1, col = "orange2",
         xlab = "Time", ylab = "Height")
 lines(y_true, lwd = 2, col = "blue")
 points(y_obs30, col = "gold", pch=20, cex = 1)
-legend(x=30, y=45, legend=c("Simulated data",
+legend(x=34, y=48, legend=c("Simulated data",
                             "True code", "Predictions"), lwd=rep(2,2), col=c("gold","blue", "orange2"), 
        cex=1, pch=c(19,NA,NA), lty=c(0,1,1))
 
@@ -130,204 +107,20 @@ boxplot(y_pred1[, 1:5], col = "orange2",
         xlab = "Time", ylab = "Height")
 lines(y_true, lwd = 2, col = "blue")
 points(y_obs30, col = "gold", pch=20, cex = 3)
-legend(x=30, y=45, legend=c("Simulated data", "Predictions",
-                            "True code"), lwd=rep(2,2), col=c("gold", "orange2","blue"), 
+legend(x=4.2, y=47, legend=c("Simulated data", "Predictions",
+                             "True code"), lwd=rep(2,2), col=c("gold", "orange2","blue"), 
        cex=1, pch=c(19,NA,NA), lty=c(0,1,1))
 
-y_pred2 <- rowMeans(y_pred) 
-y_obs2 <- rowMeans(y_obs)
 
-df_cmp <- data.frame(
-  time   = t,
-  y_obs2  = y_obs2,
-  y_pred2  = y_pred2,
-  y_true = y_true
-)
-library(ggplot2)
-p <- ggplot(df_cmp, aes(x = time)) +
-  geom_point(aes(y = y_obs2, color = "Observed"),      size = 1) +
-  geom_line( aes(y = y_pred2,  color = "Estimate"),     linetype = "dashed", size = 0.5) +
-  geom_line( aes(y = y_true, color = "True"),         linetype = "solid",  size = 0.5) +
-  scale_color_manual(
-    name   = NULL,
-    values = c("Observed" = "#800020",
-               "Estimate" = "green",
-               "True"     = "blue")
-  ) +
-  theme_minimal(base_size = 14) +
-  labs(
-    x     = "Time",
-    y     = ""
-  ) +
-  theme(
-    legend.position      = c(0.95, 0.95),
-    legend.justification = c("right", "top"),
-    legend.background    = element_rect(fill = alpha("white", 0.6)),
-    legend.key           = element_rect(fill = NA)
-  )
+## ------------------------------------ Model1 ------------------------------------ ##
 
-print(p)
 
-boxplot(colMeans(g_sh1), colMeans(g_sh2), colMeans(g_sh3), colMeans(g_sh4), colMeans(g_sh5),
-        names  = sheet_names,
-        ylab = "g",
-        col    = rainbow(5))
-
-boxplot(colMeans(h0_sh1), colMeans(h0_sh2), colMeans(h0_sh3), colMeans(h0_sh4), colMeans(h0_sh5),
-        names  = sheet_names,
-        ylab = "h0",
-        col    = rainbow(5))
-
-boxplot(colMeans(sigma_sq_err_sh1), colMeans(sigma_sq_err_sh2), colMeans(sigma_sq_err_sh3), 
-        colMeans(sigma_sq_err_sh4), colMeans(sigma_sq_err_sh5),
-        names  = sheet_names,
-        ylab = "sigma_sq_err",
-        col    = rainbow(5))
-
-boxplot(colMeans(alpha_sh1), colMeans(alpha_sh2), colMeans(alpha_sh3), colMeans(alpha_sh4), 
-        colMeans(alpha_sh5),
-        names  = sheet_names,
-        ylab = "alpha",
-        ylim = c(0.4,1),
-        col    = rainbow(5))
-
-boxplot(colMeans(psi_delta_sh1), colMeans(psi_delta_sh2), colMeans(psi_delta_sh3), 
-        colMeans(psi_delta_sh4), colMeans(psi_delta_sh5),
-        names  = sheet_names,
-        ylab = "psi_delta",
-        col    = rainbow(5))
-
-boxplot(colMeans(k_sh1), colMeans(k_sh2), colMeans(k_sh3), colMeans(k_sh4), colMeans(k_sh5),
-        names  = sheet_names,
-        ylab = "k",
-        col    = rainbow(5))
-
-load("E:/Phd_Paris Saclay/resultat/Results_M1_Simulation/result_m1_sh2_presentation.RData")
-load("E:Phd_Paris Saclay/resultat/Results_M1_Simulation/y_obs_m1_sh2_presentation.RData")
-
-alpha <- result_m1_sh2_presentation[[4]]
-hist(alpha)
-plot(density(alpha))
-
-library(ggplot2)
-
-# 1) flatten the matrix to a single vector
-alpha_vec <- as.vector(alpha)
-
-# 2) put into a data.frame
-df_alpha <- data.frame(alpha = alpha_vec)
-
-# 3) ggplot density
-ggplot(df_alpha, aes(x = alpha)) +
-  geom_density(
-    fill  = "#800020",   # burgundy fill
-    color = "#550010",   # darker border
-    alpha = 0.6,         # semi‐transparent
-    size  = 1
-  ) +
-  labs(
-    x     = expression(alpha),
-    y     = "Density",
-    title = "Posterior Density of " ~ alpha
-  ) +
-  theme_minimal(base_size = 14) +
-  theme(
-    plot.title   = element_text(hjust = 0.5),
-    plot.margin  = unit(c(0.2,0.2,0.2,0.2), "cm")
-  )
 #################################################################################
 #################################################################################
 ################# Results for model 0 - sheet2 ##################################
 #################################################################################
 #################################################################################
 
-load("/Users/negar/Documents/phd/Result/Model1/Orthogonality/result_m2_sh2_psi6_ortho.RData")
-View(result_m2_sh2_psi6_ortho)
-
-result_m2_sh2_psi6_ortho[[1]]
-result_m2_sh2_psi6_ortho[[2]]
-result_m2_sh2_psi6_ortho[[3]]
-result_m2_sh2_psi6_ortho[[4]]
-result_m2_sh2_psi6_ortho[[5]]
-result_m2_sh2_psi6_ortho[[6]]
-
-g_sh2 <- result_m0_sh2_classic_classic[[1]]
-h0_sh2 <- result_m0_sh2_classic_classic[[2]]
-sigma_sq_err_sh2 <- result_m0_sh2_classic_classic[[3]]
-alpha_sh2 <- result_m0_sh2_classic_classic[[4]]
-psi_delta_sh2 <- result_m0_sh2_classic_classic[[5]]
-k_sh2 <- result_m0_sh2_classic_classic[[6]]
-#zeta <- result_m0_sh2_classic_classic[[9]][[30]]
-
-mean(colMeans(sigma_sq_err_sh2))
-par(mfrow = c(1, 3),
-    mar   = c(3, 4, 1, 1) 
-)
-boxplot(
-  colMeans(g_sh2),
-  ylab = "g",
-  #xlab = "Bowling Ball",
-  col  = "lightseagreen",
-  main = ""
-)
-abline(h = 9.8, lty = 2)
-
-boxplot(
-  colMeans(h0_sh2),
-  ylab = "h0",
-  #xlab = "",
-  col  = "lightseagreen",
-  main = ""
-)
-abline(h = 46.45045, lty = 2)
-
-boxplot(
-  colMeans(sigma_sq_err_sh2),
-  #sigma_sq_err_sh2[, 50],
-  ylab = expression(lambda^2),
-  #ylim = c(0.01, 0.0452),
-  #xlab = "",
-  col  = "lightseagreen",
-  main = ""
-)
-abline(h = 0.01, lty = 2)
-
-boxplot(
-  colMeans(psi_delta_sh2),
-  ylab = expression(lambda^2),
-  #ylim = c(0.01, 0.0452),
-  #xlab = "",
-  col  = "lightseagreen",
-  main = ""
-)
-abline(h = 0.4, lty = 2)
-
-alpha <- result_m0_sh2_classic_classic[[4]]
-
-library(ggplot2)
-
-# 1) flatten the matrix to a single vector
-alpha_vec <- as.vector(alpha)
-
-df_alpha <- data.frame(alpha = alpha_vec)
-
-ggplot(df_alpha, aes(x = alpha)) +
-  geom_density(
-    fill  = "#4CCDC9",  
-    color = "lightseagreen", 
-    alpha = 0.6,        
-    size  = 1
-  ) +
-  labs(
-    x     = expression(alpha),
-    y     = "Density",
-    title = "Posterior Density of alpha"
-  ) +
-  theme_minimal(base_size = 14) +
-  theme(
-    plot.title   = element_text(hjust = 0.5),
-    plot.margin  = unit(c(0.2,0.2,0.2,0.2), "cm")
-  )
 
 # -------------------------------- posterior summaries for alpha -------------------------------- #
 # alpha is an (n_iter x n_samples) matrix:
