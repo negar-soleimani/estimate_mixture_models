@@ -623,3 +623,4 @@ result_scenario_III <- list(
   sim_k = sim_k,
   sim_psi_delta = sim_psi_delta
 )
+

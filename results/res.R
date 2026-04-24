@@ -1,72 +1,9 @@
-#################################################################################
-#################################################################################
+##-----------------------------------------------------------------------------##
+##-----------------------------------------------------------------------------##
 ###################### Results for model 1 ######################################
-#################################################################################
-#################################################################################
-load("E:/Phd_Paris Saclay/resultat/Results_M1_Simulation/result_m1_sh2_presentation.RData")
-load("E:Phd_Paris Saclay/resultat/Results_M1_Simulation/y_obs_m1_sh2_presentation.RData")
-load("E:/Phd_Paris Saclay/resultat/Results_M1_Simulation/result_m1_sh1.RData")
-load("E:/Phd_Paris Saclay/resultat/Results_M1_Simulation/result_m1_sh2.RData")
-load("E:/Phd_Paris Saclay/resultat/Results_M1_Simulation/result_m1_sh3.RData")
-load("E:/Phd_Paris Saclay/resultat/Results_M1_Simulation/result_m1_sh4.RData")
-load("E:/Phd_Paris Saclay/resultat/Results_M1_Simulation/result_m1_sh5.RData")
+##-----------------------------------------------------------------------------##
+##-----------------------------------------------------------------------------##
 
-sheet_names <- c("Baseball",
-                 "Blue Basketball",
-                 "Green Basketball",
-                 "Volleyball",
-                 "Bowling Ball")
-
-#View(result_m1_sh1)
-
-g_sh1 <- result_m1_sh1[[1]]
-h0_sh1 <- result_m1_sh1[[2]]
-sigma_sq_err_sh1 <- result_m1_sh1[[3]]
-alpha_sh1 <- result_m1_sh1[[4]]
-psi_delta_sh1 <- result_m1_sh1[[5]]
-k_sh1 <- result_m1_sh1[[6]]
-
-g_sh2 <- result_m1_sh2[[1]]
-h0_sh2 <- result_m1_sh2[[2]]
-sigma_sq_err_sh2 <- result_m1_sh2[[3]]
-alpha_sh2 <- result_m1_sh2[[4]]
-psi_delta_sh2 <- result_m1_sh2[[5]]
-k_sh2 <- result_m1_sh2[[6]]
-
-g_sh3 <- result_m1_sh3[[1]]
-h0_sh3 <- result_m1_sh3[[2]]
-sigma_sq_err_sh3 <- result_m1_sh3[[3]]
-alpha_sh3 <- result_m1_sh3[[4]]
-psi_delta_sh3 <- result_m1_sh3[[5]]
-k_sh3 <- result_m1_sh3[[6]]
-
-g_sh4 <- result_m1_sh4[[1]]
-h0_sh4 <- result_m1_sh4[[2]]
-sigma_sq_err_sh4 <- result_m1_sh4[[3]]
-alpha_sh4 <- result_m1_sh4[[4]]
-psi_delta_sh4 <- result_m1_sh4[[5]]
-k_sh4 <- result_m1_sh4[[6]]
-
-g_sh5 <- result_m1_sh5[[1]]
-h0_sh5 <- result_m1_sh5[[2]]
-sigma_sq_err_sh5 <- result_m1_sh5[[3]]
-alpha_sh5 <- result_m1_sh5[[4]]
-psi_delta_sh5 <- result_m1_sh5[[5]]
-k_sh5 <- result_m1_sh5[[6]]
-
-g_sh2 <- result_m1_sh2_presentation[[1]]
-h0_sh2 <- result_m1_sh2_presentation[[2]]
-sigma_sq_err_sh2 <- result_m1_sh2_presentation[[3]]
-alpha_sh2 <- result_m1_sh2_presentation[[4]]
-psi_delta_sh2 <- result_m1_sh2_presentation[[5]]
-k_sh2 <- result_m1_sh2_presentation[[6]]
-
-# g_sh2 <- result_m2_sh2_psi6_simple[[1]]
-# h0_sh2 <- result_m2_sh2_psi6_simple[[2]]
-# sigma_sq_err_sh2 <- result_m2_sh2_psi6_simple[[3]]
-# alpha_sh2 <- result_m2_sh2_psi6_simple[[4]]
-# psi_delta_sh2 <- result_m2_sh2_psi6_simple[[5]]
-# k_sh2 <- result_m2_sh2_psi6_simple[[6]]
 
 View(result_m2_sh2_psi6_simple)
 par(mfrow = c(1, 3),
@@ -1149,6 +1086,115 @@ abline(h = 0.8, col = "red")
 
 plot(k_psi9, type = "l", ylab = expression(k ~ " with " ~ psi == 0.8), xlab = "iteration")
 abline(h = 0.2, col = "red")
+
+
+
+
+load("/Users/negar/Documents/phd/Result/Model1/Classic/Model1/result_m2_sh2_psi1_simple.RData")
+load("/Users/negar/Documents/phd/Result/Model1/Classic/Model1/result_m2_sh2_psi2_simple.RData")
+load("/Users/negar/Documents/phd/Result/Model1/Classic/Model1/result_m2_sh2_psi3_simple.RData")
+load("/Users/negar/Documents/phd/Result/Model1/Classic/Model1/result_m2_sh2_psi4_simple.RData")
+load("/Users/negar/Documents/phd/Result/Model1/Classic/Model1/result_m2_sh2_psi5_simple.RData")
+load("/Users/negar/Documents/phd/Result/Model1/Classic/Model1/result_m2_sh2_psi6_simple.RData")
+load("/Users/negar/Documents/phd/Result/Model1/Classic/Model1/result_m2_sh2_psi7_simple.RData")
+load("/Users/negar/Documents/phd/Result/Model1/Classic/Model1/result_m2_sh2_psi8_simple.RData")
+load("/Users/negar/Documents/phd/Result/Model1/Classic/Model1/result_m2_sh2_psi9_simple.RData")
+load("/Users/negar/Documents/phd/Result/Model1/Classic/Model1/result_m2_sh2_psi10_simple.RData")
+
+alpha_posterior_summary <- function(alpha_mat, low_cut = 0.1, high_cut = 0.9) {
+  data.frame(
+    dataset_id       = 1:ncol(alpha_mat),
+    alpha_post_mean  = colMeans(alpha_mat),
+    prob_alpha_lt_01 = colMeans(alpha_mat < low_cut),   # P(alpha < 0.1 | Y_v)
+    prob_alpha_gt_09 = colMeans(alpha_mat > high_cut)   # P(alpha > 0.9 | Y_v)
+  )
+}
+
+alpha1 <- result_m2_sh2_psi1_simple[[4]]
+alpha2 <- result_m2_sh2_psi2_simple[[4]]
+alpha3 <- result_m2_sh2_psi3_simple[[4]]
+alpha4 <- result_m2_sh2_psi4_simple[[4]]
+alpha5 <- result_m2_sh2_psi5_simple[[4]]
+alpha6 <- result_m2_sh2_psi6_simple[[4]]
+alpha7 <- result_m2_sh2_psi7_simple[[4]]
+alpha8 <- result_m2_sh2_psi8_simple[[4]]
+alpha9 <- result_m2_sh2_psi9_simple[[4]]
+alpha10 <- result_m2_sh2_psi10_simple[[4]]
+
+alpha_sum1  <- alpha_posterior_summary(alpha1)
+alpha_sum2  <- alpha_posterior_summary(alpha2)
+alpha_sum3  <- alpha_posterior_summary(alpha3)
+alpha_sum4  <- alpha_posterior_summary(alpha4)
+alpha_sum5  <- alpha_posterior_summary(alpha5)
+alpha_sum6  <- alpha_posterior_summary(alpha6)
+alpha_sum7  <- alpha_posterior_summary(alpha7)
+alpha_sum8  <- alpha_posterior_summary(alpha8)
+alpha_sum9  <- alpha_posterior_summary(alpha9)
+alpha_sum10 <- alpha_posterior_summary(alpha10)
+
+prob_alpha_lt_01_psi1  <- alpha_sum1$prob_alpha_lt_01
+prob_alpha_lt_01_psi2  <- alpha_sum2$prob_alpha_lt_01
+prob_alpha_lt_01_psi3  <- alpha_sum3$prob_alpha_lt_01
+prob_alpha_lt_01_psi4  <- alpha_sum4$prob_alpha_lt_01
+prob_alpha_lt_01_psi5  <- alpha_sum5$prob_alpha_lt_01
+prob_alpha_lt_01_psi6  <- alpha_sum6$prob_alpha_lt_01
+prob_alpha_lt_01_psi7  <- alpha_sum7$prob_alpha_lt_01
+prob_alpha_lt_01_psi8  <- alpha_sum8$prob_alpha_lt_01
+prob_alpha_lt_01_psi9  <- alpha_sum9$prob_alpha_lt_01
+prob_alpha_lt_01_psi10 <- alpha_sum10$prob_alpha_lt_01
+
+prob_alpha_gt_09_psi1  <- alpha_sum1$prob_alpha_gt_09
+prob_alpha_gt_09_psi2  <- alpha_sum2$prob_alpha_gt_09
+prob_alpha_gt_09_psi3  <- alpha_sum3$prob_alpha_gt_09
+prob_alpha_gt_09_psi4  <- alpha_sum4$prob_alpha_gt_09
+prob_alpha_gt_09_psi5  <- alpha_sum5$prob_alpha_gt_09
+prob_alpha_gt_09_psi6  <- alpha_sum6$prob_alpha_gt_09
+prob_alpha_gt_09_psi7  <- alpha_sum7$prob_alpha_gt_09
+prob_alpha_gt_09_psi8  <- alpha_sum8$prob_alpha_gt_09
+prob_alpha_gt_09_psi9  <- alpha_sum9$prob_alpha_gt_09
+prob_alpha_gt_09_psi10 <- alpha_sum10$prob_alpha_gt_09
+
+boxplot(
+  prob_alpha_lt_01_psi1, prob_alpha_lt_01_psi2, prob_alpha_lt_01_psi3,
+  prob_alpha_lt_01_psi4, prob_alpha_lt_01_psi5, prob_alpha_lt_01_psi6,
+  prob_alpha_lt_01_psi7, prob_alpha_lt_01_psi8, prob_alpha_lt_01_psi9,
+  prob_alpha_lt_01_psi10,
+  names = c("0.01", "0.1","0.2","0.3","0.4","0.5","0.6","0.7","0.8","0.9"),
+  xlab  = expression(gamma[delta]),
+  ylab  = expression(hat(P)(alpha < 0.1 ~ "|" ~ Y[v])),
+  ylim  = c(0,1),
+  col   = "lightseagreen"
+)
+
+
+boxplot(
+  prob_alpha_gt_09_psi1, prob_alpha_gt_09_psi2, prob_alpha_gt_09_psi3,
+  prob_alpha_gt_09_psi4, prob_alpha_gt_09_psi5, prob_alpha_gt_09_psi6,
+  prob_alpha_gt_09_psi7, prob_alpha_gt_09_psi8, prob_alpha_gt_09_psi9,
+  prob_alpha_gt_09_psi10,
+  names = c("0.01", "0.1","0.2","0.3","0.4","0.5","0.6","0.7","0.8","0.9"),
+  xlab  = expression(gamma[delta]),
+  ylab  = expression(hat(P)(alpha > 0.9 ~ "|" ~ Y[v])),
+  ylim  = c(0,1),
+  col   = "lightseagreen"
+)
+
+alpha_summary_all <- list(
+  psi_0.01 = alpha_sum1,
+  psi_0.1  = alpha_sum2,
+  psi_0.2  = alpha_sum3,
+  psi_0.3  = alpha_sum4,
+  psi_0.4  = alpha_sum5,
+  psi_0.5  = alpha_sum6,
+  psi_0.6  = alpha_sum7,
+  psi_0.7  = alpha_sum8,
+  psi_0.8  = alpha_sum9,
+  psi_0.9  = alpha_sum10
+)
+
+
+sapply(alpha_summary_all, function(x) mean(x$prob_alpha_lt_01))
+sapply(alpha_summary_all, function(x) median(x$prob_alpha_lt_01))
 
 ################################################################################
 ################################################################################
