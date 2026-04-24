@@ -1,75 +1,82 @@
 # =========================================================
-# Figure 1 (main = template2.tex)
+# Figure 1, (main = template2.tex), page 13
 # Simulation under M_0 (50 datasets, n = 45, Blue Basketball)
 # Priors: delta ~ GP(0, Sigma), gamma_delta ~ U(0.1,1), k ~ U(0,1)
 # Shared params (theta, lambda^2): Jeffreys prior
 # =========================================================
 
-View(result_m2_sh2_psi6_simple)
+load("/Users/negar/Documents/phd/Result/Model1/Classic/result_m0_sh2_classic_classic.RData")
+
+g_sh2 <- result_m0_sh2_classic_classic[[1]]
+h0_sh2 <- result_m0_sh2_classic_classic[[2]]
+sigma_sq_err_sh2 <- result_m0_sh2_classic_classic[[3]]
+alpha_sh2 <- result_m0_sh2_classic_classic[[4]]
+psi_delta_sh2 <- result_m0_sh2_classic_classic[[5]]
+k_sh2 <- result_m0_sh2_classic_classic[[6]]
+
 par(mfrow = c(1, 3),
     mar   = c(3, 4, 1, 1) 
 )
 boxplot(
   colMeans(g_sh2),
   ylab = "g",
-  #xlab = "Bowling Ball",
-  col  = "#800020",
-  main = NULL
+  col  = "lightseagreen",
+  main = ""
 )
 abline(h = 9.8, lty = 2)
 
 boxplot(
   colMeans(h0_sh2),
   ylab = "h0",
-  #xlab = "",
-  col  = "#800020",
-  main = NULL
+  col  = "lightseagreen",
+  main = ""
 )
-abline(h = 46.452, lty = 2)
+abline(h = 46.45045, lty = 2)
 
 boxplot(
   colMeans(sigma_sq_err_sh2),
-  ylab = expression(sigma[err]^2),
-  #xlab = "",
-  col  = "#800020",
-  main = NULL
+  ylab = expression(lambda^2),
+  col  = "lightseagreen",
+  main = ""
 )
 abline(h = 0.01, lty = 2)
 
+alpha <- result_m0_sh2_classic_classic[[4]]
 
-boxplot(
-  colMeans(alpha_sh2),
-  ylab = expression(alpha),
-  xlab = "",
-  col  = "#800020",
-  main = NULL
-)
-abline(h = 0.7, lty = 2)
+library(ggplot2)
 
-hist(alpha_sh2)
+# flatten the matrix to a single vector
+alpha_vec <- as.vector(alpha)
 
-boxplot(
-  colMeans(psi_delta_sh2),
-  ylab = expression(psi[delta]),
-  xlab = "",
-  col  = "#800020",
-  main = NULL
-)
-abline(h = 0.3, lty = 2)
+df_alpha <- data.frame(alpha = alpha_vec)
 
-boxplot(
-  colMeans(k_sh2),
-  ylab = "k",
-  xlab = "",
-  col  = "#800020",
-  main = NULL
-)
-abline(h = 0.2, lty = 2)
+ggplot(df_alpha, aes(x = alpha)) +
+  geom_density(
+    fill  = "#4CCDC9",  
+    color = "lightseagreen", 
+    alpha = 0.6,        
+    size  = 1
+  ) +
+  labs(
+    x     = expression(alpha),
+    y     = "Density",
+    title = "Posterior Density of alpha"
+  ) +
+  theme_minimal(base_size = 14) +
+  theme(
+    plot.title   = element_text(hjust = 0.5),
+    plot.margin  = unit(c(0.2,0.2,0.2,0.2), "cm")
+  )
 
-# par(mfrow = c(1,1))
-# boxplot(result_m2_sh2_psi6_simple[[7]])
-# abline(h = 0)
-# table(result_m2_sh2_psi6_simple[[8]][[1]])
+# =========================================================
+# Figure 2, (main = template2.tex), page 14
+# Posterior predictive vs simulated data (classical GP)
+# Left: full data comparison
+# Right: zoom on first 5 observations
+# =========================================================
+
+
+
 
 don <- read_xlsx("E:/Phd_Paris Saclay/10Sep2024_Cours Calibration/Ball_drops_data.xls", sheet = 2)
 names(don) <- c("drop", "time", "Height", "Velocity")
@@ -243,8 +250,6 @@ result_m2_sh2_psi6_ortho[[3]]
 result_m2_sh2_psi6_ortho[[4]]
 result_m2_sh2_psi6_ortho[[5]]
 result_m2_sh2_psi6_ortho[[6]]
-
-plot(y_1)
 
 g_sh2 <- result_m0_sh2_classic_classic[[1]]
 h0_sh2 <- result_m0_sh2_classic_classic[[2]]
