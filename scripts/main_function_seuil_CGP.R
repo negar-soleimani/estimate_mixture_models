@@ -161,6 +161,14 @@ mcmc_step6 <- function(y, t, n_iter, init, sigma_proposals,
       
       residual2 <- y[idx2] - f_theta[idx2] - delta[idx2]
       rss2   <- sum(residual2^2)
+      
+      # lambda^2 ~ IG(a_lambda, b_lambda)
+      #rate_err  <- b_lambda + 0.5 * (rss1 + rss2 + k * quad_form_delta)
+      #shape_err <- n + a_lambda
+      
+      sigma_sq_err <- rinvgamma(1, shape = shape_err, rate = rate_err)
+      
+      
       d <- 2
       # When we consider the Jeffreys prior, I use the following code:
       rate_err <- (0.5 * ( rss1 + rss2 + (theta[6] * quad_form_delta)))

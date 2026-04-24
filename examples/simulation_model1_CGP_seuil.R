@@ -206,11 +206,7 @@ library(patchwork)
 
 res_obj <- result_scenario_IIII
 
-<<<<<<< HEAD
 v <- 10
-=======
-v <- 40
->>>>>>> 318e8e1 (modify)
 
 g     <- res_obj$g_chain[, v]
 h0    <- res_obj$h0_chain[, v]
@@ -250,10 +246,12 @@ print(round(tab_sum, 4))
 hist(alpha)
 
 par(mfrow = c(2, 3), mar = c(3,3,2,1))
-plot(g,     type = "l", main = "trace: g", xlab = "iter", ylab = "g")
+plot(g,     type = "l", main = "trace: g", xlab = "iter", ylab = "g", ylim = c(9.30, 9.85))
 abline(h = 9.8, lty = 2)
 
 plot(h0,    type = "l", main = "trace: h0", xlab = "iter", ylab = "h0")
+abline(h = 46.45)
+
 plot(sigma, type = "l", main = expression("trace: " * lambda^2),
      xlab = "iter", ylab = expression(lambda^2))
 plot(alpha, type = "l", main = expression("trace: " * alpha),
@@ -262,7 +260,6 @@ plot(psi,   type = "l", main = expression("trace: " * psi[delta]),
      xlab = "iter", ylab = expression(psi[delta]))
 plot(k,     type = "l", main = "trace: k", xlab = "iter", ylab = "k")
 
-hist(alpha)
 
 ## posterior densities for one dataset
 
@@ -584,7 +581,7 @@ for (v in 1:n_samples) {
   # -------- Scenario (I), (II), (III), (IIII) --------
   res <- mcmc_step6(
     y = y_1, t = t, n_iter = n_iter, init = init, sigma_proposals = sigma_props,
-    g_init = TRUE,
+    g_init = FALSE,
     h0_init = FALSE,
     sig2er_init = FALSE,
     alpha_init = FALSE,
@@ -609,7 +606,7 @@ for (v in 1:n_samples) {
   accept_rate[v]   <- res$accept_rate_psi
 }
 
-result_scenario_IIII <- list(
+result_scenario_III <- list(
   g_chain = g_chain,
   h0_chain = h0_chain,
   sigma_chain = sigma_chain,
