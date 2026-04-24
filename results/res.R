@@ -386,6 +386,44 @@ ggplot(df_alpha, aes(x = alpha)) +
     plot.title   = element_text(hjust = 0.5),
     plot.margin  = unit(c(0.2,0.2,0.2,0.2), "cm")
   )
+
+# -------------------------------- posterior summaries for alpha -------------------------------- #
+# alpha is an (n_iter x n_samples) matrix:
+# each column = posterior draws of alpha for one dataset Y_v
+
+alpha_post_mean <- colMeans(alpha)
+
+# Direct posterior probabilities for each dataset v
+prob_alpha_lt_01 <- colMeans(alpha < 0.1)   # P(alpha < 0.1 | Y_v)
+prob_alpha_gt_09 <- colMeans(alpha > 0.9)   # P(alpha > 0.9 | Y_v)
+
+alpha_summary <- data.frame(
+  dataset_id        = 1:n_samples,
+  alpha_post_mean   = alpha_post_mean,
+  prob_alpha_lt_01  = prob_alpha_lt_01,
+  prob_alpha_gt_09  = prob_alpha_gt_09
+)
+
+print(alpha_summary)
+
+prob_alpha_gt_09
+
+par(mfrow = c(1, 2), mar = c(4, 4, 2, 1))
+
+boxplot(
+  prob_alpha_gt_09,
+  ylab = expression(hat(P)(alpha > 0.9 ~ "|" ~ Y[v])),
+  col  = "lightseagreen",
+  main = expression("Support for " * M[0])
+)
+
+boxplot(
+  prob_alpha_lt_01,
+  ylab = expression(hat(P)(alpha < 0.1 ~ "|" ~ Y[v])),
+  col  = "lightseagreen",
+  main = expression("Support for " * M[1])
+)
+
 plot(sigma_sq_err_sh2[ , 50], type = "l", col = "#4CCDC9")
 abline(h = 0.01)
 
@@ -840,7 +878,16 @@ p_lambda2_95
 ###################### Results for model 2 ######################################
 #################################################################################
 #################################################################################
-
+load("/Users/negar/Documents/phd/Result/Model1/Orthogonality/result_m2_sh2_psi1_ortho.RData")
+load("/Users/negar/Documents/phd/Result/Model1/Orthogonality/result_m2_sh2_psi2_ortho.RData")
+load("/Users/negar/Documents/phd/Result/Model1/Orthogonality/result_m2_sh2_psi3_ortho.RData")
+load("/Users/negar/Documents/phd/Result/Model1/Orthogonality/result_m2_sh2_psi4_ortho.RData")
+load("/Users/negar/Documents/phd/Result/Model1/Orthogonality/result_m2_sh2_psi5_ortho.RData")
+load("/Users/negar/Documents/phd/Result/Model1/Orthogonality/result_m2_sh2_psi6_ortho.RData")
+load("/Users/negar/Documents/phd/Result/Model1/Orthogonality/result_m2_sh2_psi7_ortho.RData")
+load("/Users/negar/Documents/phd/Result/Model1/Orthogonality/result_m2_sh2_psi8_ortho.RData")
+load("/Users/negar/Documents/phd/Result/Model1/Orthogonality/result_m2_sh2_psi9_ortho.RData")
+load("/Users/negar/Documents/phd/Result/Model1/Orthogonality/result_m2_sh2_psi10_ortho.RData")
 
 load("/Users/negarsoleimani/Documents/phd/paper1/Simulation/Model_2/final_results/result_m2_sh2_psi1_simple.RData")
 load("/Users/negarsoleimani/Documents/phd/paper1/Simulation/Model_2/final_results/result_m2_sh2_psi2_simple.RData")
