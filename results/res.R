@@ -111,158 +111,12 @@ legend(x=4.2, y=47, legend=c("Simulated data", "Predictions",
                              "True code"), lwd=rep(2,2), col=c("gold", "orange2","blue"), 
        cex=1, pch=c(19,NA,NA), lty=c(0,1,1))
 
-
-## ------------------------------------ Model1 ------------------------------------ ##
-
-
-#################################################################################
-#################################################################################
-################# Results for model 0 - sheet2 ##################################
-#################################################################################
-#################################################################################
-
-
-# -------------------------------- posterior summaries for alpha -------------------------------- #
-# alpha is an (n_iter x n_samples) matrix:
-# each column = posterior draws of alpha for one dataset Y_v
-
-alpha_post_mean <- colMeans(alpha)
-
-# Direct posterior probabilities for each dataset v
-prob_alpha_lt_01 <- colMeans(alpha < 0.1)   # P(alpha < 0.1 | Y_v)
-prob_alpha_gt_09 <- colMeans(alpha > 0.9)   # P(alpha > 0.9 | Y_v)
-
-alpha_summary <- data.frame(
-  dataset_id        = 1:n_samples,
-  alpha_post_mean   = alpha_post_mean,
-  prob_alpha_lt_01  = prob_alpha_lt_01,
-  prob_alpha_gt_09  = prob_alpha_gt_09
-)
-
-print(alpha_summary)
-
-prob_alpha_gt_09
-
-par(mfrow = c(1, 2), mar = c(4, 4, 2, 1))
-
-boxplot(
-  prob_alpha_gt_09,
-  ylab = expression(hat(P)(alpha > 0.9 ~ "|" ~ Y[v])),
-  col  = "lightseagreen",
-  main = expression("Support for " * M[0])
-)
-
-boxplot(
-  prob_alpha_lt_01,
-  ylab = expression(hat(P)(alpha < 0.1 ~ "|" ~ Y[v])),
-  col  = "lightseagreen",
-  main = expression("Support for " * M[1])
-)
-
-plot(sigma_sq_err_sh2[ , 50], type = "l", col = "#4CCDC9")
-abline(h = 0.01)
-
-g_median <- apply(g_sh2, 2, median)
-h0_median <- apply(h0_sh2, 2, median)
-sigma_median <- apply(sigma_sq_err_sh2, 2, median)
-
-sigma_median <- apply(sigma_sq_err_sh2, 2, mode)
-
-g_mat <- result_m0_sh2_classic_classic[[1]]
-h0_mat <- result_m0_sh2_classic_classic[[2]]
-
-g_last <- g_mat[, 50]
-h0_last <- h0_mat[, 50]
-y_obs <- result_m0_sh2_classic_classic$y_obs
-y_obs30 <- y_obs[,50]
-y_true <- balldropg(t, c(9.8, 46.46))
-
-y_pred <- matrix(NA, length(t), length(g_last), byrow = FALSE)
-
-for (i in 1:length(g_last)) {
-  theta <- c(g_last[i], h0_last[i])
-  y_pred[,i] <- balldropg(t, theta)
-}
-
-y_pred1  = t(y_pred)
-par(mfrow = c(1,1))
-boxplot(y_pred1, col = "orange2",
-        xlab = "Time", ylab = "Height")
-lines(y_true, lwd = 2, col = "blue")
-points(y_obs30, col = "gold", pch=20, cex = 1)
-legend(x=34, y=48, legend=c("Simulated data",
-                            "True code", "Predictions"), lwd=rep(2,2), col=c("gold","blue", "orange2"), 
-       cex=1, pch=c(19,NA,NA), lty=c(0,1,1))
-
-boxplot(y_pred1[, 1:5], col = "orange2",
-        xlab = "Time", ylab = "Height")
-lines(y_true, lwd = 2, col = "blue")
-points(y_obs30, col = "gold", pch=20, cex = 3)
-legend(x=4.2, y=47, legend=c("Simulated data", "Predictions",
-                             "True code"), lwd=rep(2,2), col=c("gold", "orange2","blue"), 
-       cex=1, pch=c(19,NA,NA), lty=c(0,1,1))
-
-##-------------------------------------------------
-## Mode
-##-------------------------------------------------
-
-# ---- posterior mode (statistical) from kernel density ----
-post_mode <- function(x, bounds = NULL, log_scale = FALSE, adjust = 1) {
-  x <- x[is.finite(x)]
-  if (length(x) < 5) return(NA_real_)
-  
-  if (log_scale) {
-    x <- x[x > 0]
-    lx <- log(x)
-    d  <- density(lx, adjust = adjust)
-    return(exp(d$x[which.max(d$y)]))
-  } else {
-    if (!is.null(bounds)) {
-      d <- density(x, from = bounds[1], to = bounds[2], cut = 0, adjust = adjust)
-    } else {
-      d <- density(x, adjust = adjust)
-    }
-    return(d$x[which.max(d$y)])
-  }
-}
-
-g_mode   <- apply(g_sh2, 2, post_mode) 
-h0_mode  <- apply(h0_sh2, 2, post_mode)
-sig_mode <- apply(sigma_sq_err_sh2, 2, post_mode, log_scale=TRUE) 
-
-alpha_mode <- apply(alpha_sh2,     2, post_mode, bounds=c(0,1))  
-psi_mode   <- apply(psi_delta_sh2, 2, post_mode, bounds=c(0.1,1)) 
-k_mode     <- apply(k_sh2,         2, post_mode, bounds=c(0,1)) 
-
-par(mfrow = c(1, 3),
-    mar   = c(3, 4, 1, 1))
-
-boxplot(
-  g_mode,
-  ylab = "g",
-  col  = "lightseagreen",
-  main = ""
-)
-abline(h = 9.8, lty = 2)
-
-boxplot(
-  h0_mode,
-  ylab = "h0",
-  col  = "lightseagreen",
-  main = ""
-)
-abline(h = 46.45045, lty = 2)
-
-boxplot(
-  sig_mode,
-  ylab = expression(lambda^2),
-  col  = "lightseagreen",
-  main = ""
-)
-abline(h = 0.01, lty = 2)
-##-------------------------------------------------
-## Empirical coverage of 50% and 95% credible CIs
-##-------------------------------------------------
+# =========================================================
+# Table 1, (main = template2.tex), page 16
+# Empirical coverage, CI length, and absolute bias
+# Parameters: g, h0, lambda^2
+# Based on 50 simulated datasets
+# =========================================================
 
 g_true       <- 9.8
 h0_true      <- 46.45      
@@ -337,9 +191,7 @@ coverage_table <- data.frame(
   cover_lambda2_95 = cover_lambda2_95
 )
 
-print(coverage_table)
-
-######################################################
+#print(coverage_table)
 
 get_ci <- function(samples, level = 0.95) {
   alpha <- 1 - level
@@ -352,7 +204,7 @@ get_central_ci <- function(samples, probs = c(0.25, 0.75)) {
   c(lower = q[1], upper = q[2])
 }
 
-# آیا مقدار واقعی داخل بازه هست یا نه؟
+
 is_covered <- function(true_value, ci_vec) {
   (true_value >= ci_vec[1]) && (true_value <= ci_vec[2])
 }
@@ -448,9 +300,18 @@ summary_table <- data.frame(
 
 summary_table
 
+
+# =========================================================
+# Figure 3, (main = template2.tex), page 15
+# 95% credible intervals across 50 datasets (classical GP, m0)
+# Parameters: g, h0, lambda^2
+# Dots: posterior medians | Segments: CI
+# Dashed line: true value | Color: coverage
+# =========================================================
+
 library(ggplot2)
 
-## -------- g: 50% credible intervals --------
+## -------- g: 95% credible intervals --------
 df_ci_g <- data.frame(
   dataset = factor(1:n_sims),
   lower   = ci_g_95[, "lower"],
@@ -460,8 +321,6 @@ df_ci_g <- data.frame(
                    labels = c("miss", "hit"))
 )
 
-
-# مرکز هر بازه (فقط برای رسم نقطه)
 df_ci_g$center <- (df_ci_g$lower + df_ci_g$upper) / 2
 
 par(mfrow = c(1,3))
@@ -483,37 +342,6 @@ p_g_95 <- ggplot(df_ci_g,
   theme_minimal()
 
 p_g_95
-
-## -------- h0: 50% credible intervals --------
-df_ci_h0 <- data.frame(
-  dataset = factor(1:n_sims),
-  lower   = ci_h0_50[, "lower"],
-  upper   = ci_h0_50[, "upper"],
-  covered = factor(cover_h0_50,
-                   levels = c(FALSE, TRUE),
-                   labels = c("miss", "hit"))
-)
-
-df_ci_h0$center <- (df_ci_h0$lower + df_ci_h0$upper) / 2
-
-p_h0_50 <- ggplot(df_ci_h0,
-                  aes(y = dataset,
-                      x = center,
-                      xmin = lower,
-                      xmax = upper,
-                      color = covered)) +
-  geom_pointrange() +
-  geom_vline(xintercept = h0_true, linetype = "dashed") +
-  scale_color_manual(values = c("miss" = "red", "hit" = "darkgreen")) +
-  labs(
-    x = expression(h[0]),
-    y = "dataset index",
-    color = "coverage",
-    title = "50% credible intervals for h0 across 50 datasets"
-  ) +
-  theme_minimal()
-
-p_h0_50
 
 ## -------- h0: 95% credible intervals --------
 df_ci_h0 <- data.frame(
@@ -546,37 +374,6 @@ p_h0_95 <- ggplot(df_ci_h0,
 
 p_h0_95
 
-## -------- lambda^2: 50% credible intervals --------
-df_ci_lambda2 <- data.frame(
-  dataset = factor(1:n_sims),
-  lower   = ci_lambda2_50[, "lower"],
-  upper   = ci_lambda2_50[, "upper"],
-  covered = factor(cover_lambda2_50,
-                   levels = c(FALSE, TRUE),
-                   labels = c("miss", "hit"))
-)
-
-df_ci_lambda2$center <- (df_ci_lambda2$lower + df_ci_lambda2$upper) / 2
-
-p_lambda2_50 <- ggplot(df_ci_lambda2,
-                       aes(y = dataset,
-                           x = center,
-                           xmin = lower,
-                           xmax = upper,
-                           color = covered)) +
-  geom_pointrange() +
-  geom_vline(xintercept = lambda2_true, linetype = "dashed") +
-  scale_color_manual(values = c("miss" = "red", "hit" = "darkgreen")) +
-  labs(
-    x = expression(lambda^2),
-    y = "dataset index",
-    color = "coverage",
-    title = expression("50% credible intervals for " * lambda^2 * " across 50 datasets")
-  ) +
-  theme_minimal()
-
-p_lambda2_50
-
 ## -------- lambda^2: 95% credible intervals --------
 df_ci_lambda2 <- data.frame(
   dataset = factor(1:n_sims),
@@ -607,6 +404,76 @@ p_lambda2_95 <- ggplot(df_ci_lambda2,
   theme_minimal()
 
 p_lambda2_95
+
+# -------------------------------- posterior summaries for alpha -------------------------------- #
+# alpha is an (n_iter x n_samples) matrix:
+# each column = posterior draws of alpha for one dataset Y_v
+
+alpha <- result_m0_sh2_classic_classic[[4]]
+n_samples <- 50
+alpha_post_mean <- colMeans(alpha)
+
+# Direct posterior probabilities for each dataset v
+prob_alpha_lt_01 <- colMeans(alpha < 0.1)   # P(alpha < 0.1 | Y_v)
+prob_alpha_gt_09 <- colMeans(alpha > 0.9)   # P(alpha > 0.9 | Y_v)
+
+alpha_summary <- data.frame(
+  dataset_id        = 1:n_samples,
+  alpha_post_mean   = alpha_post_mean,
+  prob_alpha_lt_01  = prob_alpha_lt_01,
+  prob_alpha_gt_09  = prob_alpha_gt_09
+)
+
+print(alpha_summary)
+
+prob_alpha_gt_09
+
+par(mfrow = c(1, 2), mar = c(4, 4, 2, 1))
+
+boxplot(
+  prob_alpha_gt_09,
+  ylab = expression(hat(P)(alpha > 0.9 ~ "|" ~ Y[v])),
+  col  = "lightseagreen",
+  main = expression("Support for " * M[0])
+)
+
+boxplot(
+  prob_alpha_lt_01,
+  ylab = expression(hat(P)(alpha < 0.1 ~ "|" ~ Y[v])),
+  col  = "lightseagreen",
+  main = expression("Support for " * M[1])
+)
+
+## ------------------------------ Model1 (sans seuil) ------------------------------------ ##
+
+load("/Users/negar/Documents/phd/Result/Model1/Classic/Model1/result_m2_sh2_psi1_simple.RData")
+load("/Users/negar/Documents/phd/Result/Model1/Classic/Model1/result_m2_sh2_psi2_simple.RData")
+load("/Users/negar/Documents/phd/Result/Model1/Classic/Model1/result_m2_sh2_psi3_simple.RData")
+load("/Users/negar/Documents/phd/Result/Model1/Classic/Model1/result_m2_sh2_psi4_simple.RData")
+load("/Users/negar/Documents/phd/Result/Model1/Classic/Model1/result_m2_sh2_psi5_simple.RData")
+load("/Users/negar/Documents/phd/Result/Model1/Classic/Model1/result_m2_sh2_psi6_simple.RData")
+load("/Users/negar/Documents/phd/Result/Model1/Classic/Model1/result_m2_sh2_psi7_simple.RData")
+load("/Users/negar/Documents/phd/Result/Model1/Classic/Model1/result_m2_sh2_psi8_simple.RData")
+load("/Users/negar/Documents/phd/Result/Model1/Classic/Model1/result_m2_sh2_psi9_simple.RData")
+load("/Users/negar/Documents/phd/Result/Model1/Classic/Model1/result_m2_sh2_psi10_simple.RData")
+
+# =========================================================
+# Figure 4
+# Simulation under M1 (classical GP discrepancy)
+# gamma_delta* in {0.01, 0.1, ..., 0.9}, 50 datasets each
+# Boxplots of posterior means (g, h0, lambda^2, alpha, gamma_delta, k)
+# Horizontal lines = true values
+# =========================================================
+
+
+
+
+
+
+
+
+
+
 #########################################################
 #################################################################################
 #################################################################################
