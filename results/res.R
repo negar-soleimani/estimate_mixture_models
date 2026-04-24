@@ -296,6 +296,19 @@ ggplot(df_alpha, aes(x = alpha)) +
 ################# Results for model 0 - sheet2 ##################################
 #################################################################################
 #################################################################################
+
+load("/Users/negar/Documents/phd/Result/Model1/Orthogonality/result_m2_sh2_psi6_ortho.RData")
+View(result_m2_sh2_psi6_ortho)
+
+result_m2_sh2_psi6_ortho[[1]]
+result_m2_sh2_psi6_ortho[[2]]
+result_m2_sh2_psi6_ortho[[3]]
+result_m2_sh2_psi6_ortho[[4]]
+result_m2_sh2_psi6_ortho[[5]]
+result_m2_sh2_psi6_ortho[[6]]
+
+plot(y_1)
+
 g_sh2 <- result_m0_sh2_classic_classic[[1]]
 h0_sh2 <- result_m0_sh2_classic_classic[[2]]
 sigma_sq_err_sh2 <- result_m0_sh2_classic_classic[[3]]
