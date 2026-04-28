@@ -14,12 +14,12 @@ load("/Users/negar/Documents/phd/Result/Model1/Classic/result_m0_sh2_classic_cla
 
 result_m0_sh2_classic_classic <- result_m0_sh2_classic_classic_100
 
-g_sh2 <- result_m0_sh2_classic_classic[[1]]
-h0_sh2 <- result_m0_sh2_classic_classic[[2]]
-sigma_sq_err_sh2 <- result_m0_sh2_classic_classic[[3]]
-alpha_sh2 <- result_m0_sh2_classic_classic[[4]]
-psi_delta_sh2 <- result_m0_sh2_classic_classic[[5]]
-k_sh2 <- result_m0_sh2_classic_classic[[6]]
+g_sh2 <- result_m0_sh2_classic_classic_100[[1]]
+h0_sh2 <- result_m0_sh2_classic_classic_100[[2]]
+sigma_sq_err_sh2 <- result_m0_sh2_classic_classic_100[[3]]
+alpha_sh2 <- result_m0_sh2_classic_classic_100[[4]]
+psi_delta_sh2 <- result_m0_sh2_classic_classic_100[[5]]
+k_sh2 <- result_m0_sh2_classic_classic_100[[6]]
 
 par(
   mfrow = c(1, 3),
@@ -53,7 +53,7 @@ boxplot(
 )
 abline(h = 0.01, lty = 2)
 
-alpha <- result_m0_sh2_classic_classic[[4]]
+alpha <- result_m0_sh2_classic_classic_100[[4]]
 
 library(ggplot2)
 
@@ -81,10 +81,11 @@ ggplot(df_alpha, aes(x = alpha)) +
   )
 
 # ---- delta ---- #
-View(result_m0_sh2_classic_classic)
+View(result_m0_sh2_classic_classic_200)
+delta_list <- result_m0_sh2_classic_classic_100[[8]]
 par(mfrow = c(1,1))
 p <- length(delta_list[[1]][1, ])  
-
+n_samples = 50 
 delta_means <- matrix(NA, nrow = n_samples, ncol = p)
 
 for (v in 1:n_samples) {
@@ -119,12 +120,12 @@ axis(
 # Right: zoom on first 5 observations
 # =========================================================
 
-g_mat <- result_m0_sh2_classic_classic[[1]]
-h0_mat <- result_m0_sh2_classic_classic[[2]]
+g_mat <- result_m0_sh2_classic_classic_100[[1]]
+h0_mat <- result_m0_sh2_classic_classic_100[[2]]
 
 g_last <- g_mat[, 50]
 h0_last <- h0_mat[, 50]
-y_obs <- result_m0_sh2_classic_classic$y_obs
+y_obs <- result_m0_sh2_classic_classic_100$y_obs
 y_obs30 <- y_obs[,50]
 y_true <- balldropg(t, c(9.8, 46.46))
 
@@ -449,7 +450,7 @@ p_lambda2_95
 
 # -------------------------------- posterior summaries for alpha -------------------------------- #
 
-alpha <- result_m0_sh2_classic_classic[[4]]
+alpha <- result_m0_sh2_classic_classic_100[[4]]
 n_samples <- 50
 alpha_post_mean <- colMeans(alpha)
 
