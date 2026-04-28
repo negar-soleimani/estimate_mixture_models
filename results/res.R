@@ -20,15 +20,12 @@ alpha_sh2 <- result_m0_sh2_classic_classic[[4]]
 psi_delta_sh2 <- result_m0_sh2_classic_classic[[5]]
 k_sh2 <- result_m0_sh2_classic_classic[[6]]
 
-par(mfrow = c(1, 3),
-    mar   = c(3, 4, 1, 1) 
-)
 par(
   mfrow = c(1, 3),
-  mar   = c(3.7, 4.7, 1, 1),   # فاصله بیشتر برای محورها
-  cex.axis = 1.5,          # اندازه اعداد محورها
-  cex.lab  = 1.8,          # اندازه لیبل محورها
-  lwd      = 1.3             # ضخامت خطوط
+  mar   = c(3.7, 4.7, 1, 1),  
+  cex.axis = 1.5,          
+  cex.lab  = 1.8,          
+  lwd      = 1.3          
 )
 
 boxplot(
