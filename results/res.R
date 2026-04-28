@@ -78,7 +78,8 @@ ggplot(df_alpha, aes(x = alpha)) +
     plot.margin  = unit(c(0.2,0.2,0.2,0.2), "cm")
   )
 
-
+View(result_m0_sh2_classic_classic)
+boxplot()
 # =========================================================
 # Figure 2, (main = template2.tex), page 14
 # Posterior predictive vs simulated data (classical GP)
