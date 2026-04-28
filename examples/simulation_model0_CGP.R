@@ -28,7 +28,7 @@ y_obs_real <- don$Height
 t_min <- min(t_obs)
 t_range <- max(t_obs) - min(t_obs)
 
-t <- seq(0, 1, length.out = 100)
+t <- seq(0, 1, length.out = 200)
 
 n <- length(t)
 
@@ -41,7 +41,7 @@ Sigma_theta <- matrix(c(0.5,0,0,0.5), nrow = 2)
 # c(g, h0, sig2err, alpha, psidelta, k)
 init <- c(9.8, 46.45, 0.01, 0.5, 0.5, 0.1)
 sigma_proposals <- c(NA, NA, NA, NA, 0.5, NA)
-n_samples       <- 10
+n_samples       <- 50
 burn_in         <- 2000
 n_iter          <- 10000
 # FALSE= fixed parameter
@@ -79,10 +79,13 @@ for (v in 1:n_samples) {
   accept_rate[v]   <- results$accept_rate_psi
 }
 
-result_m0_sh2_classic_classic_ex <- list(g, h0, sigma_sq_err, alpha, psi_delta, k, y_obs = y_obs, delta_list, zeta_list, loglik_mat, accept_rate)
+#result_m0_sh2_classic_classic_ex <- list(g, h0, sigma_sq_err, alpha, psi_delta, k, y_obs = y_obs, delta_list, zeta_list, loglik_mat, accept_rate)
 
-result_m0_sh2_classic_classic_100 <- list(g, h0, sigma_sq_err, alpha, psi_delta, k, y_obs = y_obs, delta_list, zeta_list, loglik_mat, accept_rate)
-save(result_m0_sh2_classic_classic_100,file = "/Users/negar/Documents/phd/Result/Model1/Classic/result_m0_sh2_classic_classic_100.RData")
+result_m0_sh2_classic_classic_200 <- list(g, h0, sigma_sq_err, alpha, psi_delta, k, y_obs = y_obs, delta_list, zeta_list, loglik_mat, accept_rate)
+save(result_m0_sh2_classic_classic_200,file = "/Users/negar/Documents/phd/Result/Model1/Classic/result_m0_sh2_classic_classic_200.RData")
+
+#result_m0_sh2_classic_classic_100 <- list(g, h0, sigma_sq_err, alpha, psi_delta, k, y_obs = y_obs, delta_list, zeta_list, loglik_mat, accept_rate)
+#save(result_m0_sh2_classic_classic_100,file = "/Users/negar/Documents/phd/Result/Model1/Classic/result_m0_sh2_classic_classic_100.RData")
 
 #result_m0_sh2_classic_classic <- list(g, h0, sigma_sq_err, alpha, psi_delta, k, y_obs = y_obs, delta_list, zeta_list, loglik_mat, accept_rate)
 # y_obs_m1_sh2_ex <- y_obs
