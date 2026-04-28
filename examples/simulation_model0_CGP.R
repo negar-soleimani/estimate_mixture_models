@@ -1,4 +1,37 @@
 source("data/prepare_data.R")
+rm(list = ls())
+library(truncnorm)
+library(readxl)
+library(ggplot2)
+library(tidyr)
+library(MASS)
+library(mvtnorm)
+library(invgamma)
+
+don <- read_xlsx("/Users/negar/Documents/phd/estimate_mixture_models-main/data/Ball_drops_data.xlsx", sheet = 2)
+names(don) <- c("drop", "time", "Height", "Velocity")
+don$drop <- as.factor(don$drop)
+don <- don[don$drop == 1, ]
+
+#t <- don$time
+#y <- don$Height
+#length(t)
+#t_min <- min(t)
+#t_range <- max(t) - min(t)
+#t <- (t - t_min) / t_range
+#n <- length(y)
+#a <- t_range
+
+t_obs <- don$time
+y_obs_real <- don$Height
+
+t_min <- min(t_obs)
+t_range <- max(t_obs) - min(t_obs)
+
+t <- seq(0, 1, length.out = 100)
+
+n <- length(t)
+
 source("scripts/physics_model.R")
 source("scripts/helper_function_CGP.R")
 source("scripts/main_function_CGP.R")
@@ -8,7 +41,7 @@ Sigma_theta <- matrix(c(0.5,0,0,0.5), nrow = 2)
 # c(g, h0, sig2err, alpha, psidelta, k)
 init <- c(9.8, 46.45, 0.01, 0.5, 0.5, 0.1)
 sigma_proposals <- c(NA, NA, NA, NA, 0.5, NA)
-n_samples       <- 50
+n_samples       <- 10
 burn_in         <- 2000
 n_iter          <- 10000
 # FALSE= fixed parameter
@@ -21,7 +54,10 @@ sigma_sq_err <- matrix(NA, n_iter, n_samples, byrow = FALSE)
 alpha        <- matrix(NA, n_iter, n_samples, byrow = FALSE)
 psi_delta    <- matrix(NA, n_iter, n_samples, byrow = FALSE)
 k            <- matrix(NA, n_iter, n_samples, byrow = FALSE)
-
+loglik_mat   <- matrix(NA, n_iter, n_samples)
+delta_list   <- vector("list", n_samples)
+zeta_list    <- vector("list", n_samples)
+accept_rate  <- numeric(n_samples)
 
 y_obs <- matrix(NA, length(t), n_samples, byrow = FALSE)
 for (v in 1:n_samples) {
@@ -37,11 +73,20 @@ for (v in 1:n_samples) {
   alpha[,v] <- results$theta[,4]
   psi_delta[,v] <- results$theta[,5]
   k[,v] <- results$theta[,6]
+  delta_list[[v]]  <- results$delta
+  zeta_list[[v]]   <- results$zeta
+  loglik_mat[, v]  <- results$loglik
+  accept_rate[v]   <- results$accept_rate_psi
 }
 
-result_m0_sh2_classic_classic <- list(g, h0, sigma_sq_err, alpha, psi_delta, k, y_obs = y_obs)
+result_m0_sh2_classic_classic_ex <- list(g, h0, sigma_sq_err, alpha, psi_delta, k, y_obs = y_obs, delta_list, zeta_list, loglik_mat, accept_rate)
+
+result_m0_sh2_classic_classic_100 <- list(g, h0, sigma_sq_err, alpha, psi_delta, k, y_obs = y_obs, delta_list, zeta_list, loglik_mat, accept_rate)
+save(result_m0_sh2_classic_classic_100,file = "/Users/negar/Documents/phd/Result/Model1/Classic/result_m0_sh2_classic_classic_100.RData")
+
+#result_m0_sh2_classic_classic <- list(g, h0, sigma_sq_err, alpha, psi_delta, k, y_obs = y_obs, delta_list, zeta_list, loglik_mat, accept_rate)
 # y_obs_m1_sh2_ex <- y_obs
-save(result_m0_sh2_classic_classic,file = "/Users/negar/Documents/phd/Result/Model1/Classic/result_m0_sh2_classic_classic.RData")
+#save(result_m0_sh2_classic_classic,file = "/Users/negar/Documents/phd/Result/Model1/Classic/result_m0_sh2_classic_classic.RData")
 # load("/Users/negarsoleimani/Documents/phd/paper1/Simulation/Model_1/final_results/result_m0_sh2_classic_classic.RData")
-View(result_m0_sh2_classic_classic)
+View(result_m0_sh2_classic_classic_100)
 
