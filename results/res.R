@@ -5,21 +5,24 @@
 # Simulation under M_0 (50 datasets, n = 45, Blue Basketball)
 # Priors: delta ~ GP(0, Sigma), gamma_delta ~ U(0.1,1), k ~ U(0,1)
 # Shared params (theta, lambda^2): Jeffreys prior
+# Boxplots of the posterior means of delta_i
 # =========================================================
 rm(list = ls())
 
 load("/Users/negar/Documents/phd/Result/Model1/Classic/result_m0_sh2_classic_classic.RData")
-load("/Users/negar/Documents/phd/Result/Model1/Classic/result_m0_sh2_classic_classic_100.RData")
-load("/Users/negar/Documents/phd/Result/Model1/Classic/result_m0_sh2_classic_classic_200.RData")
+#load("/Users/negar/Documents/phd/Result/Model1/Classic/result_m0_sh2_classic_classic_100.RData")
+#load("/Users/negar/Documents/phd/Result/Model1/Classic/result_m0_sh2_classic_classic_200.RData")
 
-result_m0_sh2_classic_classic <- result_m0_sh2_classic_classic_100
+#result_m0_sh2_classic_classic <- result_m0_sh2_classic_classic_100
 
-g_sh2 <- result_m0_sh2_classic_classic_100[[1]]
-h0_sh2 <- result_m0_sh2_classic_classic_100[[2]]
-sigma_sq_err_sh2 <- result_m0_sh2_classic_classic_100[[3]]
-alpha_sh2 <- result_m0_sh2_classic_classic_100[[4]]
-psi_delta_sh2 <- result_m0_sh2_classic_classic_100[[5]]
-k_sh2 <- result_m0_sh2_classic_classic_100[[6]]
+g_sh2 <- result_m0_sh2_classic_classic[[1]]
+h0_sh2 <- result_m0_sh2_classic_classic[[2]]
+sigma_sq_err_sh2 <- result_m0_sh2_classic_classic[[3]]
+alpha_sh2 <- result_m0_sh2_classic_classic[[4]]
+psi_delta_sh2 <- result_m0_sh2_classic_classic[[5]]
+k_sh2 <- result_m0_sh2_classic_classic[[6]]
+
+# ----- (Top Left) Boxplots of the 50 posterior means of theta and lambda2 ------ #
 
 par(
   mfrow = c(1, 3),
@@ -53,7 +56,9 @@ boxplot(
 )
 abline(h = 0.01, lty = 2)
 
-alpha <- result_m0_sh2_classic_classic_100[[4]]
+# ----- (Top Right) Pooled posterior densities of alpha ------ #
+
+alpha <- result_m0_sh2_classic_classic[[4]]
 
 library(ggplot2)
 
@@ -80,9 +85,9 @@ ggplot(df_alpha, aes(x = alpha)) +
     plot.margin  = unit(c(0.2,0.2,0.2,0.2), "cm")
   )
 
-# ---- delta ---- #
-View(result_m0_sh2_classic_classic_200)
-delta_list <- result_m0_sh2_classic_classic_100[[8]]
+# --------------------- (Bottom) delta --------------------- #
+
+delta_list <- result_m0_sh2_classic_classic[[8]]
 par(mfrow = c(1,1))
 p <- length(delta_list[[1]][1, ])  
 n_samples = 50 
@@ -120,12 +125,12 @@ axis(
 # Right: zoom on first 5 observations
 # =========================================================
 
-g_mat <- result_m0_sh2_classic_classic_100[[1]]
-h0_mat <- result_m0_sh2_classic_classic_100[[2]]
+g_mat <- result_m0_sh2_classic_classic[[1]]
+h0_mat <- result_m0_sh2_classic_classic[[2]]
 
 g_last <- g_mat[, 50]
 h0_last <- h0_mat[, 50]
-y_obs <- result_m0_sh2_classic_classic_100$y_obs
+y_obs <- result_m0_sh2_classic_classic$y_obs
 y_obs30 <- y_obs[,50]
 y_true <- balldropg(t, c(9.8, 46.46))
 
@@ -450,7 +455,7 @@ p_lambda2_95
 
 # -------------------------------- posterior summaries for alpha -------------------------------- #
 
-alpha <- result_m0_sh2_classic_classic_100[[4]]
+alpha <- result_m0_sh2_classic_classic[[4]]
 n_samples <- 50
 alpha_post_mean <- colMeans(alpha)
 
