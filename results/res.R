@@ -6,9 +6,13 @@
 # Priors: delta ~ GP(0, Sigma), gamma_delta ~ U(0.1,1), k ~ U(0,1)
 # Shared params (theta, lambda^2): Jeffreys prior
 # =========================================================
+rm(list = ls())
 
 load("/Users/negar/Documents/phd/Result/Model1/Classic/result_m0_sh2_classic_classic.RData")
-result_m0_sh2_classic_classic <- result_m0_sh2_classic_classic_100
+load("/Users/negar/Documents/phd/Result/Model1/Classic/result_m0_sh2_classic_classic_100.RData")
+load("/Users/negar/Documents/phd/Result/Model1/Classic/result_m0_sh2_classic_classic_200.RData")
+View(result_m0_sh2_classic_classic)
+result_m0_sh2_classic_classic <- result_m0_sh2_classic_classic_200
 g_sh2 <- result_m0_sh2_classic_classic[[1]]
 h0_sh2 <- result_m0_sh2_classic_classic[[2]]
 sigma_sq_err_sh2 <- result_m0_sh2_classic_classic[[3]]
@@ -78,8 +82,37 @@ ggplot(df_alpha, aes(x = alpha)) +
     plot.margin  = unit(c(0.2,0.2,0.2,0.2), "cm")
   )
 
-View(result_m0_sh2_classic_classic)
-boxplot()
+# ---- delta ---- #
+par(mfrow = c(1,1))
+p <- length(delta_list[[1]][1, ])  
+
+delta_means <- matrix(NA, nrow = n_samples, ncol = p)
+
+for (v in 1:n_samples) {
+  delta_means[v, ] <- colMeans(delta_list[[v]])
+}
+
+df_delta <- as.data.frame(delta_means)
+colnames(df_delta) <- paste0("delta_", 1:p)
+
+par(mar = c(6, 6, 2, 2), cex.axis = 1.2, cex.lab = 1.5)
+
+boxplot(
+  df_delta,
+  outline = FALSE,
+  col = "lightseagreen",
+  xaxt = "n",   
+  ylab = expression("Posterior mean of " * delta)
+)
+
+axis(
+  1,
+  at = 1:p,
+  labels = parse(text = paste0("delta[", 1:p, "]")),
+  las = 2,   
+  cex.axis = 0.7
+)
+
 # =========================================================
 # Figure 2, (main = template2.tex), page 14
 # Posterior predictive vs simulated data (classical GP)
