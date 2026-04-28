@@ -11,8 +11,9 @@ rm(list = ls())
 load("/Users/negar/Documents/phd/Result/Model1/Classic/result_m0_sh2_classic_classic.RData")
 load("/Users/negar/Documents/phd/Result/Model1/Classic/result_m0_sh2_classic_classic_100.RData")
 load("/Users/negar/Documents/phd/Result/Model1/Classic/result_m0_sh2_classic_classic_200.RData")
-View(result_m0_sh2_classic_classic)
-result_m0_sh2_classic_classic <- result_m0_sh2_classic_classic_200
+
+result_m0_sh2_classic_classic <- result_m0_sh2_classic_classic_100
+
 g_sh2 <- result_m0_sh2_classic_classic[[1]]
 h0_sh2 <- result_m0_sh2_classic_classic[[2]]
 sigma_sq_err_sh2 <- result_m0_sh2_classic_classic[[3]]
@@ -80,6 +81,7 @@ ggplot(df_alpha, aes(x = alpha)) +
   )
 
 # ---- delta ---- #
+View(result_m0_sh2_classic_classic)
 par(mfrow = c(1,1))
 p <- length(delta_list[[1]][1, ])  
 
