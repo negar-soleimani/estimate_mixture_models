@@ -8,7 +8,7 @@
 # =========================================================
 
 load("/Users/negar/Documents/phd/Result/Model1/Classic/result_m0_sh2_classic_classic.RData")
-
+result_m0_sh2_classic_classic <- result_m0_sh2_classic_classic_100
 g_sh2 <- result_m0_sh2_classic_classic[[1]]
 h0_sh2 <- result_m0_sh2_classic_classic[[2]]
 sigma_sq_err_sh2 <- result_m0_sh2_classic_classic[[3]]
@@ -19,6 +19,14 @@ k_sh2 <- result_m0_sh2_classic_classic[[6]]
 par(mfrow = c(1, 3),
     mar   = c(3, 4, 1, 1) 
 )
+par(
+  mfrow = c(1, 3),
+  mar   = c(3.7, 4.7, 1, 1),   # فاصله بیشتر برای محورها
+  cex.axis = 1.5,          # اندازه اعداد محورها
+  cex.lab  = 1.8,          # اندازه لیبل محورها
+  lwd      = 1.3             # ضخامت خطوط
+)
+
 boxplot(
   colMeans(g_sh2),
   ylab = "g",
@@ -69,6 +77,7 @@ ggplot(df_alpha, aes(x = alpha)) +
     plot.title   = element_text(hjust = 0.5),
     plot.margin  = unit(c(0.2,0.2,0.2,0.2), "cm")
   )
+
 
 # =========================================================
 # Figure 2, (main = template2.tex), page 14
@@ -406,16 +415,14 @@ p_lambda2_95 <- ggplot(df_ci_lambda2,
 p_lambda2_95
 
 # -------------------------------- posterior summaries for alpha -------------------------------- #
-# alpha is an (n_iter x n_samples) matrix:
-# each column = posterior draws of alpha for one dataset Y_v
 
 alpha <- result_m0_sh2_classic_classic[[4]]
 n_samples <- 50
 alpha_post_mean <- colMeans(alpha)
 
 # Direct posterior probabilities for each dataset v
-prob_alpha_lt_01 <- colMeans(alpha < 0.1)   # P(alpha < 0.1 | Y_v)
-prob_alpha_gt_09 <- colMeans(alpha > 0.9)   # P(alpha > 0.9 | Y_v)
+prob_alpha_lt_01 <- colMeans(alpha < 0.2)   # P(alpha < 0.1 | Y_v)
+prob_alpha_gt_09 <- colMeans(alpha > 0.8)   # P(alpha > 0.9 | Y_v)
 
 alpha_summary <- data.frame(
   dataset_id        = 1:n_samples,
