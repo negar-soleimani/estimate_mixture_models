@@ -119,7 +119,7 @@ axis(
 )
 
 # =========================================================
-# Figure 2, (main = template2.tex), page 14
+# Figure S.1, (supplementarymaterial.tex), page 10
 # Posterior predictive vs simulated data (classical GP)
 # Left: full data comparison
 # Right: zoom on first 5 observations
@@ -350,7 +350,7 @@ summary_table
 
 
 # =========================================================
-# Figure 3, (main = template2.tex), page 15
+# Figure S.2, (supplementarymaterial.tex), page 11
 # 95% credible intervals across 50 datasets (classical GP, m0)
 # Parameters: g, h0, lambda^2
 # Dots: posterior medians | Segments: CI
