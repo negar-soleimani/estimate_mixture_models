@@ -24,3 +24,4 @@ t_range <- max(t) - min(t)
 t <- (t - t_min) / t_range
 n <- length(y)
 a <- t_range
+
