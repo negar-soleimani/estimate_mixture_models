@@ -13,24 +13,24 @@ names(don) <- c("drop", "time", "Height", "Velocity")
 don$drop <- as.factor(don$drop)
 don <- don[don$drop == 1, ]
 
-t <- don$time
-y <- don$Height
-length(t)
-t_min <- min(t)
-t_range <- max(t) - min(t)
-t <- (t - t_min) / t_range
-n <- length(y)
-a <- t_range
+#t <- don$time
+#y <- don$Height
+#length(t)
+#t_min <- min(t)
+#t_range <- max(t) - min(t)
+#t <- (t - t_min) / t_range
+#n <- length(y)
+#a <- t_range
 
-#t_obs <- don$time
-#y_obs_real <- don$Height
+t_obs <- don$time
+y_obs_real <- don$Height
 
-#t_min <- min(t_obs)
-#t_range <- max(t_obs) - min(t_obs)
+t_min <- min(t_obs)
+t_range <- max(t_obs) - min(t_obs)
 
-#t <- seq(0, 1, length.out = 200)
+t <- seq(0, 1, length.out = 100)
 
-#n <- length(t)
+n <- length(t)
 
 source("scripts/physics_model.R")
 source("scripts/helper_function_CGP.R")
@@ -84,11 +84,11 @@ for (v in 1:n_samples) {
 #result_m0_sh2_classic_classic_200 <- list(g, h0, sigma_sq_err, alpha, psi_delta, k, y_obs = y_obs, delta_list, zeta_list, loglik_mat, accept_rate)
 #save(result_m0_sh2_classic_classic_200,file = "/Users/negar/Documents/phd/Result/Model1/Classic/result_m0_sh2_classic_classic_200.RData")
 
-#result_m0_sh2_classic_classic_100 <- list(g, h0, sigma_sq_err, alpha, psi_delta, k, y_obs = y_obs, delta_list, zeta_list, loglik_mat, accept_rate)
-#save(result_m0_sh2_classic_classic_100,file = "/Users/negar/Documents/phd/Result/Model1/Classic/result_m0_sh2_classic_classic_100.RData")
+result_m0_sh2_classic_classic_100 <- list(g, h0, sigma_sq_err, alpha, psi_delta, k, y_obs = y_obs, delta_list, zeta_list, loglik_mat, accept_rate)
+save(result_m0_sh2_classic_classic_100,file = "/Users/negar/Documents/phd/Result/Model1/Classic/result_m0_sh2_classic_classic_100.RData")
 
-result_m0_sh2_classic_classic <- list(g, h0, sigma_sq_err, alpha, psi_delta, k, y_obs = y_obs, delta_list, zeta_list, loglik_mat, accept_rate)
-save(result_m0_sh2_classic_classic,file = "/Users/negar/Documents/phd/Result/Model1/Classic/result_m0_sh2_classic_classic.RData")
+#result_m0_sh2_classic_classic <- list(g, h0, sigma_sq_err, alpha, psi_delta, k, y_obs = y_obs, delta_list, zeta_list, loglik_mat, accept_rate)
+#save(result_m0_sh2_classic_classic,file = "/Users/negar/Documents/phd/Result/Model1/Classic/result_m0_sh2_classic_classic.RData")
 # y_obs_m1_sh2_ex <- y_obs
 # load("/Users/negarsoleimani/Documents/phd/paper1/Simulation/Model_1/final_results/result_m0_sh2_classic_classic.RData")
 #View(result_m0_sh2_classic_classic_100)
