@@ -504,7 +504,7 @@ load("/Users/negarsoleimani/Documents/phd/paper1/github/model1/result_m2_sh2_psi
 load("/Users/negarsoleimani/Documents/phd/paper1/github/model1/result_m2_sh2_psi10_simple.RData")
 
 # =========================================================
-# Figure 4
+# Figure 4, (main = template2.tex), page 17
 # Simulation under M1 (classical GP discrepancy)
 # gamma_delta* in {0.01, 0.1, ..., 0.9}, 50 datasets each
 # Boxplots of posterior means (g, h0, lambda^2, alpha, gamma_delta, k)
@@ -644,6 +644,15 @@ boxplot(colMeans(k1), colMeans(k2), colMeans(k3), colMeans(k4), colMeans(k5),
         col = "lightseagreen")
 abline(h = 0.1, col = "orange", lwd = 2)
 
+# =========================================================
+# Figure S.5, (supplementarymaterial.tex), page 27
+# Simulation under M1 (orthogonal GP discrepancy)
+# gamma_delta* in {0.01, 0.1, ..., 0.9}, 50 datasets each
+# Boxplots of posterior means (g, h0, lambda^2, alpha, gamma_delta, k)
+# Horizontal lines = true values
+# =========================================================
+
+#/Users/negarsoleimani/Documents/phd/paper1/github/model1/orthogonalgp
 
 
 
