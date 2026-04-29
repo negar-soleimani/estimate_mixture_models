@@ -9,7 +9,7 @@
 # =========================================================
 rm(list = ls())
 
-load("/Users/negar/Documents/phd/Result/Model1/Classic/result_m0_sh2_classic_classic.RData")
+#load("/Users/negar/Documents/phd/Result/Model1/Classic/result_m0_sh2_classic_classic.RData")
 #load("/Users/negar/Documents/phd/Result/Model1/Classic/result_m0_sh2_classic_classic_100.RData")
 #load("/Users/negar/Documents/phd/Result/Model1/Classic/result_m0_sh2_classic_classic_200.RData")
 
@@ -492,16 +492,16 @@ boxplot(
 
 ## ------------------------------ Model1 (sans seuil) ------------------------------------ ##
 
-load("/Users/negar/Documents/phd/Result/Model1/Classic/Model1/result_m2_sh2_psi1_simple.RData")
-load("/Users/negar/Documents/phd/Result/Model1/Classic/Model1/result_m2_sh2_psi2_simple.RData")
-load("/Users/negar/Documents/phd/Result/Model1/Classic/Model1/result_m2_sh2_psi3_simple.RData")
-load("/Users/negar/Documents/phd/Result/Model1/Classic/Model1/result_m2_sh2_psi4_simple.RData")
-load("/Users/negar/Documents/phd/Result/Model1/Classic/Model1/result_m2_sh2_psi5_simple.RData")
-load("/Users/negar/Documents/phd/Result/Model1/Classic/Model1/result_m2_sh2_psi6_simple.RData")
-load("/Users/negar/Documents/phd/Result/Model1/Classic/Model1/result_m2_sh2_psi7_simple.RData")
-load("/Users/negar/Documents/phd/Result/Model1/Classic/Model1/result_m2_sh2_psi8_simple.RData")
-load("/Users/negar/Documents/phd/Result/Model1/Classic/Model1/result_m2_sh2_psi9_simple.RData")
-load("/Users/negar/Documents/phd/Result/Model1/Classic/Model1/result_m2_sh2_psi10_simple.RData")
+#load("/Users/negar/Documents/phd/Result/Model1/Classic/Model1/result_m2_sh2_psi1_simple.RData")
+#load("/Users/negar/Documents/phd/Result/Model1/Classic/Model1/result_m2_sh2_psi2_simple.RData")
+#load("/Users/negar/Documents/phd/Result/Model1/Classic/Model1/result_m2_sh2_psi3_simple.RData")
+#load("/Users/negar/Documents/phd/Result/Model1/Classic/Model1/result_m2_sh2_psi4_simple.RData")
+#load("/Users/negar/Documents/phd/Result/Model1/Classic/Model1/result_m2_sh2_psi5_simple.RData")
+#load("/Users/negar/Documents/phd/Result/Model1/Classic/Model1/result_m2_sh2_psi6_simple.RData")
+#load("/Users/negar/Documents/phd/Result/Model1/Classic/Model1/result_m2_sh2_psi7_simple.RData")
+#load("/Users/negar/Documents/phd/Result/Model1/Classic/Model1/result_m2_sh2_psi8_simple.RData")
+#load("/Users/negar/Documents/phd/Result/Model1/Classic/Model1/result_m2_sh2_psi9_simple.RData")
+#load("/Users/negar/Documents/phd/Result/Model1/Classic/Model1/result_m2_sh2_psi10_simple.RData")
 
 # =========================================================
 # Figure 4
@@ -526,27 +526,27 @@ load("/Users/negar/Documents/phd/Result/Model1/Classic/Model1/result_m2_sh2_psi1
 ###################### Results for model 2 ######################################
 #################################################################################
 #################################################################################
-load("/Users/negar/Documents/phd/Result/Model1/Orthogonality/result_m2_sh2_psi1_ortho.RData")
-load("/Users/negar/Documents/phd/Result/Model1/Orthogonality/result_m2_sh2_psi2_ortho.RData")
-load("/Users/negar/Documents/phd/Result/Model1/Orthogonality/result_m2_sh2_psi3_ortho.RData")
-load("/Users/negar/Documents/phd/Result/Model1/Orthogonality/result_m2_sh2_psi4_ortho.RData")
-load("/Users/negar/Documents/phd/Result/Model1/Orthogonality/result_m2_sh2_psi5_ortho.RData")
-load("/Users/negar/Documents/phd/Result/Model1/Orthogonality/result_m2_sh2_psi6_ortho.RData")
-load("/Users/negar/Documents/phd/Result/Model1/Orthogonality/result_m2_sh2_psi7_ortho.RData")
-load("/Users/negar/Documents/phd/Result/Model1/Orthogonality/result_m2_sh2_psi8_ortho.RData")
-load("/Users/negar/Documents/phd/Result/Model1/Orthogonality/result_m2_sh2_psi9_ortho.RData")
-load("/Users/negar/Documents/phd/Result/Model1/Orthogonality/result_m2_sh2_psi10_ortho.RData")
+#load("/Users/negar/Documents/phd/Result/Model1/Orthogonality/result_m2_sh2_psi1_ortho.RData")
+#load("/Users/negar/Documents/phd/Result/Model1/Orthogonality/result_m2_sh2_psi2_ortho.RData")
+#load("/Users/negar/Documents/phd/Result/Model1/Orthogonality/result_m2_sh2_psi3_ortho.RData")
+#load("/Users/negar/Documents/phd/Result/Model1/Orthogonality/result_m2_sh2_psi4_ortho.RData")
+#load("/Users/negar/Documents/phd/Result/Model1/Orthogonality/result_m2_sh2_psi5_ortho.RData")
+#load("/Users/negar/Documents/phd/Result/Model1/Orthogonality/result_m2_sh2_psi6_ortho.RData")
+#load("/Users/negar/Documents/phd/Result/Model1/Orthogonality/result_m2_sh2_psi7_ortho.RData")
+#load("/Users/negar/Documents/phd/Result/Model1/Orthogonality/result_m2_sh2_psi8_ortho.RData")
+#load("/Users/negar/Documents/phd/Result/Model1/Orthogonality/result_m2_sh2_psi9_ortho.RData")
+#load("/Users/negar/Documents/phd/Result/Model1/Orthogonality/result_m2_sh2_psi10_ortho.RData")
 
-load("/Users/negarsoleimani/Documents/phd/paper1/Simulation/Model_2/final_results/result_m2_sh2_psi1_simple.RData")
-load("/Users/negarsoleimani/Documents/phd/paper1/Simulation/Model_2/final_results/result_m2_sh2_psi2_simple.RData")
-load("/Users/negarsoleimani/Documents/phd/paper1/Simulation/Model_2/final_results/result_m2_sh2_psi3_simple.RData")
-load("/Users/negarsoleimani/Documents/phd/paper1/Simulation/Model_2/final_results/result_m2_sh2_psi4_simple.RData")
-load("/Users/negarsoleimani/Documents/phd/paper1/Simulation/Model_2/final_results/result_m2_sh2_psi5_simple.RData")
-load("/Users/negarsoleimani/Documents/phd/paper1/Simulation/Model_2/final_results/result_m2_sh2_psi6_simple.RData")
-load("/Users/negarsoleimani/Documents/phd/paper1/Simulation/Model_2/final_results/result_m2_sh2_psi7_simple.RData")
-load("/Users/negarsoleimani/Documents/phd/paper1/Simulation/Model_2/final_results/result_m2_sh2_psi8_simple.RData")
-load("/Users/negarsoleimani/Documents/phd/paper1/Simulation/Model_2/final_results/result_m2_sh2_psi9_simple.RData")
-load("/Users/negarsoleimani/Documents/phd/paper1/Simulation/Model_2/final_results/result_m2_sh2_psi10_simple.RData")
+#load("/Users/negarsoleimani/Documents/phd/paper1/Simulation/Model_2/final_results/result_m2_sh2_psi1_simple.RData")
+#load("/Users/negarsoleimani/Documents/phd/paper1/Simulation/Model_2/final_results/result_m2_sh2_psi2_simple.RData")
+#load("/Users/negarsoleimani/Documents/phd/paper1/Simulation/Model_2/final_results/result_m2_sh2_psi3_simple.RData")
+#load("/Users/negarsoleimani/Documents/phd/paper1/Simulation/Model_2/final_results/result_m2_sh2_psi4_simple.RData")
+#load("/Users/negarsoleimani/Documents/phd/paper1/Simulation/Model_2/final_results/result_m2_sh2_psi5_simple.RData")
+#load("/Users/negarsoleimani/Documents/phd/paper1/Simulation/Model_2/final_results/result_m2_sh2_psi6_simple.RData")
+#load("/Users/negarsoleimani/Documents/phd/paper1/Simulation/Model_2/final_results/result_m2_sh2_psi7_simple.RData")
+#load("/Users/negarsoleimani/Documents/phd/paper1/Simulation/Model_2/final_results/result_m2_sh2_psi8_simple.RData")
+#load("/Users/negarsoleimani/Documents/phd/paper1/Simulation/Model_2/final_results/result_m2_sh2_psi9_simple.RData")
+#load("/Users/negarsoleimani/Documents/phd/paper1/Simulation/Model_2/final_results/result_m2_sh2_psi10_simple.RData")
 
 # View(result_m2_sh2_psi6_simple1)
 # g <- result_m2_sh2_psi6_simple1[[1]]
@@ -801,16 +801,16 @@ abline(h = 0.2, col = "red")
 
 
 
-load("/Users/negar/Documents/phd/Result/Model1/Classic/Model1/result_m2_sh2_psi1_simple.RData")
-load("/Users/negar/Documents/phd/Result/Model1/Classic/Model1/result_m2_sh2_psi2_simple.RData")
-load("/Users/negar/Documents/phd/Result/Model1/Classic/Model1/result_m2_sh2_psi3_simple.RData")
-load("/Users/negar/Documents/phd/Result/Model1/Classic/Model1/result_m2_sh2_psi4_simple.RData")
-load("/Users/negar/Documents/phd/Result/Model1/Classic/Model1/result_m2_sh2_psi5_simple.RData")
-load("/Users/negar/Documents/phd/Result/Model1/Classic/Model1/result_m2_sh2_psi6_simple.RData")
-load("/Users/negar/Documents/phd/Result/Model1/Classic/Model1/result_m2_sh2_psi7_simple.RData")
-load("/Users/negar/Documents/phd/Result/Model1/Classic/Model1/result_m2_sh2_psi8_simple.RData")
-load("/Users/negar/Documents/phd/Result/Model1/Classic/Model1/result_m2_sh2_psi9_simple.RData")
-load("/Users/negar/Documents/phd/Result/Model1/Classic/Model1/result_m2_sh2_psi10_simple.RData")
+#load("/Users/negar/Documents/phd/Result/Model1/Classic/Model1/result_m2_sh2_psi1_simple.RData")
+#load("/Users/negar/Documents/phd/Result/Model1/Classic/Model1/result_m2_sh2_psi2_simple.RData")
+#load("/Users/negar/Documents/phd/Result/Model1/Classic/Model1/result_m2_sh2_psi3_simple.RData")
+#load("/Users/negar/Documents/phd/Result/Model1/Classic/Model1/result_m2_sh2_psi4_simple.RData")
+#load("/Users/negar/Documents/phd/Result/Model1/Classic/Model1/result_m2_sh2_psi5_simple.RData")
+#load("/Users/negar/Documents/phd/Result/Model1/Classic/Model1/result_m2_sh2_psi6_simple.RData")
+#load("/Users/negar/Documents/phd/Result/Model1/Classic/Model1/result_m2_sh2_psi7_simple.RData")
+#load("/Users/negar/Documents/phd/Result/Model1/Classic/Model1/result_m2_sh2_psi8_simple.RData")
+#load("/Users/negar/Documents/phd/Result/Model1/Classic/Model1/result_m2_sh2_psi9_simple.RData")
+#load("/Users/negar/Documents/phd/Result/Model1/Classic/Model1/result_m2_sh2_psi10_simple.RData")
 
 alpha_posterior_summary <- function(alpha_mat, low_cut = 0.1, high_cut = 0.9) {
   data.frame(
