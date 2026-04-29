@@ -510,7 +510,7 @@ boxplot(
 # Boxplots of posterior means (g, h0, lambda^2, alpha, gamma_delta, k)
 # Horizontal lines = true values
 # =========================================================
-
+# /Users/negarsoleimani/Documents/phd/paper1/github/model1
 
 
 
