@@ -12,7 +12,7 @@ k = 0.1
 sim_psi_delta <- 0.01 
 sigma_sq_err <- 0.01
 sigma_sq_delta <- sigma_sq_err / k
-n_samples <- 20
+n_samples <- 50
 n_iter <- 10000
 burn_in <- 2000
 # 
@@ -56,10 +56,9 @@ for (v in 1:n_samples) {
   loglik_mat[, v]  <- res$loglik
   accept_rate[v]   <- res$accept_rate_psi
 }
-#result_m2_sh2_psi1_simple1 <- list(g_chain, h0_chain, sigma_chain, alpha_chain, psi_chain, k_chain, delta_list, zeta_list, loglik_mat, accept_rate)
 
 result_m2_sh2_psi1_simple <- list(g_chain, h0_chain, sigma_chain, alpha_chain, psi_chain, k_chain, delta_list, zeta_list, loglik_mat, accept_rate)
-save(result_m2_sh2_psi1_simple,file = "/Users/negar/Documents/phd/Result/Model1/Classic/Model1/result_m2_sh2_psi1_simple.RData")
+save(result_m2_sh2_psi1_simple,file = "/Users/negarsoleimani/Documents/phd/paper1/github/model1/result_m2_sh2_psi1_simple.RData")
 
 ## Psi2 ############################################
 set.seed(12345)
@@ -68,7 +67,7 @@ k = 0.1
 sim_psi_delta <- 0.1 
 sigma_sq_err <- 0.01
 sigma_sq_delta <- sigma_sq_err / k
-n_samples <- 20
+n_samples <- 50
 n_iter <- 10000
 burn_in <- 2000
 
@@ -111,10 +110,9 @@ for (v in 1:n_samples) {
   loglik_mat[, v]  <- res$loglik
   accept_rate[v]   <- res$accept_rate_psi
 }
-#result_m2_sh2_psi2_simple1 <- list(g_chain, h0_chain, sigma_chain, alpha_chain, psi_chain, k_chain, delta_list, zeta_list, loglik_mat, accept_rate)
 
 result_m2_sh2_psi2_simple <- list(g_chain, h0_chain, sigma_chain, alpha_chain, psi_chain, k_chain, delta_list, zeta_list, loglik_mat, accept_rate)
-save(result_m2_sh2_psi2_simple,file = "/Users/negar/Documents/phd/Result/Model1/Classic/Model1/result_m2_sh2_psi2_simple.RData")
+save(result_m2_sh2_psi2_simple,file = "/Users/negarsoleimani/Documents/phd/paper1/github/model1/result_m2_sh2_psi2_simple.RData")
 
 ## Psi3 ############################################
 set.seed(12345)
@@ -123,7 +121,7 @@ k = 0.1
 sim_psi_delta <- 0.2
 sigma_sq_err <- 0.01
 sigma_sq_delta <- sigma_sq_err / k
-n_samples <- 20
+n_samples <- 50
 n_iter <- 10000
 burn_in <- 2000
 
@@ -169,7 +167,7 @@ for (v in 1:n_samples) {
 #result_m2_sh2_psi3_simple1 <- list(g_chain, h0_chain, sigma_chain, alpha_chain, psi_chain, k_chain, delta_list, zeta_list, loglik_mat, accept_rate)
 
 result_m2_sh2_psi3_simple <- list(g_chain, h0_chain, sigma_chain, alpha_chain, psi_chain, k_chain, delta_list, zeta_list, loglik_mat, accept_rate)
-save(result_m2_sh2_psi3_simple,file = "/Users/negar/Documents/phd/Result/Model1/Classic/Model1/result_m2_sh2_psi3_simple.RData")
+save(result_m2_sh2_psi3_simple,file = "/Users/negarsoleimani/Documents/phd/paper1/github/model1/result_m2_sh2_psi3_simple.RData")
 
 
 ## Psi4 ############################################
@@ -179,7 +177,7 @@ k = 0.1
 sim_psi_delta <- 0.3 
 sigma_sq_err <- 0.01
 sigma_sq_delta <- sigma_sq_err / k
-n_samples <- 20
+n_samples <- 50
 n_iter <- 10000
 burn_in <- 2000
 
@@ -225,7 +223,7 @@ for (v in 1:n_samples) {
 #result_m2_sh2_psi4_simple1 <- list(g_chain, h0_chain, sigma_chain, alpha_chain, psi_chain, k_chain, delta_list, zeta_list, loglik_mat, accept_rate)
 
 result_m2_sh2_psi4_simple <- list(g_chain, h0_chain, sigma_chain, alpha_chain, psi_chain, k_chain, delta_list, zeta_list, loglik_mat, accept_rate)
-save(result_m2_sh2_psi4_simple,file = "/Users/negar/Documents/phd/Result/Model1/Classic/Model1/result_m2_sh2_psi4_simple.RData")
+save(result_m2_sh2_psi4_simple,file = "/Users/negarsoleimani/Documents/phd/paper1/github/model1/result_m2_sh2_psi4_simple.RData")
 
 
 ## Psi5 ############################################
@@ -235,7 +233,7 @@ k = 0.1
 sim_psi_delta <- 0.4
 sigma_sq_err <- 0.01
 sigma_sq_delta <- sigma_sq_err / k
-n_samples <- 20
+n_samples <- 50
 n_iter <- 10000
 burn_in <- 2000
 
@@ -282,7 +280,7 @@ for (v in 1:n_samples) {
 #result_m2_sh2_psi5_simple1 <- list(g_chain, h0_chain, sigma_chain, alpha_chain, psi_chain, k_chain, delta_list, zeta_list, loglik_mat, accept_rate)
 
 result_m2_sh2_psi5_simple <- list(g_chain, h0_chain, sigma_chain, alpha_chain, psi_chain, k_chain, delta_list, zeta_list, loglik_mat, accept_rate)
-save(result_m2_sh2_psi5_simple,file = "/Users/negar/Documents/phd/Result/Model1/Classic/Model1/result_m2_sh2_psi5_simple.RData")
+save(result_m2_sh2_psi5_simple,file = "/Users/negarsoleimani/Documents/phd/paper1/github/model1/result_m2_sh2_psi5_simple.RData")
 
 
 ## Psi6 ############################################
@@ -292,7 +290,7 @@ k = 0.1
 sim_psi_delta <- 0.5 
 sigma_sq_err <- 0.01
 sigma_sq_delta <- sigma_sq_err / k
-n_samples <- 20
+n_samples <- 50
 n_iter <- 10000
 burn_in <- 2000
 
@@ -339,7 +337,7 @@ for (v in 1:n_samples) {
 #result_m2_sh2_psi6_simple1 <- list(g_chain, h0_chain, sigma_chain, alpha_chain, psi_chain, k_chain, delta_list, zeta_list, loglik_mat, accept_rate)
 
 result_m2_sh2_psi6_simple <- list(g_chain, h0_chain, sigma_chain, alpha_chain, psi_chain, k_chain, delta_list, zeta_list, loglik_mat, accept_rate)
-save(result_m2_sh2_psi6_simple,file = "/Users/negar/Documents/phd/Result/Model1/Classic/Model1/result_m2_sh2_psi6_simple.RData")
+save(result_m2_sh2_psi6_simple,file = "/Users/negarsoleimani/Documents/phd/paper1/github/model1/result_m2_sh2_psi6_simple.RData")
 
 
 ## Psi7 ############################################
@@ -349,7 +347,7 @@ k = 0.1
 sim_psi_delta <- 0.6 
 sigma_sq_err <- 0.01
 sigma_sq_delta <- sigma_sq_err / k
-n_samples <- 20
+n_samples <- 50
 n_iter <- 10000
 burn_in <- 2000
 
@@ -396,7 +394,7 @@ for (v in 1:n_samples) {
 #result_m2_sh2_psi7_simple1 <- list(g_chain, h0_chain, sigma_chain, alpha_chain, psi_chain, k_chain, delta_list, zeta_list, loglik_mat, accept_rate)
 
 result_m2_sh2_psi7_simple <- list(g_chain, h0_chain, sigma_chain, alpha_chain, psi_chain, k_chain, delta_list, zeta_list, loglik_mat, accept_rate)
-save(result_m2_sh2_psi7_simple,file = "/Users/negar/Documents/phd/Result/Model1/Classic/Model1/result_m2_sh2_psi7_simple.RData")
+save(result_m2_sh2_psi7_simple,file = "/Users/negarsoleimani/Documents/phd/paper1/github/model1/result_m2_sh2_psi7_simple.RData")
 
 
 ## Psi8 ############################################
@@ -406,7 +404,7 @@ k = 0.1
 sim_psi_delta <- 0.7 
 sigma_sq_err <- 0.01
 sigma_sq_delta <- sigma_sq_err / k
-n_samples <- 20
+n_samples <- 50
 n_iter <- 10000
 burn_in <- 2000
 
@@ -453,7 +451,7 @@ for (v in 1:n_samples) {
 #result_m2_sh2_psi8_simple1 <- list(g_chain, h0_chain, sigma_chain, alpha_chain, psi_chain, k_chain, delta_list, zeta_list, loglik_mat, accept_rate)
 
 result_m2_sh2_psi8_simple <- list(g_chain, h0_chain, sigma_chain, alpha_chain, psi_chain, k_chain, delta_list, zeta_list, loglik_mat, accept_rate)
-save(result_m2_sh2_psi8_simple,file = "/Users/negar/Documents/phd/Result/Model1/Classic/Model1/result_m2_sh2_psi8_simple.RData")
+save(result_m2_sh2_psi8_simple,file = "/Users/negarsoleimani/Documents/phd/paper1/github/model1/result_m2_sh2_psi8_simple.RData")
 
 
 ## Psi9 ############################################
@@ -463,7 +461,7 @@ k = 0.1
 sim_psi_delta <- 0.8 
 sigma_sq_err <- 0.01
 sigma_sq_delta <- sigma_sq_err / k
-n_samples <- 20
+n_samples <- 50
 n_iter <- 10000
 burn_in <- 2000
 
@@ -510,7 +508,7 @@ for (v in 1:n_samples) {
 #result_m2_sh2_psi9_simple1 <- list(g_chain, h0_chain, sigma_chain, alpha_chain, psi_chain, k_chain, delta_list, zeta_list, loglik_mat, accept_rate)
 
 result_m2_sh2_psi9_simple <- list(g_chain, h0_chain, sigma_chain, alpha_chain, psi_chain, k_chain, delta_list, zeta_list, loglik_mat, accept_rate)
-save(result_m2_sh2_psi9_simple,file = "/Users/negar/Documents/phd/Result/Model1/Classic/Model1/result_m2_sh2_psi9_simple.RData")
+save(result_m2_sh2_psi9_simple,file = "/Users/negarsoleimani/Documents/phd/paper1/github/model1/result_m2_sh2_psi9_simple.RData")
 
 
 ## Psi10 ############################################
@@ -520,7 +518,7 @@ k = 0.1
 sim_psi_delta <- 0.9
 sigma_sq_err <- 0.01
 sigma_sq_delta <- sigma_sq_err / k
-n_samples <- 20
+n_samples <- 50
 n_iter <- 10000
 burn_in <- 2000
 #
@@ -565,6 +563,6 @@ for (v in 1:n_samples) {
 }
 # result_m2_sh2_psi10_simple1 <- list(g_chain, h0_chain, sigma_chain, alpha_chain, psi_chain, k_chain, delta_list, zeta_list, loglik_mat, accept_rate)
 result_m2_sh2_psi10_simple <- list(g_chain, h0_chain, sigma_chain, alpha_chain, psi_chain, k_chain, delta_list, zeta_list, loglik_mat, accept_rate)
-save(result_m2_sh2_psi10_simple,file = "/Users/negar/Documents/phd/Result/Model1/Classic/Model1/result_m2_sh2_psi10_simple.RData")
+save(result_m2_sh2_psi10_simple,file = "/Users/negarsoleimani/Documents/phd/paper1/github/model1/result_m2_sh2_psi10_simple.RData")
 
 
