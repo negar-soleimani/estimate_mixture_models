@@ -561,7 +561,7 @@ for (v in 1:n_samples) {
 }
 
 result_m2_sh2_psi10_ortho <- list(g_chain, h0_chain, sigma_chain, alpha_chain, psi_chain, k_chain, delta_list, zeta_list, loglik_mat, accept_rate)
-save(result_m2_sh2_psi10_ortho,file = "/Users/negarsoleimani/Documents/phd/paper1/github/model1/orthogonalgp//result_m2_sh2_psi10_ortho.RData")
+save(result_m2_sh2_psi10_ortho,file = "/Users/negarsoleimani/Documents/phd/paper1/github/model1/orthogonalgp/result_m2_sh2_psi10_ortho.RData")
 
 
 
