@@ -1,7 +1,7 @@
 ## ------------------------------------ Model0 ------------------------------------ ##
 
 # =========================================================
-# Figure 1, (main = template2.tex), page 13
+# Figure 1, (main = template2.tex), page 14
 # Simulation under M_0 (50 datasets, n = 45, Blue Basketball)
 # Priors: delta ~ GP(0, Sigma), gamma_delta ~ U(0.1,1), k ~ U(0,1)
 # Shared params (theta, lambda^2): Jeffreys prior
@@ -350,7 +350,7 @@ summary_table
 
 
 # =========================================================
-# Figure S.2, (supplementarymaterial.tex), page 11
+# Figure S.2, (supplementarymaterial.tex), page 20
 # 95% credible intervals across 50 datasets (classical GP, m0)
 # Parameters: g, h0, lambda^2
 # Dots: posterior medians | Segments: CI
@@ -492,6 +492,14 @@ boxplot(
 
 ## ------------------------------ Model1 (sans seuil) ------------------------------------ ##
 
+# =========================================================
+# Figure 3, (main = template2.tex), page 17
+# Simulation under M1 (classical GP discrepancy)
+# gamma_delta* in {0.01, 0.1, ..., 0.9}, 50 datasets each
+# Boxplots of posterior means (g, h0, lambda^2, alpha, gamma_delta, k)
+# Horizontal lines = true values
+# =========================================================
+
 load("/Users/negarsoleimani/Documents/phd/paper1/github/model1/result_m2_sh2_psi1_simple.RData")
 load("/Users/negarsoleimani/Documents/phd/paper1/github/model1/result_m2_sh2_psi2_simple.RData")
 load("/Users/negarsoleimani/Documents/phd/paper1/github/model1/result_m2_sh2_psi3_simple.RData")
@@ -502,14 +510,6 @@ load("/Users/negarsoleimani/Documents/phd/paper1/github/model1/result_m2_sh2_psi
 load("/Users/negarsoleimani/Documents/phd/paper1/github/model1/result_m2_sh2_psi8_simple.RData")
 load("/Users/negarsoleimani/Documents/phd/paper1/github/model1/result_m2_sh2_psi9_simple.RData")
 load("/Users/negarsoleimani/Documents/phd/paper1/github/model1/result_m2_sh2_psi10_simple.RData")
-
-# =========================================================
-# Figure 4, (main = template2.tex), page 17
-# Simulation under M1 (classical GP discrepancy)
-# gamma_delta* in {0.01, 0.1, ..., 0.9}, 50 datasets each
-# Boxplots of posterior means (g, h0, lambda^2, alpha, gamma_delta, k)
-# Horizontal lines = true values
-# =========================================================
 
 # boxplot(result_m2_sh2_psi8_simple[[7]][[30]])
 
@@ -794,6 +794,17 @@ boxplot(colMeans(k1), colMeans(k2), colMeans(k3), colMeans(k4), colMeans(k5),
         col = "lightseagreen")
 abline(h = 0.1, col = "orange", lwd = 2)
 
+
+
+# =========================================================
+# Figure 4, (supplementarymaterial.tex), page 27
+# Simulation under M1 (orthogonal GP discrepancy)
+# gamma_delta* in {0.01, 0.1, ..., 0.9}, 50 datasets each
+# Boxplots of posterior means (g, h0, lambda^2, alpha, gamma_delta, k)
+# Horizontal lines = true values
+# =========================================================
+
+load("/Users/negarsoleimani/Documents/phd/paper1/github/model1/threshold/result_scenario_IIII.RData")
 
 #########################################################
 #################################################################################
