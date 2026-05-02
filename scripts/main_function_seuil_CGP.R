@@ -77,6 +77,8 @@ mcmc_step6 <- function(y, t, n_iter, init, sigma_proposals,
       mu_delta_hat <- rep(0, n) + Sigma_delta_ym %*% Sigma_inv %*% (y_m - f_theta[zeta_2_indices])
       Sigma_delta_hat <- Sigma_delta - Sigma_delta_ym %*% Sigma_inv %*% t(Sigma_delta_ym)
       Sigma_delta_hat <- 0.5 * (Sigma_delta_hat + t(Sigma_delta_hat))
+      # for scenario II
+      Sigma_delta_hat <- Sigma_delta_hat + 1e-8 * diag(n)
       delta <- as.vector(rmvnorm(1, mean = mu_delta_hat, sigma = Sigma_delta_hat))
     }
     else delta = as.vector(rmvnorm(1, rep(0, n), sigma = Sigma_delta))
