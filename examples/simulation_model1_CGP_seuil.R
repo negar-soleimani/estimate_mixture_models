@@ -494,7 +494,7 @@ w <- make_envelope(n, ndis, envelope_type)
 
 n_samples <- 50
 n_iter <- 10000
-burn_in <- 2500
+burn_in <- 2000
 sigma_props <- c(NA, NA, NA, NA, 0.5, NA)
 
 # init = c(g, h0, sig2err, alpha, psidelta, k)
