@@ -138,7 +138,7 @@ for (v in 1:n_samples) {
   # -------- Scenario (I), (II), (III), (IIII) --------
   res <- mcmc_step6(
     y = y_1, t = t, n_iter = n_iter, init = init, sigma_proposals = sigma_props,
-    g_init = TRUE,
+    g_init = FALSE,
     h0_init = FALSE,
     sig2er_init = FALSE,
     alpha_init = FALSE,
@@ -146,7 +146,7 @@ for (v in 1:n_samples) {
     k_init = FALSE,
     Sigma_theta = matrix(c(0.5, 0, 0, 0.5), 2),
     n_burnin = burn_in,
-    seuil = FALSE,
+    seuil = TRUE,
     s = 0.3
   )
   
@@ -163,7 +163,7 @@ for (v in 1:n_samples) {
   accept_rate[v]   <- res$accept_rate_psi
 }
 
-result_scenario_II <- list(
+result_scenario_III <- list(
   g_chain = g_chain,
   h0_chain = h0_chain,
   sigma_chain = sigma_chain,
@@ -181,6 +181,6 @@ result_scenario_II <- list(
   sim_psi_delta = sim_psi_delta
 )
 
-save(result_scenario_II, file = "/Users/negarsoleimani/Documents/phd/paper1/github/model1/threshold/result_scenario_II.RData")
+save(result_scenario_III, file = "/Users/negarsoleimani/Documents/phd/paper1/github/model1/threshold/result_scenario_III.RData")
 
 
