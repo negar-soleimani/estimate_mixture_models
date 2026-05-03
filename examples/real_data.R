@@ -253,9 +253,7 @@ res <- mcmc_step6(
   k_init = FALSE,
   Sigma_theta = matrix(c(0.5, 0, 0, 0.5), 2),
   n_burnin = burn_in,
-  seuil = TRUE,  
+  seuil = FALSE,  
   s = 0.3       
 )
-
-#save(res, file = "/Users/negarsoleimani/Documents/PhD/Paper1/Simulation/Model_2/result_m2_sh2_seuil_gfix.RData")
 
