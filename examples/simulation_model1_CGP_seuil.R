@@ -127,7 +127,7 @@ for (v in 1:n_samples) {
     keep_same_sign = TRUE,        # delta_true remains a single sign in the active zone
     force_positive = TRUE,        # TRUE if impose delta_true > 0
     s = 0.3,
-    require_above_threshold = TRUE,  # Set to TRUE if the entire active area is above the threshold
+    require_above_threshold = FALSE,  # Set to TRUE if the entire active area is above the threshold
     max_try = 5000
   )
   
@@ -138,7 +138,7 @@ for (v in 1:n_samples) {
   # -------- Scenario (I), (II), (III), (IIII) --------
   res <- mcmc_step6(
     y = y_1, t = t, n_iter = n_iter, init = init, sigma_proposals = sigma_props,
-    g_init = TRUE,
+    g_init = FALSE,
     h0_init = FALSE,
     sig2er_init = FALSE,
     alpha_init = FALSE,
@@ -146,7 +146,7 @@ for (v in 1:n_samples) {
     k_init = FALSE,
     Sigma_theta = matrix(c(0.5, 0, 0, 0.5), 2),
     n_burnin = burn_in,
-    seuil = FALSE,
+    seuil = TRUE,
     s = 0.3
   )
   
@@ -163,7 +163,7 @@ for (v in 1:n_samples) {
   accept_rate[v]   <- res$accept_rate_psi
 }
 
-result_scenario_II <- list(
+result_scenario_IIII <- list(
   g_chain = g_chain,
   h0_chain = h0_chain,
   sigma_chain = sigma_chain,

@@ -813,7 +813,7 @@ library(ggplot2)
 library(gridExtra)
 library(patchwork)
 
-res_obj <- result_scenario_II
+res_obj <- result_scenario_ex
 
 ## pooled posterior density of alpha across all datasets
 
@@ -925,7 +925,7 @@ p_alpha_pool <- ggplot(df_alpha_pool, aes(x = alpha)) +
   geom_density(fill = "#E8C1CF", color = "#8E244D",
                alpha = 0.6, linewidth = 1) +
   labs(x = expression(alpha), y = "Density",
-       title = "Pooled posterior density of alpha (Scenario II)") +
+       title = "Pooled posterior density of alpha (Scenario IV)") +
   theme_minimal(base_size = 13) +
   theme(plot.title = element_text(hjust = 0.5)) #print(p_alpha_pool)
 
@@ -945,7 +945,7 @@ p_zeta <- ggplot(df_p, aes(x = i, y = p_hat)) +
   ylim(0, 1) +
   labs(x = "Index i",
        y = expression(hat(p)[i] == P(zeta[i] == 1 ~ "|" ~ Y)),
-       title = "Pointwise inclusion probabilities (Scenario II)") +
+       title = "Pointwise inclusion probabilities (Scenario IV)") +
   theme_minimal(base_size = 12) +
   theme(plot.title = element_text(hjust = 0.5)) #print(p_zeta)
 
@@ -970,7 +970,7 @@ p_delta <- ggplot(df_delta, aes(x = i, y = d_mean)) +
   geom_hline(yintercept = 0, linetype = "dashed") +
   geom_vline(xintercept = ndis + 0.5, linetype = "dashed") +
   labs(x = "Index i", y = expression(delta(x[i])),
-       title = expression("Posterior summary of " * delta(x[i]) ~ "(Scenario II)")) +
+       title = expression("Posterior summary of " * delta(x[i]) ~ "(Scenario IV)")) +
   theme_minimal(base_size = 12) +
   theme(plot.title = element_text(hjust = 0.5)) #print(p_delta)
 
