@@ -138,7 +138,7 @@ for (v in 1:n_samples) {
   # -------- Scenario (I), (II), (III), (IIII) --------
   res <- mcmc_step6(
     y = y_1, t = t, n_iter = n_iter, init = init, sigma_proposals = sigma_props,
-    g_init = FALSE,
+    g_init = TRUE,
     h0_init = FALSE,
     sig2er_init = FALSE,
     alpha_init = FALSE,
@@ -146,7 +146,7 @@ for (v in 1:n_samples) {
     k_init = FALSE,
     Sigma_theta = matrix(c(0.5, 0, 0, 0.5), 2),
     n_burnin = burn_in,
-    seuil = TRUE,
+    seuil = FALSE,
     s = 0.3
   )
   
@@ -163,7 +163,7 @@ for (v in 1:n_samples) {
   accept_rate[v]   <- res$accept_rate_psi
 }
 
-result_scenario_IIII <- list(
+result_scenario_II <- list(
   g_chain = g_chain,
   h0_chain = h0_chain,
   sigma_chain = sigma_chain,
