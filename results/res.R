@@ -815,7 +815,7 @@ library(ggplot2)
 library(gridExtra)
 library(patchwork)
 
-res_obj <- result_scenario_II
+res_obj <- result_scenario_II_psi0.2
 
 ## pooled posterior density of alpha across all datasets
 
@@ -1222,6 +1222,8 @@ print(right_col2)
 
 right_col2 <- p_delta / p_zeta0 +
   patchwork::plot_layout(heights = c(1, 1))
+
+
 #################################################################################
 #################################################################################
 ###################### Results for model 2 ######################################
