@@ -30,7 +30,7 @@ sigma_sq_err <- 0.01
 
 # Parameters used only to simulate delta_true
 sim_k <- 0.01
-sim_psi_delta <- 0.5
+sim_psi_delta <- 0.2
 
 # discrepancy is ~0 for first ndis points, then active afterwards
 ndis <- 20
@@ -135,10 +135,10 @@ for (v in 1:n_samples) {
   y_obs[, v] <- y_1
   delta_true_mat[, v] <- delta_true
   
-  # -------- Scenario (I), (II), (III), (IIII) --------
+  # -------- Scenario (I), (II), (III), (IV) --------
   res <- mcmc_step6(
     y = y_1, t = t, n_iter = n_iter, init = init, sigma_proposals = sigma_props,
-    g_init = TRUE,
+    g_init = FALSE,
     h0_init = FALSE,
     sig2er_init = FALSE,
     alpha_init = FALSE,
@@ -146,7 +146,7 @@ for (v in 1:n_samples) {
     k_init = FALSE,
     Sigma_theta = matrix(c(0.5, 0, 0, 0.5), 2),
     n_burnin = burn_in,
-    seuil = TRUE,
+    seuil = FALSE,
     s = 0.3
   )
   
@@ -163,7 +163,7 @@ for (v in 1:n_samples) {
   accept_rate[v]   <- res$accept_rate_psi
 }
 
-result_scenario_IV <- list(
+result_scenario_I <- list(
   g_chain = g_chain,
   h0_chain = h0_chain,
   sigma_chain = sigma_chain,
@@ -181,6 +181,11 @@ result_scenario_IV <- list(
   sim_psi_delta = sim_psi_delta
 )
 
-save(result_scenario_IV, file = "/Users/negarsoleimani/Documents/phd/paper1/github/model1/threshold/result_scenario_IV.RData")
+#save(result_scenario_I, file = "/Users/negarsoleimani/Documents/phd/paper1/github/model1/threshold/result_scenario_I.RData")
+#save(result_scenario_II, file = "/Users/negarsoleimani/Documents/phd/paper1/github/model1/threshold/result_scenario_II.RData")
+#save(result_scenario_II_psi0.2, file = "/Users/negarsoleimani/Documents/phd/paper1/github/model1/threshold/result_scenario_II_psi0.2.RData")
+#save(result_scenario_III, file = "/Users/negarsoleimani/Documents/phd/paper1/github/model1/threshold/result_scenario_III.RData")
+#save(result_scenario_IV, file = "/Users/negarsoleimani/Documents/phd/paper1/github/model1/threshold/result_scenario_IV.RData")
+#save(result_scenario_IV_psi0.2, file = "/Users/negarsoleimani/Documents/phd/paper1/github/model1/threshold/result_scenario_IV_psi0.2.RData")
 
 
