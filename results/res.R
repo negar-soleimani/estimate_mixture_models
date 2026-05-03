@@ -806,16 +806,14 @@ abline(h = 0.1, col = "orange", lwd = 2)
 # =========================================================
 
 # ---------------------- left (scenario_II) ---------------------- #
-
-# -------------------- right (scenario_IIII) --------------------- #
 source("data/prepare_data.R")
-load("/Users/negarsoleimani/Documents/phd/paper1/github/model1/threshold/result_scenario_IIII.RData")
+load("/Users/negarsoleimani/Documents/phd/paper1/github/model1/threshold/result_scenario_II.RData")
 
 library(ggplot2)
 library(gridExtra)
 library(patchwork)
 
-res_obj <- result_scenario_IIII
+res_obj <- result_scenario_II
 
 ## pooled posterior density of alpha across all datasets
 
@@ -827,7 +825,7 @@ p_alpha_pool <- ggplot(df_alpha_pool, aes(x = alpha)) +
   geom_density(fill = "#E8C1CF", color = "#8E244D",
                alpha = 0.6, linewidth = 1) +
   labs(x = expression(alpha), y = "Density",
-       title = "Pooled posterior density of alpha (Scenario IV)") +
+       title = "Pooled posterior density of alpha (Scenario II)") +
   theme_minimal(base_size = 13) +
   theme(plot.title = element_text(hjust = 0.5)) #print(p_alpha_pool)
 
@@ -847,7 +845,7 @@ p_zeta <- ggplot(df_p, aes(x = i, y = p_hat)) +
   ylim(0, 1) +
   labs(x = "Index i",
        y = expression(hat(p)[i] == P(zeta[i] == 1 ~ "|" ~ Y)),
-       title = "Pointwise inclusion probabilities (Scenario IV)") +
+       title = "Pointwise inclusion probabilities (Scenario II)") +
   theme_minimal(base_size = 12) +
   theme(plot.title = element_text(hjust = 0.5)) #print(p_zeta)
 
@@ -872,7 +870,107 @@ p_delta <- ggplot(df_delta, aes(x = i, y = d_mean)) +
   geom_hline(yintercept = 0, linetype = "dashed") +
   geom_vline(xintercept = ndis + 0.5, linetype = "dashed") +
   labs(x = "Index i", y = expression(delta(x[i])),
-       title = expression("Posterior summary of " * delta(x[i]) ~ "(Scenario IV)")) +
+       title = expression("Posterior summary of " * delta(x[i]) ~ "(Scenario II)")) +
+  theme_minimal(base_size = 12) +
+  theme(plot.title = element_text(hjust = 0.5)) #print(p_delta)
+
+
+## zeta==1 means model without discrepancy
+
+prob_zeta_model0 <- colMeans(zeta_mat == 1)
+
+df_p0 <- data.frame(
+  i = 1:length(prob_zeta_model0),
+  p0 = prob_zeta_model0
+)
+
+p_zeta0 <- ggplot(df_p0, aes(x = i, y = p0)) +
+  geom_col(fill = "lightseagreen") +
+  ylim(0, 1) +
+  labs(
+    x = "Index i",
+    y = expression(hat(p)[i] == P(zeta[i] == 0 ~ "|" ~ Y)),
+    title = expression("Pointwise allocation probabilities to " * M[0])
+  ) +
+  theme_minimal(base_size = 12) +
+  theme(plot.title = element_text(hjust = 0.5)) #print(p_zeta0)
+
+
+right_col2 <- p_alpha_pool / p_delta / p_zeta +
+  patchwork::plot_layout(heights = c(1, 1.25, 1))
+
+print(right_col2)
+
+right_col2 <- p_delta / p_zeta0 +
+  patchwork::plot_layout(heights = c(1, 1))
+
+
+# -------------------- right (scenario_IIII) --------------------- #
+source("data/prepare_data.R")
+load("/Users/negarsoleimani/Documents/phd/paper1/github/model1/threshold/result_scenario_IIII.RData")
+
+library(ggplot2)
+library(gridExtra)
+library(patchwork)
+
+res_obj <- result_scenario_IIII
+
+## pooled posterior density of alpha across all datasets
+
+alpha_vec <- as.vector(res_obj$alpha_chain)
+
+df_alpha_pool <- data.frame(alpha = alpha_vec)
+
+p_alpha_pool <- ggplot(df_alpha_pool, aes(x = alpha)) +
+  geom_density(fill = "#E8C1CF", color = "#8E244D",
+               alpha = 0.6, linewidth = 1) +
+  labs(x = expression(alpha), y = "Density",
+       title = "Pooled posterior density of alpha (Scenario II)") +
+  theme_minimal(base_size = 13) +
+  theme(plot.title = element_text(hjust = 0.5)) #print(p_alpha_pool)
+
+## zeta == 2 means model with discrepancy
+
+v <- 30
+zeta_mat <- res_obj$zeta_list[[v]]
+delta_mat <- res_obj$delta_list[[v]]
+n <- ncol(delta_mat)
+
+p_hat <- colMeans(zeta_mat == 2)
+
+df_p <- data.frame(i = 1:n, x = t, p_hat = p_hat)
+
+p_zeta <- ggplot(df_p, aes(x = i, y = p_hat)) +
+  geom_col(fill = "lightseagreen") +
+  ylim(0, 1) +
+  labs(x = "Index i",
+       y = expression(hat(p)[i] == P(zeta[i] == 1 ~ "|" ~ Y)),
+       title = "Pointwise inclusion probabilities (Scenario II)") +
+  theme_minimal(base_size = 12) +
+  theme(plot.title = element_text(hjust = 0.5)) #print(p_zeta)
+
+
+## ------- delta(x_i) 
+ndis <- 20
+delta_mean <- colMeans(delta_mat)
+delta_ci   <- t(apply(delta_mat, 2, quantile, probs = c(0.025, 0.975)))
+
+df_delta <- data.frame(
+  i = 1:n,
+  x = t,
+  d_mean = delta_mean,
+  d_low  = delta_ci[, 1],
+  d_high = delta_ci[, 2]
+)
+
+p_delta <- ggplot(df_delta, aes(x = i, y = d_mean)) +
+  geom_ribbon(aes(ymin = d_low, ymax = d_high),
+              fill = "#6C63A8", alpha = 0.25) +
+  geom_line(color = "lightseagreen", linewidth = 0.9) +
+  geom_hline(yintercept = 0, linetype = "dashed") +
+  geom_vline(xintercept = ndis + 0.5, linetype = "dashed") +
+  labs(x = "Index i", y = expression(delta(x[i])),
+       title = expression("Posterior summary of " * delta(x[i]) ~ "(Scenario II)")) +
   theme_minimal(base_size = 12) +
   theme(plot.title = element_text(hjust = 0.5)) #print(p_delta)
 
