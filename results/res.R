@@ -1226,7 +1226,127 @@ right_col2 <- p_delta / p_zeta0 +
 
 ## ----------------------------- Real Data ------------------------------- ##
 
+# =========================================================
+# Figure S.7, (supplementarymaterial.tex), page 29
+# Real data (classical GP discrepancy)
+# scenario_I
+# Bayesian inference without thresholding and g estimated
+# Pooled posterior density of alpha
+# Posterior means of delta(x_i)
+# pointwise posterior inclusion probabilities $\hat p_i$
+# =========================================================
 
+library(ggplot2)
+library(gridExtra)
+
+theta_mat <- res[["theta"]]     # (n_iter x 6)
+delta_mat <- res[["delta"]]     # (n_iter x n)
+zeta_mat  <- res[["zeta"]]    
+
+g     <- theta_mat[, 1]
+h0    <- theta_mat[, 2]
+sigma <- theta_mat[, 3]
+alpha <- theta_mat[, 4]
+psi   <- theta_mat[, 5]
+k     <- theta_mat[, 6]
+
+n_iter_post <- nrow(theta_mat)
+
+df_alpha <- data.frame(alpha = alpha)
+p_alpha <- ggplot(df_alpha, aes(x = alpha)) +
+  geom_density(fill = "#4CCDC9", color = "lightseagreen", alpha = 0.6, linewidth = 1) +
+  labs(x = expression(alpha), y = "Density",
+       title = "Posterior density of alpha (real data, Scenario IV)") +
+  theme_minimal(base_size = 13) +
+  theme(plot.title = element_text(hjust = 0.5)) #print(p_alpha)
+
+## ---------- p_hat_i = P(zeta_i==1 | Y) ----------
+p_hat <- colMeans(zeta_mat == 2)  
+
+df_p <- data.frame(i = 1:n, x = t, p_hat = p_hat)
+
+p_zeta <- ggplot(df_p, aes(x = i, y = p_hat)) +
+  geom_col(fill = "lightseagreen") +
+  ylim(0, 1) +
+  labs(x = "Index i",
+       y = expression(hat(p)[i] == P(zeta[i] == 1 ~ "|" ~ Y)),
+       title = "Pointwise inclusion probabilities (Scenario IV)") +
+  theme_minimal(base_size = 12) +
+  theme(plot.title = element_text(hjust = 0.5)) #print(p_zeta)
+
+## ---------- delta(x_i) ----------
+delta_mean <- colMeans(delta_mat)
+boxplot(delta_mat)
+delta_ci   <- t(apply(delta_mat, 2, quantile, probs = c(0.025, 0.975)))
+
+df_delta <- data.frame(
+  i = 1:n,
+  x = t,
+  d_mean = delta_mean,
+  d_low  = delta_ci[,1],
+  d_high = delta_ci[,2]
+)
+
+p_delta <- ggplot(df_delta, aes(x = i, y = d_mean)) +
+  geom_ribbon(aes(ymin = d_low, ymax = d_high), fill = "lightseagreen", alpha = 0.25) +
+  geom_line(color = "lightseagreen", linewidth = 0.9) +
+  geom_hline(yintercept = 0, linetype = "dashed") +
+  labs(x = "Index i", y = expression(delta(x[i])),
+       title = expression("Posterior summary of " * delta(x[i]) ~ "(Scenario IV)")) +
+  theme_minimal(base_size = 12) +
+  theme(plot.title = element_text(hjust = 0.5)) #print(p_delta)
+
+
+
+library(ggplot2)
+library(patchwork)
+
+make_box <- function(x, ylab, ref = NULL) {
+  df <- data.frame(val = x)
+  p <- ggplot(df, aes(x = 1, y = val)) +
+    geom_boxplot(fill = "lightseagreen", width = 0.25, outlier.size = 1) +
+    labs(x = NULL, y = ylab) +
+    theme_minimal(base_size = 11) +
+    theme(
+      axis.text.x  = element_blank(),
+      axis.ticks.x = element_blank(),
+      plot.margin  = margin(3, 6, 3, 6)
+    )
+  if (!is.null(ref)) {
+    p <- p + geom_hline(yintercept = ref, linetype = "dashed", color = "orange", linewidth = 0.7)
+  }
+  p
+}
+
+p_g     <- make_box(g,     ylab = "g")                 
+p_h0    <- make_box(h0,    ylab = "h0")
+p_sig   <- make_box(sigma, ylab = expression(lambda^2))
+p_a_box <- make_box(alpha, ylab = expression(alpha))
+p_psi   <- make_box(psi,   ylab = expression(gamma[delta]))
+p_k     <- make_box(k,     ylab = "k")                 
+
+left_grid <- (p_g | p_h0) /
+  (p_sig | p_a_box) /
+  (p_psi | p_k)
+
+right_col <- p_alpha / p_delta + plot_layout(heights = c(1, 1.25))
+
+fig_all <- left_grid | right_col
+fig_all <- fig_all + plot_layout(widths = c(1.05, 1.35))
+
+
+
+
+# alpha density / delta summary / p(zeta=1|Y)
+right_col <- p_alpha / p_delta / p_zeta + patchwork::plot_layout(heights = c(1, 1.25, 1))
+
+fig_all2 <- left_grid | right_col
+fig_all2 <- fig_all2 + patchwork::plot_layout(widths = c(1.05, 1.45))
+
+fig_all2
+
+
+## --------------------------------------------------------------- ##
 
 alpha_posterior_summary <- function(alpha_mat, low_cut = 0.1, high_cut = 0.9) {
   data.frame(
