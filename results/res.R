@@ -1451,19 +1451,3 @@ sapply(alpha_summary_all, function(x) median(x$prob_alpha_lt_01))
 ################################################################################
 ################################################################################
 
-# =====================================================================
-# Real data, Scenario IV (g_init = TRUE, seuil = TRUE) — over all sheets
-# =====================================================================
-# This script runs the same MCMC configuration as in examples/real_data.R
-# (Scenario IV: g fixed at the nominal value g* = 9.8 with thresholding
-# active, s = 0.3) for every (sheet, drop) combination contained in
-# data/Ball_drops_data.xlsx, and stores one result file per case.
-#
-# The only quantity that has to change between cases is the initial
-# height h_0 used in `init`: each drop has its own physical drop height
-# (essentially the first observed height), so init[2] is set per case
-# from the data itself.  All other arguments of mcmc_step6 are kept
-# strictly identical to the existing real-data analysis on Blue
-# Basketball (sheet 2, drop 1) used in the paper.
-# =====================================================================
-
