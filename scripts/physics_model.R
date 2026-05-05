@@ -7,3 +7,4 @@ balldropg <- function(t, theta) {
   h[h < 0] <- 0
   return(as.vector(h))
 }
+
