@@ -251,7 +251,15 @@ mcmc_step6 <- function(y, t, n_iter, init, sigma_proposals, mcmc_parameters, Sig
     
     #-------------------------------- Gibbs step for k --------------------------------#   
     #-------------------------------- Page 24-part 8.3 --------------------------------#     
-    
+    R <- outer(t, t, function(ti, tj) exp(-abs(ti - tj) / psi_delta))
+    if(n > 0){
+      R_inv <- tryCatch(solve(R), error = function(e) diag(1, n))
+      
+      quad_form_delta <- as.numeric(t(delta) %*% R_inv %*% delta)
+    } 
+    else {
+      quad_form_delta <- 0
+    }
     alpha_k <- (n / 2) + 1
     beta_k <- (1 / (2 * sigma_sq_err)) * quad_form_delta
     # alpha_k <- (n / 2) + 1
