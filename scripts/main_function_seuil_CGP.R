@@ -224,7 +224,7 @@ mcmc_step6 <- function(y, t, n_iter, init, sigma_proposals,
       for (try_k in 1:100) {
         k_prop <- rgamma(1, shape = alpha_k, rate = beta_k)
         #if (k_prop >= 0.1 && k_prop <= 0.9) {
-        if (k_prop > 0 && k_prop < 1) {
+        if (k_prop > 0.01 && k_prop < 1) {
           k <- k_prop
           theta[6] <- k
           break
