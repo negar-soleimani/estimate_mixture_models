@@ -111,7 +111,8 @@ mcmc_step6 <- function(y, t, n_iter, init, sigma_proposals,
     zeta_1_indices <- which(zeta == 1)
     zeta_2_indices <- which(zeta == 2)
     
-    X <- cbind(1, -0.5 * (t * t_range)^2)
+    # X <- cbind(1, -0.5 * (t * t_range)^2)
+    X <- cbind(1, -0.5 * (t * t_range + t_min)^2)
     x1 <- X[zeta_1_indices, , drop = FALSE]
     x2 <- X[zeta_2_indices, , drop = FALSE]
     
