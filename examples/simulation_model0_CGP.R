@@ -43,7 +43,7 @@ Sigma_theta <- matrix(c(0.5,0,0,0.5), nrow = 2)
 # theta <- c(h0, g, sigma_sq_err, alpha, psi_delta, k)
 init <- c(46.45, 9.8, 0.01, 0.5, 0.5, 0.1)
 sigma_proposals <- c(NA, NA, NA, NA, 0.5, NA)
-n_samples       <- 50
+n_samples       <- 20
 burn_in         <- 2000
 n_iter          <- 10000
 # FALSE= fixed parameter
