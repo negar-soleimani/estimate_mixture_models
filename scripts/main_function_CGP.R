@@ -141,7 +141,7 @@ mcmc_step6 <- function(y, t, n_iter, init, sigma_proposals, mcmc_parameters, Sig
     
     theta_sample <- rmvnorm(1, mean = Mupost_theta, sigma = Sigmapost_theta)
     
-    h0 <- theta_sample[1];  g <- theta_sample[2]
+    h0 <- theta_sample[2];  g <- theta_sample[1]
     #theta[1] <- g
     #theta[2] <- h0
     theta[1] <- h0
