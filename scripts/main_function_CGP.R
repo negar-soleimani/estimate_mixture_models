@@ -146,8 +146,10 @@ mcmc_step6 <- function(y, t, n_iter, init, sigma_proposals, mcmc_parameters, Sig
     theta[2] <- g
     
     if(mcmc_parameters[1] == FALSE){
-      g <- init[1]
-      h0 <- init[2]
+      h0 <- init[1]
+      g  <- init[2]
+      #g <- init[1]
+      #h0 <- init[2]
     }
     
     ## g = fixer
@@ -176,7 +178,8 @@ mcmc_step6 <- function(y, t, n_iter, init, sigma_proposals, mcmc_parameters, Sig
     }
     
     if (freeze_delta_zeta){
-      f_theta <- balldropg(t, c(g, h0))
+      f_theta <- balldropg(t, c(h0, g))
+      #balldropg(t, c(g, h0))
       idx1 <- which(zeta == 1)
       idx2 <- which(zeta == 2)
       n1   <- length(idx1)
@@ -187,7 +190,8 @@ mcmc_step6 <- function(y, t, n_iter, init, sigma_proposals, mcmc_parameters, Sig
       shape_err <- (n + d) / 2
       rate_err  <- 0.5 * rss1
     } else {
-      f_theta <- balldropg(t, c(g, h0))
+      f_theta <- balldropg(t, c(h0, g))
+      #balldropg(t, c(g, h0))
       idx1 <- which(zeta == 1)
       idx2 <- which(zeta == 2)
       n1   <- length(idx1)
@@ -305,6 +309,10 @@ mcmc_step6 <- function(y, t, n_iter, init, sigma_proposals, mcmc_parameters, Sig
     }
     theta[6] <- k
     
+    if(mcmc_parameters[4] == FALSE){    
+      k <- init[6]
+      theta[6] <- k
+    }
     #-------------------------------- Gibbs step for alpha --------------------------------#   
     #-------------------------------- Page 25 - part 8.4 --------------------------------#     
     
