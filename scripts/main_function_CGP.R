@@ -119,7 +119,8 @@ mcmc_step6 <- function(y, t, n_iter, init, sigma_proposals, mcmc_parameters, Sig
     zeta_1_indices <- which(zeta == 1)
     zeta_2_indices <- which(zeta == 2)
     
-    X <- cbind(1, -0.5 * (t * t_range)^2)
+    # X <- cbind(1, -0.5 * (t * t_range)^2)
+    X <- cbind(1, -0.5 * (t * t_range + t_min)^2)
     x1 <- X[zeta_1_indices, , drop = FALSE]
     x2 <- X[zeta_2_indices, , drop = FALSE]
     
@@ -133,8 +134,7 @@ mcmc_step6 <- function(y, t, n_iter, init, sigma_proposals, mcmc_parameters, Sig
     Sigmapost_theta <- solve(A)             
     Mupost_theta    <- Sigmapost_theta %*% B 
     
-    theta_sample <- rmvnorm(1, mean = Mupost_theta,
-                            sigma = Sigmapost_theta)
+    theta_sample <- rmvnorm(1, mean = Mupost_theta, sigma = Sigmapost_theta)
     
     h0 <- theta_sample[1];  g <- theta_sample[2]
     theta[1] <- g
@@ -179,7 +179,8 @@ mcmc_step6 <- function(y, t, n_iter, init, sigma_proposals, mcmc_parameters, Sig
       n2   <- length(idx2)
       residual1 <- y[idx1] - f_theta[idx1]
       rss1   <- sum(residual1^2)
-      shape_err <- (n / 2) + 1
+      #shape_err <- (n / 2) + 1
+      shape_err <- (n + d) / 2
       rate_err  <- 0.5 * rss1
     } else {
       f_theta <- balldropg(t, c(g, h0))

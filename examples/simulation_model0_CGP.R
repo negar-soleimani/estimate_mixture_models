@@ -13,24 +13,24 @@ names(don) <- c("drop", "time", "Height", "Velocity")
 don$drop <- as.factor(don$drop)
 don <- don[don$drop == 1, ]
 
-#t <- don$time
-#y <- don$Height
-#length(t)
-#t_min <- min(t)
-#t_range <- max(t) - min(t)
-#t <- (t - t_min) / t_range
-#n <- length(y)
-#a <- t_range
+t <- don$time
+y <- don$Height
+length(t)
+t_min <- min(t)
+t_range <- max(t) - min(t)
+t <- (t - t_min) / t_range
+n <- length(y)
+a <- t_range
 
-t_obs <- don$time
-y_obs_real <- don$Height
+#t_obs <- don$time
+#y_obs_real <- don$Height
 
-t_min <- min(t_obs)
-t_range <- max(t_obs) - min(t_obs)
+#t_min <- min(t_obs)
+#t_range <- max(t_obs) - min(t_obs)
 
-t <- seq(0, 1, length.out = 100)
+#t <- seq(0, 1, length.out = 100)
 
-n <- length(t)
+#n <- length(t)
 
 source("scripts/physics_model.R")
 source("scripts/helper_function_CGP.R")
@@ -39,7 +39,9 @@ source("scripts/main_function_CGP.R")
 set.seed(12345)
 Sigma_theta <- matrix(c(0.5,0,0,0.5), nrow = 2)
 # c(g, h0, sig2err, alpha, psidelta, k)
-init <- c(9.8, 46.45, 0.01, 0.5, 0.5, 0.1)
+# init <- c(9.8, 46.45, 0.01, 0.5, 0.5, 0.1)
+# theta <- c(h0, g, sigma_sq_err, alpha, psi_delta, k)
+init <- c(46.45, 9.8, 0.01, 0.5, 0.5, 0.1)
 sigma_proposals <- c(NA, NA, NA, NA, 0.5, NA)
 n_samples       <- 50
 burn_in         <- 2000
