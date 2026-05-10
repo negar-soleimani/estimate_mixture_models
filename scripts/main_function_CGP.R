@@ -270,49 +270,26 @@ mcmc_step6 <- function(y, t, n_iter, init, sigma_proposals, mcmc_parameters, Sig
       quad_form_delta <- 0
     }
     
-    #alpha_k <- (n / 2) + 1
-    #beta_k <- (1 / (2 * sigma_sq_err)) * quad_form_delta
-    ## alpha_k <- (n / 2) + 1
-    ## beta_k <- (1 / (2 * sigma_sq_err)) * quad_form_delta
-    #for (try_k in 1:100) {
-    #  k_prop <- rgamma(1, shape = alpha_k, rate = beta_k)
-    #  #if (k_prop >= 0.1 && k_prop <= 0.9) {
-    #  if (k_prop > 0 && k_prop < 1) {
-    #    k <- k_prop
-    #    theta[6] <- k
-    #    break
-    #  }
-    #}
-    
-    #if(mcmc_parameters[4] == FALSE){
-    #  k <- init[6]
-    #  theta[6] <- k
-    #}
-    
     alpha_k <- (n / 2) + 1
-    beta_k  <- (1 / (2 * sigma_sq_err)) * quad_form_delta
-    
-    # Inverse-CDF sampling from Gamma(alpha_k, beta_k) truncated to (0, 1).
-    # Robust to extreme regimes: if all the mass is concentrated near 0 or 1,
-    # we still get an exact draw; if numerical underflow makes the CDF interval
-    # degenerate, we fall back to the previous value (and warn).
-    F_lo <- pgamma(0, shape = alpha_k, rate = beta_k)        # = 0
-    F_hi <- pgamma(1, shape = alpha_k, rate = beta_k)
-    if (F_hi - F_lo > 1e-12) {
-      u <- runif(1, F_lo, F_hi)
-      k_new <- qgamma(u, shape = alpha_k, rate = beta_k)
-      # Numerical safety: clamp to the open interval
-      k_new <- min(max(k_new, .Machine$double.eps), 1 - .Machine$double.eps)
-      k <- k_new
-    } else {
-      warning(sprintf("k-update: truncated Gamma mass on (0,1) is ~0 at iter %d; keeping previous value.", iter))
+    beta_k <- (1 / (2 * sigma_sq_err)) * quad_form_delta
+    # alpha_k <- (n / 2) + 1
+    # beta_k <- (1 / (2 * sigma_sq_err)) * quad_form_delta
+    for (try_k in 1:100) {
+      k_prop <- rgamma(1, shape = alpha_k, rate = beta_k)
+      #if (k_prop >= 0.1 && k_prop <= 0.9) {
+      if (k_prop > 0 && k_prop < 1) {
+        k <- k_prop
+        theta[6] <- k
+        break
+      }
     }
-    theta[6] <- k
     
-    if(mcmc_parameters[4] == FALSE){    
+    if(mcmc_parameters[4] == FALSE){
       k <- init[6]
       theta[6] <- k
     }
+    
+    
     #-------------------------------- Gibbs step for alpha --------------------------------#   
     #-------------------------------- Page 25 - part 8.4 --------------------------------#     
     
