@@ -1,8 +1,8 @@
 mcmc_step6 <- function(y, t, n_iter, init, sigma_proposals, mcmc_parameters, Sigma_theta, n_burnin=1000) {
   # mcmc_parameters : c(theta(g, h0) = "TRUE", sigma_sq_err = "T", psi_delta = "T", k = "T", alpha = "T")
-  
+  n <- length(y)
   freeze_delta_zeta <- mcmc_parameters[6]
-  
+  d <- 2
   # Total iterations = burn-in + desired samples
   total_iter <- n_burnin + n_iter
   
@@ -10,21 +10,24 @@ mcmc_step6 <- function(y, t, n_iter, init, sigma_proposals, mcmc_parameters, Sig
   delta <- rep(0, length(y))
   
   chain_theta <- matrix(NA, nrow = total_iter, ncol = length(init))
-  colnames(chain_theta) <- c("g", "h0", "sigma_sq_err", "alpha", "psi_delta", "k")
+  #colnames(chain_theta) <- c("g", "h0", "sigma_sq_err", "alpha", "psi_delta", "k")
+  colnames(chain_theta) <- c("h0", "g", "sigma_sq_err", "alpha", "psi_delta", "k")
   chain_delta <- matrix(NA, nrow = total_iter, ncol = length(y))
   chain_zeta <- matrix(NA, nrow = total_iter, ncol = length(y))
   
   loglik_chain <- numeric(total_iter)
   accept_psi <- 0
+  # g <- theta[1]; h0 <- theta[2]
   
   for (iter in 1:total_iter) {
-    g <- theta[1]; h0 <- theta[2]; sigma_sq_err <- theta[3]
+    h0 <- theta[1]; g <- theta[2]; sigma_sq_err <- theta[3]
     alpha_param <- theta[4]; psi_delta <- theta[5]; k <- theta[6]
     sigma_sq_delta <- sigma_sq_err / k
     
     Sigma_delta <- GP_covariance(t, sigma_sq_delta, psi_delta)
     
-    f_theta <- balldropg(t, c(g, h0))
+    #f_theta <- balldropg(t, c(g, h0))
+    f_theta <- balldropg(t, c(h0, g))
     mean1 <- f_theta
     mean2 <- f_theta + delta
     
@@ -137,9 +140,10 @@ mcmc_step6 <- function(y, t, n_iter, init, sigma_proposals, mcmc_parameters, Sig
     theta_sample <- rmvnorm(1, mean = Mupost_theta, sigma = Sigmapost_theta)
     
     h0 <- theta_sample[1];  g <- theta_sample[2]
-    theta[1] <- g
-    theta[2] <- h0
-    
+    #theta[1] <- g
+    #theta[2] <- h0
+    theta[1] <- h0
+    theta[2] <- g
     
     if(mcmc_parameters[1] == FALSE){
       g <- init[1]
@@ -255,30 +259,51 @@ mcmc_step6 <- function(y, t, n_iter, init, sigma_proposals, mcmc_parameters, Sig
     R <- outer(t, t, function(ti, tj) exp(-abs(ti - tj) / psi_delta))
     if(n > 0){
       R_inv <- tryCatch(solve(R), error = function(e) diag(1, n))
-      
+    
       quad_form_delta <- as.numeric(t(delta) %*% R_inv %*% delta)
     } 
     else {
       quad_form_delta <- 0
     }
-    alpha_k <- (n / 2) + 1
-    beta_k <- (1 / (2 * sigma_sq_err)) * quad_form_delta
-    # alpha_k <- (n / 2) + 1
-    # beta_k <- (1 / (2 * sigma_sq_err)) * quad_form_delta
-    for (try_k in 1:100) {
-      k_prop <- rgamma(1, shape = alpha_k, rate = beta_k)
-      #if (k_prop >= 0.1 && k_prop <= 0.9) {
-      if (k_prop > 0 && k_prop < 1) {
-        k <- k_prop
-        theta[6] <- k
-        break
-      }
-    }
     
-    if(mcmc_parameters[4] == FALSE){
-      k <- init[6]
-      theta[6] <- k
+    #alpha_k <- (n / 2) + 1
+    #beta_k <- (1 / (2 * sigma_sq_err)) * quad_form_delta
+    ## alpha_k <- (n / 2) + 1
+    ## beta_k <- (1 / (2 * sigma_sq_err)) * quad_form_delta
+    #for (try_k in 1:100) {
+    #  k_prop <- rgamma(1, shape = alpha_k, rate = beta_k)
+    #  #if (k_prop >= 0.1 && k_prop <= 0.9) {
+    #  if (k_prop > 0 && k_prop < 1) {
+    #    k <- k_prop
+    #    theta[6] <- k
+    #    break
+    #  }
+    #}
+    
+    #if(mcmc_parameters[4] == FALSE){
+    #  k <- init[6]
+    #  theta[6] <- k
+    #}
+    
+    alpha_k <- (n / 2) + 1
+    beta_k  <- (1 / (2 * sigma_sq_err)) * quad_form_delta
+    
+    # Inverse-CDF sampling from Gamma(alpha_k, beta_k) truncated to (0, 1).
+    # Robust to extreme regimes: if all the mass is concentrated near 0 or 1,
+    # we still get an exact draw; if numerical underflow makes the CDF interval
+    # degenerate, we fall back to the previous value (and warn).
+    F_lo <- pgamma(0, shape = alpha_k, rate = beta_k)        # = 0
+    F_hi <- pgamma(1, shape = alpha_k, rate = beta_k)
+    if (F_hi - F_lo > 1e-12) {
+      u <- runif(1, F_lo, F_hi)
+      k_new <- qgamma(u, shape = alpha_k, rate = beta_k)
+      # Numerical safety: clamp to the open interval
+      k_new <- min(max(k_new, .Machine$double.eps), 1 - .Machine$double.eps)
+      k <- k_new
+    } else {
+      warning(sprintf("k-update: truncated Gamma mass on (0,1) is ~0 at iter %d; keeping previous value.", iter))
     }
+    theta[6] <- k
     
     #-------------------------------- Gibbs step for alpha --------------------------------#   
     #-------------------------------- Page 25 - part 8.4 --------------------------------#     
@@ -292,7 +317,8 @@ mcmc_step6 <- function(y, t, n_iter, init, sigma_proposals, mcmc_parameters, Sig
     }
     
     
-    theta <- c(g, h0, sigma_sq_err, alpha_param, psi_delta, k)
+    #theta <- c(g, h0, sigma_sq_err, alpha_param, psi_delta, k)
+    theta <- c(h0, g, sigma_sq_err, alpha_param, psi_delta, k)
     chain_theta[iter, ] <- theta
     chain_delta[iter, ] <- delta
     
