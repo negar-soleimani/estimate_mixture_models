@@ -253,7 +253,7 @@ res <- mcmc_step6(
   k_init = FALSE,
   Sigma_theta = matrix(c(0.5, 0, 0, 0.5), 2),
   n_burnin = burn_in,
-  seuil = TRUE,  
+  seuil = FALSE,  
   s = 0.3       
 )
 

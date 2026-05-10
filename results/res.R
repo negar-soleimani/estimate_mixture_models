@@ -15,6 +15,8 @@ rm(list = ls())
 
 #result_m0_sh2_classic_classic <- result_m0_sh2_classic_classic_100
 
+result_m0_sh2_classic_classic <- result_m0_sh2_classic_classic_ex
+
 g_sh2 <- result_m0_sh2_classic_classic[[1]]
 h0_sh2 <- result_m0_sh2_classic_classic[[2]]
 sigma_sq_err_sh2 <- result_m0_sh2_classic_classic[[3]]
