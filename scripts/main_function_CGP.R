@@ -272,26 +272,46 @@ mcmc_step6 <- function(y, t, n_iter, init, sigma_proposals, mcmc_parameters, Sig
       quad_form_delta <- 0
     }
     
+    #alpha_k <- (n / 2) + 1
+    #beta_k <- (1 / (2 * sigma_sq_err)) * quad_form_delta
+    ## alpha_k <- (n / 2) + 1
+    ## beta_k <- (1 / (2 * sigma_sq_err)) * quad_form_delta
+    #for (try_k in 1:100) {
+    #  k_prop <- rgamma(1, shape = alpha_k, rate = beta_k)
+    #  #if (k_prop >= 0.1 && k_prop <= 0.9) {
+    #  if (k_prop > 0 && k_prop < 1) {
+    #    k <- k_prop
+    #    theta[6] <- k
+    #    break
+    #  }
+    #}
+    
+    #if(mcmc_parameters[4] == FALSE){
+    #  k <- init[6]
+    #  theta[6] <- k
+    #}
+    
+    
     alpha_k <- (n / 2) + 1
-    beta_k <- (1 / (2 * sigma_sq_err)) * quad_form_delta
-    # alpha_k <- (n / 2) + 1
-    # beta_k <- (1 / (2 * sigma_sq_err)) * quad_form_delta
-    for (try_k in 1:100) {
-      k_prop <- rgamma(1, shape = alpha_k, rate = beta_k)
-      #if (k_prop >= 0.1 && k_prop <= 0.9) {
-      if (k_prop > 0 && k_prop < 1) {
-        k <- k_prop
-        theta[6] <- k
-        break
-      }
+    beta_k  <- (1 / (2 * sigma_sq_err)) * quad_form_delta
+    
+    # Inverse-CDF sampling from Gamma(alpha_k, beta_k) truncated to (0, 1)
+    F_lo <- pgamma(0, shape = alpha_k, rate = beta_k)
+    F_hi <- pgamma(1, shape = alpha_k, rate = beta_k)
+    if (F_hi - F_lo > 1e-12) {
+      u <- runif(1, F_lo, F_hi)
+      k_new <- qgamma(u, shape = alpha_k, rate = beta_k)
+      k_new <- min(max(k_new, 1e-6), 1 - 1e-6)
+      k <- k_new
+    } else {
+      warning(sprintf("k-update at iter %d: truncated Gamma mass on (0,1) is ~0; keeping k.", iter))
     }
+    theta[6] <- k
     
     if(mcmc_parameters[4] == FALSE){
       k <- init[6]
       theta[6] <- k
     }
-    
-    
     #-------------------------------- Gibbs step for alpha --------------------------------#   
     #-------------------------------- Page 25 - part 8.4 --------------------------------#     
     

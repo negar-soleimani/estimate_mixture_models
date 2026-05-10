@@ -84,7 +84,7 @@ for (v in 1:n_samples) {
   accept_rate[v]   <- results$accept_rate_psi
 }
 
-result_m0_sh2_classic_classic_ex <- list(g, h0, sigma_sq_err, alpha, psi_delta, k, y_obs = y_obs, delta_list, zeta_list, loglik_mat, accept_rate)
+result_m0_sh2_classic_classic_ex <- list(h0, g, sigma_sq_err, alpha, psi_delta, k, y_obs = y_obs, delta_list, zeta_list, loglik_mat, accept_rate)
 
 #result_m0_sh2_classic_classic_200 <- list(g, h0, sigma_sq_err, alpha, psi_delta, k, y_obs = y_obs, delta_list, zeta_list, loglik_mat, accept_rate)
 #save(result_m0_sh2_classic_classic_200,file = "/Users/negar/Documents/phd/Result/Model1/Classic/result_m0_sh2_classic_classic_200.RData")
