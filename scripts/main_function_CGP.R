@@ -1,8 +1,8 @@
 mcmc_step6 <- function(y, t, n_iter, init, sigma_proposals, mcmc_parameters, Sigma_theta, n_burnin=1000) {
   # mcmc_parameters : c(theta(g, h0) = "TRUE", sigma_sq_err = "T", psi_delta = "T", k = "T", alpha = "T")
-  n <- length(y)
+  
   freeze_delta_zeta <- mcmc_parameters[6]
-  d <- 2
+  
   # Total iterations = burn-in + desired samples
   total_iter <- n_burnin + n_iter
   
@@ -10,24 +10,21 @@ mcmc_step6 <- function(y, t, n_iter, init, sigma_proposals, mcmc_parameters, Sig
   delta <- rep(0, length(y))
   
   chain_theta <- matrix(NA, nrow = total_iter, ncol = length(init))
-  #colnames(chain_theta) <- c("g", "h0", "sigma_sq_err", "alpha", "psi_delta", "k")
-  colnames(chain_theta) <- c("h0", "g", "sigma_sq_err", "alpha", "psi_delta", "k")
+  colnames(chain_theta) <- c("g", "h0", "sigma_sq_err", "alpha", "psi_delta", "k")
   chain_delta <- matrix(NA, nrow = total_iter, ncol = length(y))
   chain_zeta <- matrix(NA, nrow = total_iter, ncol = length(y))
   
   loglik_chain <- numeric(total_iter)
   accept_psi <- 0
-  # g <- theta[1]; h0 <- theta[2]
   
   for (iter in 1:total_iter) {
-    h0 <- theta[1]; g <- theta[2]; sigma_sq_err <- theta[3]
+    g <- theta[1]; h0 <- theta[2]; sigma_sq_err <- theta[3]
     alpha_param <- theta[4]; psi_delta <- theta[5]; k <- theta[6]
     sigma_sq_delta <- sigma_sq_err / k
     
     Sigma_delta <- GP_covariance(t, sigma_sq_delta, psi_delta)
     
-    #f_theta <- balldropg(t, c(g, h0))
-    f_theta <- balldropg(t, c(h0, g))
+    f_theta <- balldropg(t, c(g, h0))
     mean1 <- f_theta
     mean2 <- f_theta + delta
     
@@ -82,8 +79,6 @@ mcmc_step6 <- function(y, t, n_iter, init, sigma_proposals, mcmc_parameters, Sig
       mu_delta_hat <- rep(0, n) + Sigma_delta_ym %*% Sigma_inv %*% (y_m - f_theta[zeta_2_indices])
       Sigma_delta_hat <- Sigma_delta - Sigma_delta_ym %*% Sigma_inv %*% t(Sigma_delta_ym)
       Sigma_delta_hat <- 0.5 * (Sigma_delta_hat + t(Sigma_delta_hat))
-      jit <- 1e-8 * mean(diag(Sigma_delta_hat))
-      Sigma_delta_hat <- Sigma_delta_hat + diag(jit, n)
       delta <- as.vector(rmvnorm(1, mean = mu_delta_hat, sigma = Sigma_delta_hat))
     } else {
       delta = as.vector(rmvnorm(1, rep(0, n), sigma = Sigma_delta))}
@@ -124,8 +119,7 @@ mcmc_step6 <- function(y, t, n_iter, init, sigma_proposals, mcmc_parameters, Sig
     zeta_1_indices <- which(zeta == 1)
     zeta_2_indices <- which(zeta == 2)
     
-    # X <- cbind(1, -0.5 * (t * t_range)^2)
-    X <- cbind(1, -0.5 * (t * t_range + t_min)^2)
+    X <- cbind(1, -0.5 * (t * t_range)^2)
     x1 <- X[zeta_1_indices, , drop = FALSE]
     x2 <- X[zeta_2_indices, , drop = FALSE]
     
@@ -139,19 +133,17 @@ mcmc_step6 <- function(y, t, n_iter, init, sigma_proposals, mcmc_parameters, Sig
     Sigmapost_theta <- solve(A)             
     Mupost_theta    <- Sigmapost_theta %*% B 
     
-    theta_sample <- rmvnorm(1, mean = Mupost_theta, sigma = Sigmapost_theta)
+    theta_sample <- rmvnorm(1, mean = Mupost_theta,
+                            sigma = Sigmapost_theta)
     
-    h0 <- theta_sample[2];  g <- theta_sample[1]
-    #theta[1] <- g
-    #theta[2] <- h0
-    theta[1] <- h0
-    theta[2] <- g
+    h0 <- theta_sample[1];  g <- theta_sample[2]
+    theta[1] <- g
+    theta[2] <- h0
+    
     
     if(mcmc_parameters[1] == FALSE){
-      h0 <- init[1]
-      g  <- init[2]
-      #g <- init[1]
-      #h0 <- init[2]
+      g <- init[1]
+      h0 <- init[2]
     }
     
     ## g = fixer
@@ -180,20 +172,17 @@ mcmc_step6 <- function(y, t, n_iter, init, sigma_proposals, mcmc_parameters, Sig
     }
     
     if (freeze_delta_zeta){
-      f_theta <- balldropg(t, c(h0, g))
-      #balldropg(t, c(g, h0))
+      f_theta <- balldropg(t, c(g, h0))
       idx1 <- which(zeta == 1)
       idx2 <- which(zeta == 2)
       n1   <- length(idx1)
       n2   <- length(idx2)
       residual1 <- y[idx1] - f_theta[idx1]
       rss1   <- sum(residual1^2)
-      #shape_err <- (n / 2) + 1
-      shape_err <- (n + d) / 2
+      shape_err <- (n / 2) + 1
       rate_err  <- 0.5 * rss1
     } else {
-      f_theta <- balldropg(t, c(h0, g))
-      #balldropg(t, c(g, h0))
+      f_theta <- balldropg(t, c(g, h0))
       idx1 <- which(zeta == 1)
       idx2 <- which(zeta == 2)
       n1   <- length(idx1)
@@ -265,53 +254,31 @@ mcmc_step6 <- function(y, t, n_iter, init, sigma_proposals, mcmc_parameters, Sig
     R <- outer(t, t, function(ti, tj) exp(-abs(ti - tj) / psi_delta))
     if(n > 0){
       R_inv <- tryCatch(solve(R), error = function(e) diag(1, n))
-    
+      
       quad_form_delta <- as.numeric(t(delta) %*% R_inv %*% delta)
     } 
     else {
       quad_form_delta <- 0
     }
-    
-    #alpha_k <- (n / 2) + 1
-    #beta_k <- (1 / (2 * sigma_sq_err)) * quad_form_delta
-    ## alpha_k <- (n / 2) + 1
-    ## beta_k <- (1 / (2 * sigma_sq_err)) * quad_form_delta
-    #for (try_k in 1:100) {
-    #  k_prop <- rgamma(1, shape = alpha_k, rate = beta_k)
-    #  #if (k_prop >= 0.1 && k_prop <= 0.9) {
-    #  if (k_prop > 0 && k_prop < 1) {
-    #    k <- k_prop
-    #    theta[6] <- k
-    #    break
-    #  }
-    #}
-    
-    #if(mcmc_parameters[4] == FALSE){
-    #  k <- init[6]
-    #  theta[6] <- k
-    #}
-    
-    
     alpha_k <- (n / 2) + 1
-    beta_k  <- (1 / (2 * sigma_sq_err)) * quad_form_delta
-    
-    # Inverse-CDF sampling from Gamma(alpha_k, beta_k) truncated to (0, 1)
-    F_lo <- pgamma(0, shape = alpha_k, rate = beta_k)
-    F_hi <- pgamma(1, shape = alpha_k, rate = beta_k)
-    if (F_hi - F_lo > 1e-12) {
-      u <- runif(1, F_lo, F_hi)
-      k_new <- qgamma(u, shape = alpha_k, rate = beta_k)
-      k_new <- min(max(k_new, 1e-6), 1 - 1e-6)
-      k <- k_new
-    } else {
-      warning(sprintf("k-update at iter %d: truncated Gamma mass on (0,1) is ~0; keeping k.", iter))
+    beta_k <- (1 / (2 * sigma_sq_err)) * quad_form_delta
+    # alpha_k <- (n / 2) + 1
+    # beta_k <- (1 / (2 * sigma_sq_err)) * quad_form_delta
+    for (try_k in 1:100) {
+      k_prop <- rgamma(1, shape = alpha_k, rate = beta_k)
+      #if (k_prop >= 0.1 && k_prop <= 0.9) {
+      if (k_prop > 0 && k_prop < 1) {
+        k <- k_prop
+        theta[6] <- k
+        break
+      }
     }
-    theta[6] <- k
     
     if(mcmc_parameters[4] == FALSE){
       k <- init[6]
       theta[6] <- k
     }
+    
     #-------------------------------- Gibbs step for alpha --------------------------------#   
     #-------------------------------- Page 25 - part 8.4 --------------------------------#     
     
@@ -324,8 +291,7 @@ mcmc_step6 <- function(y, t, n_iter, init, sigma_proposals, mcmc_parameters, Sig
     }
     
     
-    #theta <- c(g, h0, sigma_sq_err, alpha_param, psi_delta, k)
-    theta <- c(h0, g, sigma_sq_err, alpha_param, psi_delta, k)
+    theta <- c(g, h0, sigma_sq_err, alpha_param, psi_delta, k)
     chain_theta[iter, ] <- theta
     chain_delta[iter, ] <- delta
     

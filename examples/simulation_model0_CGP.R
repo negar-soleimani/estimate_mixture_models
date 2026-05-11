@@ -13,24 +13,24 @@ names(don) <- c("drop", "time", "Height", "Velocity")
 don$drop <- as.factor(don$drop)
 don <- don[don$drop == 1, ]
 
-t <- don$time
-y <- don$Height
-length(t)
-t_min <- min(t)
-t_range <- max(t) - min(t)
-t <- (t - t_min) / t_range
-n <- length(y)
-a <- t_range
+#t <- don$time
+#y <- don$Height
+#length(t)
+#t_min <- min(t)
+#t_range <- max(t) - min(t)
+#t <- (t - t_min) / t_range
+#n <- length(y)
+#a <- t_range
 
-#t_obs <- don$time
-#y_obs_real <- don$Height
+t_obs <- don$time
+y_obs_real <- don$Height
 
-#t_min <- min(t_obs)
-#t_range <- max(t_obs) - min(t_obs)
+t_min <- min(t_obs)
+t_range <- max(t_obs) - min(t_obs)
 
-#t <- seq(0, 1, length.out = 100)
+t <- seq(0, 1, length.out = 100)
 
-#n <- length(t)
+n <- length(t)
 
 source("scripts/physics_model.R")
 source("scripts/helper_function_CGP.R")
@@ -39,11 +39,9 @@ source("scripts/main_function_CGP.R")
 set.seed(12345)
 Sigma_theta <- matrix(c(0.5,0,0,0.5), nrow = 2)
 # c(g, h0, sig2err, alpha, psidelta, k)
-# init <- c(9.8, 46.45, 0.01, 0.5, 0.5, 0.1)
-# theta <- c(h0, g, sigma_sq_err, alpha, psi_delta, k)
-init <- c(46.45, 9.8, 0.01, 0.5, 0.5, 0.1)
+init <- c(9.8, 46.45, 0.01, 0.5, 0.5, 0.1)
 sigma_proposals <- c(NA, NA, NA, NA, 0.5, NA)
-n_samples       <- 20
+n_samples       <- 50
 burn_in         <- 2000
 n_iter          <- 10000
 # FALSE= fixed parameter
@@ -63,17 +61,14 @@ accept_rate  <- numeric(n_samples)
 
 y_obs <- matrix(NA, length(t), n_samples, byrow = FALSE)
 for (v in 1:n_samples) {
-  #y_1 = balldropg(t,c(9.8, 46.45)) + rnorm(n, 0, sqrt(0.01))
-  y_1 = balldropg(t, c(46.45, 9.8)) + rnorm(n, 0, sqrt(0.01))
+  y_1 = balldropg(t,c(9.8, 46.45)) + rnorm(n, 0, sqrt(0.01))
   y_obs[,v] <- y_1
   
   #results <- mcmc_step6(y_1, t, n_iter, init, sigma_proposals, g_init=FALSE, h0_init= FALSE, sig2er_init = FALSE,
   #                      alpha_init = FALSE, psi_init = FALSE, k_init = FALSE, Sigma_theta, n_burnin = burn_in, a_psi, b_psi, seuil = FALSE, s = 0.3)
   results <- mcmc_step6(y_1, t, n_iter, init, sigma_proposals, mcmc_parameters, Sigma_theta, n_burnin=2000)
-  #g[,v] = results$theta[,1]
-  #h0[,v]=results$theta[,2]
-  h0[,v] = results$theta[,1]
-  g[,v]  = results$theta[,2]
+  g[,v] = results$theta[,1]
+  h0[,v]=results$theta[,2]
   sigma_sq_err[,v]=results$theta[,3]
   alpha[,v] <- results$theta[,4]
   psi_delta[,v] <- results$theta[,5]
@@ -84,7 +79,7 @@ for (v in 1:n_samples) {
   accept_rate[v]   <- results$accept_rate_psi
 }
 
-result_m0_sh2_classic_classic_ex <- list(h0, g, sigma_sq_err, alpha, psi_delta, k, y_obs = y_obs, delta_list, zeta_list, loglik_mat, accept_rate)
+result_m0_sh2_classic_classic_ex <- list(g, h0, sigma_sq_err, alpha, psi_delta, k, y_obs = y_obs, delta_list, zeta_list, loglik_mat, accept_rate)
 
 #result_m0_sh2_classic_classic_200 <- list(g, h0, sigma_sq_err, alpha, psi_delta, k, y_obs = y_obs, delta_list, zeta_list, loglik_mat, accept_rate)
 #save(result_m0_sh2_classic_classic_200,file = "/Users/negar/Documents/phd/Result/Model1/Classic/result_m0_sh2_classic_classic_200.RData")
@@ -97,4 +92,5 @@ save(result_m0_sh2_classic_classic_100,file = "/Users/negar/Documents/phd/Result
 # y_obs_m1_sh2_ex <- y_obs
 # load("/Users/negarsoleimani/Documents/phd/paper1/Simulation/Model_1/final_results/result_m0_sh2_classic_classic.RData")
 #View(result_m0_sh2_classic_classic_100)
+
 
