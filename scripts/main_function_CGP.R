@@ -263,26 +263,26 @@ mcmc_step6 <- function(y, t, n_iter, init, sigma_proposals, mcmc_parameters, Sig
     alpha_k <- (n / 2) + 1
     beta_k <- (1 / (2 * sigma_sq_err)) * quad_form_delta
 
-    # Inverse-CDF sampling from Gamma(alpha_k, beta_k) truncated to (0, 1).
-    # Equivalent to the rejection-sampling loop, but exact in one call.
-    F_hi <- pgamma(1, shape = alpha_k, rate = beta_k)
-    if (F_hi > 1e-12) {
-      u <- runif(1, 0, F_hi)
-      k <- qgamma(u, shape = alpha_k, rate = beta_k)
-      theta[6] <- k
-    }
-    # If F_hi is numerically zero (truncated-Gamma mass on (0,1) ~ 0),
-    # k keeps its previous value — same behavior as the rejection loop.
-    
-    #for (try_k in 1:100) {
-    #  k_prop <- rgamma(1, shape = alpha_k, rate = beta_k)
-    #  #if (k_prop >= 0.1 && k_prop <= 0.9) {
-    #  if (k_prop > 0 && k_prop < 1) {
-    #    k <- k_prop
-    #    theta[6] <- k
-    #    break
-    #  }
+    ## Inverse-CDF sampling from Gamma(alpha_k, beta_k) truncated to (0, 1).
+    ## Equivalent to the rejection-sampling loop, but exact in one call.
+    #F_hi <- pgamma(1, shape = alpha_k, rate = beta_k)
+    #if (F_hi > 1e-12) {
+    #  u <- runif(1, 0, F_hi)
+    #  k <- qgamma(u, shape = alpha_k, rate = beta_k)
+    #  theta[6] <- k
     #}
+    ## If F_hi is numerically zero (truncated-Gamma mass on (0,1) ~ 0),
+    ## k keeps its previous value — same behavior as the rejection loop.
+    
+    for (try_k in 1:100) {
+      k_prop <- rgamma(1, shape = alpha_k, rate = beta_k)
+      #if (k_prop >= 0.1 && k_prop <= 0.9) {
+      if (k_prop > 0 && k_prop < 1) {
+        k <- k_prop
+        theta[6] <- k
+        break
+      }
+    }
     
     if(mcmc_parameters[4] == FALSE){
       k <- init[6]
