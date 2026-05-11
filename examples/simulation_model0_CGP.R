@@ -13,24 +13,24 @@ names(don) <- c("drop", "time", "Height", "Velocity")
 don$drop <- as.factor(don$drop)
 don <- don[don$drop == 1, ]
 
-#t <- don$time
-#y <- don$Height
-#length(t)
-#t_min <- min(t)
-#t_range <- max(t) - min(t)
-#t <- (t - t_min) / t_range
-#n <- length(y)
-#a <- t_range
+t <- don$time
+y <- don$Height
+length(t)
+t_min <- min(t)
+t_range <- max(t) - min(t)
+t <- (t - t_min) / t_range
+n <- length(y)
+a <- t_range
 
-t_obs <- don$time
-y_obs_real <- don$Height
+#t_obs <- don$time
+#y_obs_real <- don$Height
 
-t_min <- min(t_obs)
-t_range <- max(t_obs) - min(t_obs)
+#t_min <- min(t_obs)
+#t_range <- max(t_obs) - min(t_obs)
 
-t <- seq(0, 1, length.out = 100)
+#t <- seq(0, 1, length.out = 100)
 
-n <- length(t)
+#n <- length(t)
 
 source("scripts/physics_model.R")
 source("scripts/helper_function_CGP.R")
