@@ -108,10 +108,42 @@ mcmc_step6 <- function(y, t, n_iter, init, sigma_proposals,
     #-------------------------------- Page 22 - part 8.1 --------------------------------#     
     # flat prior on theta 
     
+    #zeta_1_indices <- which(zeta == 1)
+    #zeta_2_indices <- which(zeta == 2)
+    
+    ## X <- cbind(1, -0.5 * (t * t_range)^2)
+    #X <- cbind(1, -0.5 * (t * t_range + t_min)^2)
+    #x1 <- X[zeta_1_indices, , drop = FALSE]
+    #x2 <- X[zeta_2_indices, , drop = FALSE]
+    
+    #y1 <- matrix(y[zeta_1_indices], ncol = 1)
+    #y2 <- matrix(y[zeta_2_indices], ncol = 1)
+    #d2 <- matrix(delta[zeta_2_indices], ncol = 1)
+    
+    #A <- (t(x1) %*% x1 + t(x2) %*% x2) / sigma_sq_err
+    #B <- (t(x1) %*% y1 + t(x2) %*% y2 - t(x2) %*% d2) / sigma_sq_err
+    
+    #Sigmapost_theta <- solve(A)
+    #Mupost_theta    <- Sigmapost_theta %*% B
+    
+    #theta_sample <- rmvnorm(1, mean = Mupost_theta,
+    #                        sigma = Sigmapost_theta)
+    
+    #h0 <- theta_sample[1];  g <- theta_sample[2]
+    #theta[1] <- g
+    #theta[2] <- h0
+    
+    #if(g_init){
+    #  g <- init[1]
+    #}else{g <- theta_sample[2]}
+    
+    #if(h0_init){
+    #  h0 <- init[2]
+    #}else{h0 <- theta_sample[1]}
+    
     zeta_1_indices <- which(zeta == 1)
     zeta_2_indices <- which(zeta == 2)
     
-    # X <- cbind(1, -0.5 * (t * t_range)^2)
     X <- cbind(1, -0.5 * (t * t_range + t_min)^2)
     x1 <- X[zeta_1_indices, , drop = FALSE]
     x2 <- X[zeta_2_indices, , drop = FALSE]
@@ -120,26 +152,64 @@ mcmc_step6 <- function(y, t, n_iter, init, sigma_proposals,
     y2 <- matrix(y[zeta_2_indices], ncol = 1)
     d2 <- matrix(delta[zeta_2_indices], ncol = 1)
     
-    A <- (t(x1) %*% x1 + t(x2) %*% x2) / sigma_sq_err
-    B <- (t(x1) %*% y1 + t(x2) %*% y2 - t(x2) %*% d2) / sigma_sq_err
-    
-    Sigmapost_theta <- solve(A)
-    Mupost_theta    <- Sigmapost_theta %*% B
-    
-    theta_sample <- rmvnorm(1, mean = Mupost_theta,
-                            sigma = Sigmapost_theta)
-    
-    h0 <- theta_sample[1];  g <- theta_sample[2]
-    theta[1] <- g
-    theta[2] <- h0
-    
-    if(g_init){
-      g <- init[1]
-    }else{g <- theta_sample[2]}
-    
-    if(h0_init){
+    if (g_init && !h0_init) {
+      # CASE: g fixed at init[1], sample h0 alone from its conditional
+      g_fixed <- init[1]
+      # adjust y by subtracting the fixed g term
+      y1_adj <- y1 - x1[, 2, drop = FALSE] * g_fixed
+      y2_adj <- y2 - d2 - x2[, 2, drop = FALSE] * g_fixed
+      # x_intercept columns
+      x1_int <- x1[, 1, drop = FALSE]   # all ones
+      x2_int <- x2[, 1, drop = FALSE]
+      
+      A_h0 <- as.numeric(t(x1_int) %*% x1_int + t(x2_int) %*% x2_int) / sigma_sq_err
+      B_h0 <- as.numeric(t(x1_int) %*% y1_adj + t(x2_int) %*% y2_adj) / sigma_sq_err
+      
+      sigma_post_h0 <- 1 / A_h0
+      mu_post_h0    <- sigma_post_h0 * B_h0
+      
+      h0 <- rnorm(1, mu_post_h0, sqrt(sigma_post_h0))
+      g  <- g_fixed
+      theta[1] <- g
+      theta[2] <- h0
+      
+    } else if (!g_init && h0_init) {
+      # CASE: h0 fixed at init[2], sample g alone from its conditional
+      h0_fixed <- init[2]
+      y1_adj <- y1 - x1[, 1, drop = FALSE] * h0_fixed
+      y2_adj <- y2 - d2 - x2[, 1, drop = FALSE] * h0_fixed
+      x1_slope <- x1[, 2, drop = FALSE]
+      x2_slope <- x2[, 2, drop = FALSE]
+      
+      A_g <- as.numeric(t(x1_slope) %*% x1_slope + t(x2_slope) %*% x2_slope) / sigma_sq_err
+      B_g <- as.numeric(t(x1_slope) %*% y1_adj + t(x2_slope) %*% y2_adj) / sigma_sq_err
+      
+      sigma_post_g <- 1 / A_g
+      mu_post_g    <- sigma_post_g * B_g
+      
+      g  <- rnorm(1, mu_post_g, sqrt(sigma_post_g))
+      h0 <- h0_fixed
+      theta[1] <- g
+      theta[2] <- h0
+      
+    } else if (!g_init && !h0_init) {
+      # CASE: both free — current bivariate Gibbs sampling
+      A <- (t(x1) %*% x1 + t(x2) %*% x2) / sigma_sq_err
+      B <- (t(x1) %*% y1 + t(x2) %*% y2 - t(x2) %*% d2) / sigma_sq_err
+      Sigmapost_theta <- solve(A)
+      Mupost_theta    <- Sigmapost_theta %*% B
+      theta_sample <- rmvnorm(1, mean = Mupost_theta, sigma = Sigmapost_theta)
+      h0 <- theta_sample[1]; g <- theta_sample[2]
+      theta[1] <- g
+      theta[2] <- h0
+      
+    } else {
+      # CASE: both fixed
+      g  <- init[1]
       h0 <- init[2]
-    }else{h0 <- theta_sample[1]}
+      theta[1] <- g
+      theta[2] <- h0
+    }
 
 
     #-------------------------------- Gibbs step for sigma_sq_err(lambda^2) --------------------------------#   

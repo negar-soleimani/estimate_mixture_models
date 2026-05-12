@@ -1252,6 +1252,15 @@ alpha <- theta_mat[, 4]
 psi   <- theta_mat[, 5]
 k     <- theta_mat[, 6]
 
+## ---------- Trace plots ----------
+par(mfrow = c(2, 3), mar = c(3,3,2,1))
+plot(g, type="l", main="trace: g", xlab="iter", ylab="g"); abline(h=9.8, lty=2)
+plot(h0, type="l", main="trace: h0", xlab="iter", ylab="h0")
+plot(sigma, type="l", main=expression("trace: " * lambda^2), xlab="iter", ylab=expression(lambda^2))
+plot(alpha, type="l", main=expression("trace: " * alpha), xlab="iter", ylab=expression(alpha))
+plot(psi, type="l", main=expression("trace: " * psi[delta]), xlab="iter", ylab=expression(psi[delta]))
+plot(k, type="l", main="trace: k", xlab="iter", ylab="k")
+
 n_iter_post <- nrow(theta_mat)
 
 df_alpha <- data.frame(alpha = alpha)
