@@ -8,6 +8,7 @@ mcmc_step6 <- function(y, t, n_iter, init, sigma_proposals,
   n <- length(y)
   theta <- init
   delta <- rep(0, length(y))
+  
   chain_theta <- matrix(NA, nrow = total_iter, ncol = length(init))
   colnames(chain_theta) <- c("g", "h0", "sigma_sq_err", "alpha", "psi_delta", "k")
   chain_delta <- matrix(NA, nrow = total_iter, ncol = length(y))
@@ -29,6 +30,7 @@ mcmc_step6 <- function(y, t, n_iter, init, sigma_proposals,
     sigma_sq_delta <- sigma_sq_err / k
     
     Sigma_delta <- GP_covariance(t, sigma_sq_delta, psi_delta)
+    
     f_theta <- balldropg(t, c(g, h0))
     mean1 <- f_theta
     mean2 <- f_theta + delta
@@ -365,7 +367,9 @@ mcmc_step6 <- function(y, t, n_iter, init, sigma_proposals,
       #log_prior_prop    <- dbeta(psi_prop,  shape1 = 7, shape2 = 13, log = TRUE)
       log_like_current <- tryCatch(dmvnorm(delta, rep(0, n), Sigma_delta, log = TRUE), error = function(e) -Inf)
       log_like_prop <- tryCatch(dmvnorm(delta, rep(0, n), Sigma_delta_prop, log = TRUE), error = function(e) -Inf)
+      
       log_ratio <- (log_like_prop + log_prior_prop) - (log_like_current + log_prior_current) + (log_prop_current - log_prop_prop)
+      
       if (!is.na(log_ratio) && log(runif(1)) < log_ratio) {
         psi_delta <- psi_prop
         #theta[5] <- psi_delta

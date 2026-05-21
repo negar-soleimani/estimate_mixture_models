@@ -23,7 +23,16 @@ sigma_sq_err_sh2 <- result_m0_sh2_classic_classic[[3]]
 alpha_sh2 <- result_m0_sh2_classic_classic[[4]]
 psi_delta_sh2 <- result_m0_sh2_classic_classic[[5]]
 k_sh2 <- result_m0_sh2_classic_classic[[6]]
+delta_sh2 <- result_m0_sh2_classic_classic[[8]]
 
+par(mfrow = c(2, 4))
+plot(g_sh2, type = "l")
+plot(h0_sh2, type = "l")
+plot(sigma_sq_err_sh2, type = "l")
+plot(alpha_sh2, type = "l")
+plot(psi_delta_sh2, type = "l")
+plot(k_sh2, type = "l")
+boxplot(delta_sh2)
 # ----- (Top Left) Boxplots of the 50 posterior means of theta and lambda2 ------ #
 
 par(
@@ -35,7 +44,7 @@ par(
 )
 
 boxplot(
-  colMeans(g_sh2),
+  g_sh2,
   ylab = "g",
   col  = "lightseagreen",
   main = ""
@@ -43,7 +52,7 @@ boxplot(
 abline(h = 9.8, lty = 2)
 
 boxplot(
-  colMeans(h0_sh2),
+  h0_sh2,
   ylab = "h0",
   col  = "lightseagreen",
   main = ""
@@ -51,12 +60,33 @@ boxplot(
 abline(h = 46.45045, lty = 2)
 
 boxplot(
-  colMeans(sigma_sq_err_sh2),
+  sigma_sq_err_sh2,
   ylab = expression(lambda^2),
   col  = "lightseagreen",
   main = ""
 )
 abline(h = 0.01, lty = 2)
+
+boxplot(
+  alpha_sh2,
+  ylab = expression(alpha),
+  col  = "lightseagreen",
+  main = ""
+)
+
+boxplot(
+  psi_delta_sh2,
+  ylab = expression(psi),
+  col  = "lightseagreen",
+  main = ""
+)
+
+boxplot(
+  k_sh2,
+  ylab = expression(k),
+  col  = "lightseagreen",
+  main = ""
+)
 
 # ----- (Top Right) Pooled posterior densities of alpha ------ #
 
