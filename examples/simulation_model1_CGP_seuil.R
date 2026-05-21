@@ -49,7 +49,7 @@ make_envelope <- function(n, ndis, type = c("step","ramp")) {
 
 w <- make_envelope(n, ndis, envelope_type)
 
-n_samples <- 50
+n_samples <- 1
 n_iter <- 10000
 burn_in <- 2000
 sigma_props <- c(NA, NA, NA, NA, 0.5, NA)
@@ -140,10 +140,10 @@ for (v in 1:n_samples) {
     y = y_1, t = t, n_iter = n_iter, init = init, sigma_proposals = sigma_props,
     g_init = FALSE,
     h0_init = FALSE,
-    sig2er_init = FALSE,
-    alpha_init = FALSE,
-    psi_init = FALSE,
-    k_init = FALSE,
+    sig2er_init = TRUE,
+    alpha_init = TRUE,
+    psi_init = TRUE,
+    k_init = TRUE,
     Sigma_theta = matrix(c(0.5, 0, 0, 0.5), 2),
     n_burnin = burn_in,
     seuil = FALSE,
