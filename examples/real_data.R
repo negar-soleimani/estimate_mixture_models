@@ -231,6 +231,28 @@
 
 
 source("data/prepare_data.R")
+rm(list = ls())
+library(truncnorm)
+library(readxl)
+library(ggplot2)
+library(tidyr)
+library(MASS)
+library(mvtnorm)
+library(invgamma)
+
+don <- read_xlsx("/Users/negar/Documents/phd/estimate_mixture_models-main/data/Ball_drops_data.xlsx", sheet = 2)
+names(don) <- c("drop", "time", "Height", "Velocity")
+don$drop <- as.factor(don$drop)
+don <- don[don$drop == 1, ]
+
+t <- don$time
+y <- don$Height
+length(t)
+t_min <- min(t)
+t_range <- max(t) - min(t)
+t <- (t - t_min) / t_range
+n <- length(y)
+a <- t_range
 source("scripts/physics_model.R")
 source("scripts/helper_function_CGP.R")
 source("scripts/main_function_seuil_CGP.R")
@@ -246,7 +268,7 @@ init <- c(9.8, 46.45, 0.01, 0.5, 0.5, 0.1)
 res <- mcmc_step6(
   y = y, t = t, n_iter = n_iter, init = init, sigma_proposals = sigma_props,
   g_init = TRUE, 
-  h0_init = FALSE,
+  h0_init = TRUE,
   sig2er_init = FALSE,
   alpha_init = FALSE,
   psi_init = FALSE,
@@ -256,4 +278,5 @@ res <- mcmc_step6(
   seuil = FALSE,  
   s = 0.3       
 )
+
 
