@@ -41,7 +41,7 @@ Sigma_theta <- matrix(c(0.5,0,0,0.5), nrow = 2)
 # c(g, h0, sig2err, alpha, psidelta, k)
 init <- c(9.8, 46.45, 0.01, 0.5, 0.5, 0.1)
 sigma_proposals <- c(NA, NA, NA, NA, 0.5, NA)
-n_samples       <- 50
+n_samples       <- 1
 burn_in         <- 2000
 n_iter          <- 10000
 # FALSE= fixed parameter
@@ -64,9 +64,10 @@ for (v in 1:n_samples) {
   y_1 = balldropg(t,c(9.8, 46.45)) + rnorm(n, 0, sqrt(0.01))
   y_obs[,v] <- y_1
   
-  #results <- mcmc_step6(y_1, t, n_iter, init, sigma_proposals, g_init=FALSE, h0_init= FALSE, sig2er_init = FALSE,
-  #                      alpha_init = FALSE, psi_init = FALSE, k_init = FALSE, Sigma_theta, n_burnin = burn_in, a_psi, b_psi, seuil = FALSE, s = 0.3)
-  results <- mcmc_step6(y_1, t, n_iter, init, sigma_proposals, mcmc_parameters, Sigma_theta, n_burnin=2000)
+  results <- mcmc_step6(y_1, t, n_iter, init, sigma_proposals,
+                        g_init=FALSE, h0_init= FALSE, sig2er_init = FALSE,
+                        alpha_init = FALSE, psi_init = FALSE, k_init = FALSE, Sigma_theta, n_burnin=1000, seuil = TRUE, s = 0.3)
+  #results <- mcmc_step6(y_1, t, n_iter, init, sigma_proposals, mcmc_parameters, Sigma_theta, n_burnin=2000)
   g[,v] = results$theta[,1]
   h0[,v]=results$theta[,2]
   sigma_sq_err[,v]=results$theta[,3]

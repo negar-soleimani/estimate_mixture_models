@@ -5,7 +5,7 @@ mcmc_step6 <- function(y, t, n_iter, init, sigma_proposals, mcmc_parameters, Sig
   
   # Total iterations = burn-in + desired samples
   total_iter <- n_burnin + n_iter
-  
+  n <- length(y)
   theta <- init
   delta <- rep(0, length(y))
   
@@ -16,6 +16,11 @@ mcmc_step6 <- function(y, t, n_iter, init, sigma_proposals, mcmc_parameters, Sig
   
   loglik_chain <- numeric(total_iter)
   accept_psi <- 0
+  
+  safe_solve <- function(M, jitter = 1e-8) {
+    M <- 0.5 * (M + t(M))
+    solve(M + jitter * diag(nrow(M)))
+  }
   
   for (iter in 1:total_iter) {
     g <- theta[1]; h0 <- theta[2]; sigma_sq_err <- theta[3]
