@@ -1,14 +1,21 @@
-
+library(coda)
 mcmc_step6 <- function(y, t, n_iter, init, sigma_proposals,
                        g_init=TRUE, h0_init= TRUE, sig2er_init = TRUE,
-                       alpha_init = TRUE, psi_init = TRUE, k_init = TRUE, Sigma_theta, n_burnin=1000, seuil = FALSE, s = 0.3) {
+                       alpha_init = TRUE, psi_init = TRUE, k_init = TRUE, Sigma_theta, n_burnin=1000, seuil = FALSE, s = 0.3, continue_chain = TRUE,
+                       last_delta = current_delta) {
   
   # Total iterations = burn-in + desired samples
   total_iter <- n_burnin + n_iter
   n <- length(y)
+  #theta <- init
+  #delta <- rep(0, length(y))
   theta <- init
-  delta <- rep(0, length(y))
   
+  if (continue_chain && !is.null(last_delta)) {
+    delta <- last_delta
+  } else {
+    delta <- rep(0, length(y))
+  }
   chain_theta <- matrix(NA, nrow = total_iter, ncol = length(init))
   colnames(chain_theta) <- c("g", "h0", "sigma_sq_err", "alpha", "psi_delta", "k")
   chain_delta <- matrix(NA, nrow = total_iter, ncol = length(y))
