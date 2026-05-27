@@ -1,8 +1,8 @@
 library(coda)
 mcmc_step6 <- function(y, t, n_iter, init, sigma_proposals,
                        g_init=TRUE, h0_init= TRUE, sig2er_init = TRUE,
-                       alpha_init = TRUE, psi_init = TRUE, k_init = TRUE, Sigma_theta, n_burnin=1000, seuil = FALSE, s = 0.3, continue_chain = TRUE,
-                       last_delta = current_delta) {
+                       alpha_init = TRUE, psi_init = TRUE, k_init = TRUE, Sigma_theta, n_burnin=1000, seuil = FALSE, s = 0.3, continue_chain = FALSE,
+                       last_delta = NULL) {
   
   # Total iterations = burn-in + desired samples
   total_iter <- n_burnin + n_iter
@@ -10,12 +10,20 @@ mcmc_step6 <- function(y, t, n_iter, init, sigma_proposals,
   #theta <- init
   #delta <- rep(0, length(y))
   theta <- init
+  names(theta) <- c("g", "h0", "sigma_sq_err", "alpha", "psi_delta", "k")
   
-  if (continue_chain && !is.null(last_delta)) {
-    delta <- last_delta
+  if (continue_chain) {
+    if (is.null(last_delta)) {
+      stop("continue_chain = TRUE but last_delta is NULL.")
+    }
+    if (length(last_delta) != n) {
+      stop("last_delta has wrong length.")
+    }
+    delta <- as.numeric(last_delta)
   } else {
-    delta <- rep(0, length(y))
+    delta <- rep(0, n)
   }
+
   chain_theta <- matrix(NA, nrow = total_iter, ncol = length(init))
   colnames(chain_theta) <- c("g", "h0", "sigma_sq_err", "alpha", "psi_delta", "k")
   chain_delta <- matrix(NA, nrow = total_iter, ncol = length(y))
