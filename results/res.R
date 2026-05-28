@@ -25,13 +25,70 @@ psi_delta_sh2 <- result_m0_sh2_classic_classic[[5]]
 k_sh2 <- result_m0_sh2_classic_classic[[6]]
 delta_sh2 <- result_m0_sh2_classic_classic[[8]]
 
+# -----------------------------
+# Trace plots for all samples
+# Save all plots into one PDF
+# -----------------------------
+
+pdf("traceplots_sigma_sq_err_500.pdf", width = 10, height = 6)
+
+for (i in 1:n_samples) {
+  
+  plot(
+    sigma_sq_err_sh2[, i],
+    type = "l",
+    main = paste("Trace plot - sigma_sq_err - Sample", i),
+    xlab = "Iteration",
+    ylab = expression(lambda^2)
+  )
+  abline(h = 0.01, lty = 2, col = "red")
+  
+}
+
+dev.off()
+
+
+pdf("h0_500.pdf", width = 10, height = 6)
+
+for (i in 1:n_samples) {
+  
+  plot(
+    h0[, i],
+    type = "l",
+    main = paste("Trace plot - h0 - Sample", i),
+    xlab = "Iteration",
+    ylab = expression(h_0)
+  )
+  abline(h = 46.45045, lty = 2, col = "red")
+  
+}
+
+dev.off()
+
+pdf("g_500.pdf", width = 10, height = 6)
+
+for (i in 1:n_samples) {
+  
+  plot(
+    g[, i],
+    type = "l",
+    main = paste("Trace plot - g - Sample", i),
+    xlab = "Iteration",
+    ylab = expression(g)
+  )
+  abline(h = 9.8, lty = 2, col = "red")
+  
+}
+
+dev.off()
+
 par(mfrow = c(2, 4))
-plot(colMeans(g_sh2), type = "l")
-plot(colMeans(h0_sh2), type = "l")
-plot(colMeans(sigma_sq_err_sh2), type = "l")
-plot(colMeans(alpha_sh2), type = "l")
-plot(colMeans(psi_delta_sh2), type = "l")
-plot(colMeans(k_sh2), type = "l")
+plot(g_sh2[, 1], type = "l")
+plot(h0_sh2[, 1], type = "l")
+plot(sigma_sq_err_sh2[, 1], type = "l")
+plot(alpha_sh2[, 1], type = "l")
+plot(psi_delta_sh2[, 1], type = "l")
+plot(k_sh2[, 1], type = "l")
 boxplot(delta_sh2)
 # ----- (Top Left) Boxplots of the 50 posterior means of theta and lambda2 ------ #
 
@@ -68,21 +125,21 @@ boxplot(
 abline(h = 0.01, lty = 2)
 
 boxplot(
-  colMeans(alpha_sh2),
+  alpha_sh2,
   ylab = expression(alpha),
   col  = "lightseagreen",
   main = ""
 )
 
 boxplot(
-  colMeans(psi_delta_sh2),
+  psi_delta_sh2,
   ylab = expression(psi),
   col  = "lightseagreen",
   main = ""
 )
 
 boxplot(
-  colMeans(k_sh2),
+  k_sh2,
   ylab = expression(k),
   col  = "lightseagreen",
   main = ""
@@ -150,8 +207,6 @@ axis(
   cex.axis = 0.7
 )
 
-abline(h = 0, lty = 2)
-
 # =========================================================
 # Figure S.1, (supplementarymaterial.tex), page 10
 # Posterior predictive vs simulated data (classical GP)
@@ -189,7 +244,7 @@ boxplot(y_pred1[, 1:5], col = "orange2",
         xlab = "Time", ylab = "Height")
 lines(y_true, lwd = 2, col = "blue")
 points(y_obs30, col = "gold", pch=20, cex = 3)
-legend(x=4.2, y=46.55, legend=c("Simulated data", "Predictions",
+legend(x=4.2, y=47, legend=c("Simulated data", "Predictions",
                              "True code"), lwd=rep(2,2), col=c("gold", "orange2","blue"), 
        cex=1, pch=c(19,NA,NA), lty=c(0,1,1))
 
@@ -421,8 +476,7 @@ p_g_95 <- ggplot(df_ci_g,
     color = "coverage",
     title = "95% credible intervals for g across 50 datasets"
   ) +
-  theme_minimal()+
-  theme(legend.position = "none")
+  theme_minimal()
 
 p_g_95
 
@@ -453,8 +507,7 @@ p_h0_95 <- ggplot(df_ci_h0,
     color = "coverage",
     title = "95% credible intervals for h0 across 50 datasets"
   ) +
-  theme_minimal()+
-  theme(legend.position = "none")
+  theme_minimal()
 
 p_h0_95
 
