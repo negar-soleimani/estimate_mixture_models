@@ -1,4 +1,8 @@
 # simulation: orthogonal_GP
+<<<<<<< HEAD
+=======
+#####
+>>>>>>> 8450abc4c47461f1601519d1d05674d6497dd7ed
 set.seed(12345)
 Sigma_theta <- matrix(c(0.5,0,0,0.5), nrow = 2)
 # c(g, h0, sig2err, alpha, psidelta, k)

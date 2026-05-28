@@ -5,9 +5,16 @@ mcmc_step6 <- function(y, t, n_iter, init, sigma_proposals, mcmc_parameters, Sig
   
   # Total iterations = burn-in + desired samples
   total_iter <- n_burnin + n_iter
+<<<<<<< HEAD
   
   theta <- init
   delta <- rep(0, length(y))
+=======
+  n <- length(y)
+  theta <- init
+  delta <- rep(0, length(y))
+  
+>>>>>>> 8450abc4c47461f1601519d1d05674d6497dd7ed
   chain_theta <- matrix(NA, nrow = total_iter, ncol = length(init))
   colnames(chain_theta) <- c("g", "h0", "sigma_sq_err", "alpha", "psi_delta", "k")
   chain_delta <- matrix(NA, nrow = total_iter, ncol = length(y))
@@ -16,12 +23,24 @@ mcmc_step6 <- function(y, t, n_iter, init, sigma_proposals, mcmc_parameters, Sig
   loglik_chain <- numeric(total_iter)
   accept_psi <- 0
   
+<<<<<<< HEAD
+=======
+  safe_solve <- function(M, jitter = 1e-8) {
+    M <- 0.5 * (M + t(M))
+    solve(M + jitter * diag(nrow(M)))
+  }
+  
+>>>>>>> 8450abc4c47461f1601519d1d05674d6497dd7ed
   for (iter in 1:total_iter) {
     g <- theta[1]; h0 <- theta[2]; sigma_sq_err <- theta[3]
     alpha_param <- theta[4]; psi_delta <- theta[5]; k <- theta[6]
     sigma_sq_delta <- sigma_sq_err / k
     
     Sigma_delta <- GP_covariance(t, sigma_sq_delta, psi_delta)
+<<<<<<< HEAD
+=======
+    
+>>>>>>> 8450abc4c47461f1601519d1d05674d6497dd7ed
     f_theta <- balldropg(t, c(g, h0))
     mean1 <- f_theta
     mean2 <- f_theta + delta
@@ -195,7 +214,11 @@ mcmc_step6 <- function(y, t, n_iter, init, sigma_proposals, mcmc_parameters, Sig
       rate_err <- (0.5 * ( rss1 + rss2 + (k * quad_form_delta)))
       shape_err <- n + (d/2)
     }
+<<<<<<< HEAD
     sigma_sq_err <- 1/rgamma(1, shape = shape_err, rate = rate_err)
+=======
+    sigma_sq_err <- rinvgamma(1, shape = shape_err, rate = rate_err)
+>>>>>>> 8450abc4c47461f1601519d1d05674d6497dd7ed
     theta[3] <- sigma_sq_err
     
     if(mcmc_parameters[2] == FALSE){
@@ -216,7 +239,13 @@ mcmc_step6 <- function(y, t, n_iter, init, sigma_proposals, mcmc_parameters, Sig
     log_prior_prop    <- dunif(psi_prop,  min = 0.1, max = 1, log = TRUE)
     log_like_current <- tryCatch(dmvnorm(delta, rep(0, n), Sigma_delta, log = TRUE), error = function(e) -Inf)
     log_like_prop <- tryCatch(dmvnorm(delta, rep(0, n), Sigma_delta_prop, log = TRUE), error = function(e) -Inf)
+<<<<<<< HEAD
     log_ratio <- (log_like_prop + log_prior_prop) - (log_like_current + log_prior_current) + (log_prop_current - log_prop_prop)
+=======
+    
+    log_ratio <- (log_like_prop + log_prior_prop) - (log_like_current + log_prior_current) + (log_prop_current - log_prop_prop)
+    
+>>>>>>> 8450abc4c47461f1601519d1d05674d6497dd7ed
     if (!is.na(log_ratio) && log(runif(1)) < log_ratio) {
       psi_delta <- psi_prop
       theta[5] <- psi_delta
@@ -247,11 +276,37 @@ mcmc_step6 <- function(y, t, n_iter, init, sigma_proposals, mcmc_parameters, Sig
     
     #-------------------------------- Gibbs step for k --------------------------------#   
     #-------------------------------- Page 24-part 8.3 --------------------------------#     
+<<<<<<< HEAD
     
     alpha_k <- (n / 2) + 1
     beta_k <- (1 / (2 * sigma_sq_err)) * quad_form_delta
     # alpha_k <- (n / 2) + 1
     # beta_k <- (1 / (2 * sigma_sq_err)) * quad_form_delta
+=======
+    R <- outer(t, t, function(ti, tj) exp(-abs(ti - tj) / psi_delta))
+    if(n > 0){
+      R_inv <- tryCatch(solve(R), error = function(e) diag(1, n))
+      
+      quad_form_delta <- as.numeric(t(delta) %*% R_inv %*% delta)
+    } 
+    else {
+      quad_form_delta <- 0
+    }
+    alpha_k <- (n / 2) + 1
+    beta_k <- (1 / (2 * sigma_sq_err)) * quad_form_delta
+
+    ## Inverse-CDF sampling from Gamma(alpha_k, beta_k) truncated to (0, 1).
+    ## Equivalent to the rejection-sampling loop, but exact in one call.
+    #F_hi <- pgamma(1, shape = alpha_k, rate = beta_k)
+    #if (F_hi > 1e-12) {
+    #  u <- runif(1, 0, F_hi)
+    #  k <- qgamma(u, shape = alpha_k, rate = beta_k)
+    #  theta[6] <- k
+    #}
+    ## If F_hi is numerically zero (truncated-Gamma mass on (0,1) ~ 0),
+    ## k keeps its previous value — same behavior as the rejection loop.
+    
+>>>>>>> 8450abc4c47461f1601519d1d05674d6497dd7ed
     for (try_k in 1:100) {
       k_prop <- rgamma(1, shape = alpha_k, rate = beta_k)
       #if (k_prop >= 0.1 && k_prop <= 0.9) {
