@@ -2,7 +2,7 @@ rm(list = ls())
 source("data/prepare_data.R")
 source("scripts/physics_model.R")
 source("scripts/helper_function_CGP.R")
-source("scripts/main_function_CGP.R")
+source("scripts/main_function_seuil_CGP.R")
 
 # Simulation the data of model 2 with different psi_delta
 # ## Psi1 ####################################################
@@ -16,10 +16,10 @@ n_samples <- 50
 n_iter <- 10000
 burn_in <- 2000
 # 
-sigma_props <- c(NA, NA, NA, NA, 0.5, NA)
+sigma_proposals <- c(NA, NA, NA, NA, 0.5, NA)
 #(g,h0), sigma, psi, k, alpha
 # mcmc parameter (g,h), sig2err, psidelta, k, alpha, freeze delta-zeta
-mcmc_parameters <- c(TRUE, TRUE, TRUE, TRUE, TRUE, FALSE)
+#mcmc_parameters <- c(TRUE, TRUE, TRUE, TRUE, TRUE, FALSE)
 Sigma_theta <- matrix(c(0.5, 0, 0, 0.5), nrow = 2)
 # c(g, h0, sig2err, alpha, psidelta, k)
 init <- c(9.8, 46.46, 0.01, 0.5, 0.5, 0.1)
@@ -42,8 +42,10 @@ for (v in 1:n_samples) {
   delta <- as.vector(rmvnorm(1, rep(0, n), Sigma_delta))
   y_1 <- balldropg(t, c(9.8, 46.46)) + rnorm(n, 0, sqrt(sigma_sq_err))  + delta
   y_obs[, v] <- y_1
-  res <- mcmc_step6(y_1, t, n_iter, init, sigma_props, mcmc_parameters,
-                    Sigma_theta, n_burnin = burn_in)
+  #res <- mcmc_step6(y_1, t, n_iter, init, sigma_proposals, mcmc_parameters, Sigma_theta, n_burnin = burn_in)
+  res <- mcmc_step6(y_1, t, n_iter, init, sigma_proposals,
+                        g_init=FALSE, h0_init= FALSE, sig2er_init = FALSE,
+                        alpha_init = FALSE, psi_init = FALSE, k_init = FALSE, Sigma_theta, n_burnin=1000, seuil = TRUE, s = 0.3)
   
   g_chain[, v]     <- res$theta[, 1]
   h0_chain[, v]    <- res$theta[, 2]
@@ -71,9 +73,9 @@ n_samples <- 50
 n_iter <- 10000
 burn_in <- 2000
 
-sigma_props <- c(NA, NA, NA, NA, 0.5, NA) 
+sigma_proposals <- c(NA, NA, NA, NA, 0.5, NA) 
 #(g,h0), sigma, psi, k, alpha
-mcmc_parameters <- c(TRUE, TRUE, TRUE, TRUE, TRUE, FALSE)
+#mcmc_parameters <- c(TRUE, TRUE, TRUE, TRUE, TRUE, FALSE)
 Sigma_theta <- matrix(c(0.5, 0, 0, 0.5), nrow = 2)
 # c(g, h0, sig2err, alpha, psidelta, k)
 init <- c(9.8, 46.46, 0.01, 0.5, 0.5, 0.1)
@@ -96,8 +98,10 @@ for (v in 1:n_samples) {
   y_1 <- balldropg(t, c(9.8, 46.46)) + rnorm(n, 0, sqrt(sigma_sq_err))  + delta
   y_obs[, v] <- y_1
   
-  res <- mcmc_step6(y_1, t, n_iter, init, sigma_props, mcmc_parameters,
-                    Sigma_theta, n_burnin = burn_in)
+  #res <- mcmc_step6(y_1, t, n_iter, init, sigma_proposals, mcmc_parameters, Sigma_theta, n_burnin = burn_in)
+  res <- mcmc_step6(y_1, t, n_iter, init, sigma_proposals,
+                    g_init=FALSE, h0_init= FALSE, sig2er_init = FALSE,
+                    alpha_init = FALSE, psi_init = FALSE, k_init = FALSE, Sigma_theta, n_burnin=1000, seuil = TRUE, s = 0.3)
   
   g_chain[, v]     <- res$theta[, 1]
   h0_chain[, v]    <- res$theta[, 2]
@@ -125,9 +129,9 @@ n_samples <- 50
 n_iter <- 10000
 burn_in <- 2000
 
-sigma_props <- c(NA, NA, NA, NA, 0.5, NA) 
+sigma_proposals <- c(NA, NA, NA, NA, 0.5, NA) 
 #(g,h0), sigma, psi, k, alpha
-mcmc_parameters <- c(TRUE, TRUE, TRUE, TRUE, TRUE, FALSE)
+#mcmc_parameters <- c(TRUE, TRUE, TRUE, TRUE, TRUE, FALSE)
 Sigma_theta <- matrix(c(0.5, 0, 0, 0.5), nrow = 2)
 # c(g, h0, sig2err, alpha, psidelta, k)
 init <- c(9.8, 46.46, 0.01, 0.5, 0.5, 0.1)
@@ -150,8 +154,10 @@ for (v in 1:n_samples) {
   delta <- as.vector(rmvnorm(1, rep(0, n), Sigma_delta))
   y_1 <- balldropg(t, c(9.8, 46.46)) + rnorm(n, 0, sqrt(sigma_sq_err)) + delta
   y_obs[, v] <- y_1
-  res <- mcmc_step6(y_1, t, n_iter, init, sigma_props, mcmc_parameters,
-                    Sigma_theta, n_burnin = burn_in)
+  #res <- mcmc_step6(y_1, t, n_iter, init, sigma_proposals, mcmc_parameters, Sigma_theta, n_burnin = burn_in)
+  res <- mcmc_step6(y_1, t, n_iter, init, sigma_proposals,
+                    g_init=FALSE, h0_init= FALSE, sig2er_init = FALSE,
+                    alpha_init = FALSE, psi_init = FALSE, k_init = FALSE, Sigma_theta, n_burnin=1000, seuil = TRUE, s = 0.3)
   
   g_chain[, v]     <- res$theta[, 1]
   h0_chain[, v]    <- res$theta[, 2]
@@ -180,9 +186,9 @@ n_samples <- 50
 n_iter <- 10000
 burn_in <- 2000
 
-sigma_props <- c(NA, NA, NA, NA, 0.5, NA) 
+sigma_proposals <- c(NA, NA, NA, NA, 0.5, NA) 
 #(g,h0), sigma, psi, k, alpha
-mcmc_parameters <- c(TRUE, TRUE, TRUE, TRUE, TRUE, FALSE)
+#mcmc_parameters <- c(TRUE, TRUE, TRUE, TRUE, TRUE, FALSE)
 Sigma_theta <- matrix(c(0.5, 0, 0, 0.5), nrow = 2)
 # c(g, h0, sig2err, alpha, psidelta, k)
 init <- c(9.8, 46.46, 0.01, 0.5, 0.5, 0.1)
@@ -205,8 +211,10 @@ for (v in 1:n_samples) {
   delta <- as.vector(rmvnorm(1, rep(0, n), Sigma_delta))
   y_1 <- balldropg(t, c(9.8, 46.46)) + rnorm(n, 0, sqrt(sigma_sq_err))  + delta
   y_obs[, v] <- y_1
-  res <- mcmc_step6(y_1, t, n_iter, init, sigma_props, mcmc_parameters,
-                    Sigma_theta, n_burnin = burn_in)
+  #res <- mcmc_step6(y_1, t, n_iter, init, sigma_proposals, mcmc_parameters, Sigma_theta, n_burnin = burn_in)
+  res <- mcmc_step6(y_1, t, n_iter, init, sigma_proposals,
+                    g_init=FALSE, h0_init= FALSE, sig2er_init = FALSE,
+                    alpha_init = FALSE, psi_init = FALSE, k_init = FALSE, Sigma_theta, n_burnin=1000, seuil = TRUE, s = 0.3)
   
   g_chain[, v]     <- res$theta[, 1]
   h0_chain[, v]    <- res$theta[, 2]
@@ -235,9 +243,9 @@ n_samples <- 50
 n_iter <- 10000
 burn_in <- 2000
 
-sigma_props <- c(NA, NA, NA, NA, 0.5, NA) 
+sigma_proposals <- c(NA, NA, NA, NA, 0.5, NA) 
 #(g,h0), sigma, psi, k, alpha
-mcmc_parameters <- c(TRUE, TRUE, TRUE, TRUE, TRUE, FALSE)
+#mcmc_parameters <- c(TRUE, TRUE, TRUE, TRUE, TRUE, FALSE)
 Sigma_theta <- matrix(c(0.5, 0, 0, 0.5), nrow = 2)
 # c(g, h0, sig2err, alpha, psidelta, k)
 init <- c(9.8, 46.46, 0.01, 0.5, 0.5, 0.1)
@@ -261,8 +269,10 @@ for (v in 1:n_samples) {
   y_1 <- balldropg(t, c(9.8, 46.46)) + rnorm(n, 0, sqrt(sigma_sq_err))  + delta
   y_obs[, v] <- y_1
   
-  res <- mcmc_step6(y_1, t, n_iter, init, sigma_props, mcmc_parameters,
-                    Sigma_theta, n_burnin = burn_in)
+  #res <- mcmc_step6(y_1, t, n_iter, init, sigma_proposals, mcmc_parameters, Sigma_theta, n_burnin = burn_in)
+  res <- mcmc_step6(y_1, t, n_iter, init, sigma_proposals,
+                    g_init=FALSE, h0_init= FALSE, sig2er_init = FALSE,
+                    alpha_init = FALSE, psi_init = FALSE, k_init = FALSE, Sigma_theta, n_burnin=1000, seuil = TRUE, s = 0.3)
   
   g_chain[, v]     <- res$theta[, 1]
   h0_chain[, v]    <- res$theta[, 2]
@@ -291,9 +301,9 @@ n_samples <- 50
 n_iter <- 10000
 burn_in <- 2000
 
-sigma_props <- c(NA, NA, NA, NA, 0.5, NA) 
+sigma_proposals <- c(NA, NA, NA, NA, 0.5, NA) 
 #(g,h0), sigma, psi, k, alpha
-mcmc_parameters <- c(TRUE, TRUE, TRUE, TRUE, TRUE, FALSE)
+#mcmc_parameters <- c(TRUE, TRUE, TRUE, TRUE, TRUE, FALSE)
 Sigma_theta <- matrix(c(0.5, 0, 0, 0.5), nrow = 2)
 # c(g, h0, sig2err, alpha, psidelta, k)
 init <- c(9.8, 46.46, 0.01, 0.5, 0.5, 0.1)
@@ -317,8 +327,10 @@ for (v in 1:n_samples) {
   y_1 <- balldropg(t, c(9.8, 46.46)) + rnorm(n, 0, sqrt(sigma_sq_err))  + delta
   y_obs[, v] <- y_1
   
-  res <- mcmc_step6(y_1, t, n_iter, init, sigma_props, mcmc_parameters,
-                    Sigma_theta, n_burnin = burn_in)
+  #res <- mcmc_step6(y_1, t, n_iter, init, sigma_proposals, mcmc_parameters, Sigma_theta, n_burnin = burn_in)
+  res <- mcmc_step6(y_1, t, n_iter, init, sigma_proposals,
+                    g_init=FALSE, h0_init= FALSE, sig2er_init = FALSE,
+                    alpha_init = FALSE, psi_init = FALSE, k_init = FALSE, Sigma_theta, n_burnin=1000, seuil = TRUE, s = 0.3)
   
   g_chain[, v]     <- res$theta[, 1]
   h0_chain[, v]    <- res$theta[, 2]
@@ -347,9 +359,9 @@ n_samples <- 50
 n_iter <- 10000
 burn_in <- 2000
 
-sigma_props <- c(NA, NA, NA, NA, 0.5, NA) 
+sigma_proposals <- c(NA, NA, NA, NA, 0.5, NA) 
 #(g,h0), sigma, psi, k, alpha
-mcmc_parameters <- c(TRUE, TRUE, TRUE, TRUE, TRUE, FALSE)
+#mcmc_parameters <- c(TRUE, TRUE, TRUE, TRUE, TRUE, FALSE)
 Sigma_theta <- matrix(c(0.5, 0, 0, 0.5), nrow = 2)
 # c(g, h0, sig2err, alpha, psidelta, k)
 init <- c(9.8, 46.46, 0.01, 0.5, 0.5, 0.1)
@@ -373,8 +385,10 @@ for (v in 1:n_samples) {
   y_1 <- balldropg(t, c(9.8, 46.46)) + rnorm(n, 0, sqrt(sigma_sq_err))  + delta
   y_obs[, v] <- y_1
   
-  res <- mcmc_step6(y_1, t, n_iter, init, sigma_props, mcmc_parameters,
-                    Sigma_theta, n_burnin = burn_in)
+  #res <- mcmc_step6(y_1, t, n_iter, init, sigma_proposals, mcmc_parameters, Sigma_theta, n_burnin = burn_in)
+  res <- mcmc_step6(y_1, t, n_iter, init, sigma_proposals,
+                    g_init=FALSE, h0_init= FALSE, sig2er_init = FALSE,
+                    alpha_init = FALSE, psi_init = FALSE, k_init = FALSE, Sigma_theta, n_burnin=1000, seuil = TRUE, s = 0.3)
   
   g_chain[, v]     <- res$theta[, 1]
   h0_chain[, v]    <- res$theta[, 2]
@@ -403,9 +417,9 @@ n_samples <- 50
 n_iter <- 10000
 burn_in <- 2000
 
-sigma_props <- c(NA, NA, NA, NA, 0.5, NA) 
+sigma_proposals <- c(NA, NA, NA, NA, 0.5, NA) 
 #(g,h0), sigma, psi, k, alpha
-mcmc_parameters <- c(TRUE, TRUE, TRUE, TRUE, TRUE, FALSE)
+#mcmc_parameters <- c(TRUE, TRUE, TRUE, TRUE, TRUE, FALSE)
 Sigma_theta <- matrix(c(0.5, 0, 0, 0.5), nrow = 2)
 # c(g, h0, sig2err, alpha, psidelta, k)
 init <- c(9.8, 46.46, 0.01, 0.5, 0.5, 0.1)
@@ -429,8 +443,10 @@ for (v in 1:n_samples) {
   y_1 <- balldropg(t, c(9.8, 46.46)) + rnorm(n, 0, sqrt(sigma_sq_err))  + delta
   y_obs[, v] <- y_1
   
-  res <- mcmc_step6(y_1, t, n_iter, init, sigma_props, mcmc_parameters,
-                    Sigma_theta, n_burnin = burn_in)
+  #res <- mcmc_step6(y_1, t, n_iter, init, sigma_proposals, mcmc_parameters, Sigma_theta, n_burnin = burn_in)
+  res <- mcmc_step6(y_1, t, n_iter, init, sigma_proposals,
+                    g_init=FALSE, h0_init= FALSE, sig2er_init = FALSE,
+                    alpha_init = FALSE, psi_init = FALSE, k_init = FALSE, Sigma_theta, n_burnin=1000, seuil = TRUE, s = 0.3)
   
   g_chain[, v]     <- res$theta[, 1]
   h0_chain[, v]    <- res$theta[, 2]
@@ -459,9 +475,9 @@ n_samples <- 50
 n_iter <- 10000
 burn_in <- 2000
 
-sigma_props <- c(NA, NA, NA, NA, 0.5, NA) 
+sigma_proposals <- c(NA, NA, NA, NA, 0.5, NA) 
 #(g,h0), sigma, psi, k, alpha
-mcmc_parameters <- c(TRUE, TRUE, TRUE, TRUE, TRUE, FALSE)
+#mcmc_parameters <- c(TRUE, TRUE, TRUE, TRUE, TRUE, FALSE)
 Sigma_theta <- matrix(c(0.5, 0, 0, 0.5), nrow = 2)
 # c(g, h0, sig2err, alpha, psidelta, k)
 init <- c(9.8, 46.46, 0.01, 0.5, 0.5, 0.1)
@@ -485,8 +501,10 @@ for (v in 1:n_samples) {
   y_1 <- balldropg(t, c(9.8, 46.46)) + rnorm(n, 0, sqrt(sigma_sq_err))  + delta
   y_obs[, v] <- y_1
   
-  res <- mcmc_step6(y_1, t, n_iter, init, sigma_props, mcmc_parameters,
-                    Sigma_theta, n_burnin = burn_in)
+  #res <- mcmc_step6(y_1, t, n_iter, init, sigma_proposals, mcmc_parameters, Sigma_theta, n_burnin = burn_in)
+  res <- mcmc_step6(y_1, t, n_iter, init, sigma_proposals,
+                    g_init=FALSE, h0_init= FALSE, sig2er_init = FALSE,
+                    alpha_init = FALSE, psi_init = FALSE, k_init = FALSE, Sigma_theta, n_burnin=1000, seuil = TRUE, s = 0.3)
   
   g_chain[, v]     <- res$theta[, 1]
   h0_chain[, v]    <- res$theta[, 2]
@@ -515,9 +533,9 @@ n_samples <- 50
 n_iter <- 10000
 burn_in <- 2000
 #
-sigma_props <- c(NA, NA, NA, NA, 0.5, NA)
+sigma_proposals <- c(NA, NA, NA, NA, 0.5, NA)
 #(g,h0), sigma, psi, k, alpha
-mcmc_parameters <- c(TRUE, TRUE, TRUE, TRUE, TRUE, FALSE)
+#mcmc_parameters <- c(TRUE, TRUE, TRUE, TRUE, TRUE, FALSE)
 Sigma_theta <- matrix(c(0.5, 0, 0, 0.5), nrow = 2)
 init <- c(9.8, 46.46, 0.01, 0.5, 0.5, 0.1)
 
@@ -540,9 +558,11 @@ for (v in 1:n_samples) {
   y_1 <- balldropg(t, c(9.8, 46.46)) + rnorm(n, 0, sqrt(sigma_sq_err)) + delta
   y_obs[, v] <- y_1
 
-  res <- mcmc_step6(y_1, t, n_iter, init, sigma_props, mcmc_parameters,
-                    Sigma_theta, n_burnin = burn_in)
-  #
+  #res <- mcmc_step6(y_1, t, n_iter, init, sigma_proposals, mcmc_parameters, Sigma_theta, n_burnin = burn_in)
+  res <- mcmc_step6(y_1, t, n_iter, init, sigma_proposals,
+                    g_init=FALSE, h0_init= FALSE, sig2er_init = FALSE,
+                    alpha_init = FALSE, psi_init = FALSE, k_init = FALSE, Sigma_theta, n_burnin=1000, seuil = TRUE, s = 0.3)
+  
   g_chain[, v]     <- res$theta[, 1]
   h0_chain[, v]    <- res$theta[, 2]
   sigma_chain[, v] <- res$theta[, 3]

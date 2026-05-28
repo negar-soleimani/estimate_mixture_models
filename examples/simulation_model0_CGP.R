@@ -66,7 +66,7 @@ for (v in 1:n_samples) {
   
   results <- mcmc_step6(y_1, t, n_iter, init, sigma_proposals,
                         g_init=FALSE, h0_init= FALSE, sig2er_init = FALSE,
-                        alpha_init = FALSE, psi_init = FALSE, k_init = FALSE, Sigma_theta, n_burnin=1000, seuil = TRUE, s = 0.3)
+                        alpha_init = FALSE, psi_init = FALSE, k_init = FALSE, Sigma_theta, n_burnin=1000, seuil = FALSE, s = 0.3)
   #results <- mcmc_step6(y_1, t, n_iter, init, sigma_proposals, mcmc_parameters, Sigma_theta, n_burnin=2000)
   g[,v] = results$theta[,1]
   h0[,v]=results$theta[,2]
