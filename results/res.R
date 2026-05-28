@@ -1,77 +1,4 @@
-<<<<<<< HEAD
-#################################################################################
-#################################################################################
-###################### Results for model 1 ######################################
-#################################################################################
-#################################################################################
-load("E:/Phd_Paris Saclay/resultat/Results_M1_Simulation/result_m1_sh2_presentation.RData")
-load("E:Phd_Paris Saclay/resultat/Results_M1_Simulation/y_obs_m1_sh2_presentation.RData")
-load("E:/Phd_Paris Saclay/resultat/Results_M1_Simulation/result_m1_sh1.RData")
-load("E:/Phd_Paris Saclay/resultat/Results_M1_Simulation/result_m1_sh2.RData")
-load("E:/Phd_Paris Saclay/resultat/Results_M1_Simulation/result_m1_sh3.RData")
-load("E:/Phd_Paris Saclay/resultat/Results_M1_Simulation/result_m1_sh4.RData")
-load("E:/Phd_Paris Saclay/resultat/Results_M1_Simulation/result_m1_sh5.RData")
 
-sheet_names <- c("Baseball",
-                 "Blue Basketball",
-                 "Green Basketball",
-                 "Volleyball",
-                 "Bowling Ball")
-
-#View(result_m1_sh1)
-
-g_sh1 <- result_m1_sh1[[1]]
-h0_sh1 <- result_m1_sh1[[2]]
-sigma_sq_err_sh1 <- result_m1_sh1[[3]]
-alpha_sh1 <- result_m1_sh1[[4]]
-psi_delta_sh1 <- result_m1_sh1[[5]]
-k_sh1 <- result_m1_sh1[[6]]
-
-g_sh2 <- result_m1_sh2[[1]]
-h0_sh2 <- result_m1_sh2[[2]]
-sigma_sq_err_sh2 <- result_m1_sh2[[3]]
-alpha_sh2 <- result_m1_sh2[[4]]
-psi_delta_sh2 <- result_m1_sh2[[5]]
-k_sh2 <- result_m1_sh2[[6]]
-
-g_sh3 <- result_m1_sh3[[1]]
-h0_sh3 <- result_m1_sh3[[2]]
-sigma_sq_err_sh3 <- result_m1_sh3[[3]]
-alpha_sh3 <- result_m1_sh3[[4]]
-psi_delta_sh3 <- result_m1_sh3[[5]]
-k_sh3 <- result_m1_sh3[[6]]
-
-g_sh4 <- result_m1_sh4[[1]]
-h0_sh4 <- result_m1_sh4[[2]]
-sigma_sq_err_sh4 <- result_m1_sh4[[3]]
-alpha_sh4 <- result_m1_sh4[[4]]
-psi_delta_sh4 <- result_m1_sh4[[5]]
-k_sh4 <- result_m1_sh4[[6]]
-
-g_sh5 <- result_m1_sh5[[1]]
-h0_sh5 <- result_m1_sh5[[2]]
-sigma_sq_err_sh5 <- result_m1_sh5[[3]]
-alpha_sh5 <- result_m1_sh5[[4]]
-psi_delta_sh5 <- result_m1_sh5[[5]]
-k_sh5 <- result_m1_sh5[[6]]
-
-g_sh2 <- result_m1_sh2_presentation[[1]]
-h0_sh2 <- result_m1_sh2_presentation[[2]]
-sigma_sq_err_sh2 <- result_m1_sh2_presentation[[3]]
-alpha_sh2 <- result_m1_sh2_presentation[[4]]
-psi_delta_sh2 <- result_m1_sh2_presentation[[5]]
-k_sh2 <- result_m1_sh2_presentation[[6]]
-
-par(mfrow = c(1, 3),
-    mar   = c(3, 4, 1, 1) 
-)
-boxplot(
-  colMeans(g_sh2),
-  ylab = "g",
-  #xlab = "Bowling Ball",
-  col  = "#800020",
-  main = NULL
-=======
 ## ------------------------------------ Model0 ------------------------------------ ##
 
 # =========================================================
@@ -179,14 +106,12 @@ boxplot(
   ylab = "g",
   col  = "lightseagreen",
   main = ""
->>>>>>> 8450abc4c47461f1601519d1d05674d6497dd7ed
 )
 abline(h = 9.8, lty = 2)
 
 boxplot(
   colMeans(h0_sh2),
   ylab = "h0",
-<<<<<<< HEAD
   #xlab = "",
   col  = "#800020",
   main = NULL
@@ -257,13 +182,9 @@ h0_mat<- result_m1_sh2_presentation[[2]]
 
 g_last <- g_mat[, 30]
 h0_last <- h0_mat[, 30]
-y_obs <- result_m1_sh2_presentation$y_obs
 y_obs30 <- y_obs[,30]
 y_true <- balldropg(t, c(9.8, 46.45))
-=======
-  col  = "lightseagreen",
-  main = ""
-)
+
 abline(h = 46.45045, lty = 2)
 
 boxplot(
@@ -372,7 +293,6 @@ h0_last <- h0_mat[, 50]
 y_obs <- result_m0_sh2_classic_classic$y_obs
 y_obs30 <- y_obs[,50]
 y_true <- balldropg(t, c(9.8, 46.46))
->>>>>>> 8450abc4c47461f1601519d1d05674d6497dd7ed
 
 y_pred <- matrix(NA, length(t), length(g_last), byrow = FALSE)
 
@@ -387,11 +307,8 @@ boxplot(y_pred1, col = "orange2",
         xlab = "Time", ylab = "Height")
 lines(y_true, lwd = 2, col = "blue")
 points(y_obs30, col = "gold", pch=20, cex = 1)
-<<<<<<< HEAD
-legend(x=30, y=45, legend=c("Simulated data",
-=======
+
 legend(x=34, y=48, legend=c("Simulated data",
->>>>>>> 8450abc4c47461f1601519d1d05674d6497dd7ed
                             "True code", "Predictions"), lwd=rep(2,2), col=c("gold","blue", "orange2"), 
        cex=1, pch=c(19,NA,NA), lty=c(0,1,1))
 
@@ -399,7 +316,6 @@ boxplot(y_pred1[, 1:5], col = "orange2",
         xlab = "Time", ylab = "Height")
 lines(y_true, lwd = 2, col = "blue")
 points(y_obs30, col = "gold", pch=20, cex = 3)
-<<<<<<< HEAD
 legend(x=30, y=45, legend=c("Simulated data", "Predictions",
                             "True code"), lwd=rep(2,2), col=c("gold", "orange2","blue"), 
        cex=1, pch=c(19,NA,NA), lty=c(0,1,1))
@@ -635,7 +551,6 @@ plot_boxplot(results_all, 5, expression(psi[delta]), 0.4)
 # Plot for k
 plot_boxplot(results_all, 6, expression(k), 0.2)
 
-=======
 legend(x=4.2, y=47, legend=c("Simulated data", "Predictions",
                              "True code"), lwd=rep(2,2), col=c("gold", "orange2","blue"), 
        cex=1, pch=c(19,NA,NA), lty=c(0,1,1))
@@ -1944,4 +1859,3 @@ sapply(alpha_summary_all, function(x) median(x$prob_alpha_lt_01))
 ################################################################################
 ################################################################################
 ################################################################################
->>>>>>> 8450abc4c47461f1601519d1d05674d6497dd7ed

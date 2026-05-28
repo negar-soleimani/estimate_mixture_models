@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 mcmc_step6 <- function(y, t, n_iter, init, sigma_proposals, mcmc_parameters, Sigma_theta, n_burnin=1000) {
   # mcmc_parameters : c(theta(g, h0) = "TRUE", sigma_sq_err = "T", psi_delta = "T", k = "T", alpha = "T")
   
@@ -270,7 +269,7 @@ plot(results_real_sh2$theta[, 3], type = "l", ylim = c(0, 1), main = "Trace of s
 plot(results_real_sh2$theta[, 4], type = "l", ylim = c(0, 1), main = "alpha")
 plot(results_real_sh2$theta[, 5], type = "l", main = "Trace of psi_delta")
 plot(results_real_sh2$theta[, 6], type = "l", ylim = c(0, 1), main = "k")
-=======
+
 # mcmc_step6 <- function(y, t, n_iter, init, sigma_proposals, mcmc_parameters, Sigma_theta, n_burnin=1000) {
 #   # mcmc_parameters : c(theta(g, h0) = "TRUE", sigma_sq_err = "T", psi_delta = "T", k = "T", alpha = "T")
 #   
@@ -552,5 +551,3 @@ res <- mcmc_step6(
   s = 0.3       
 )
 
-
->>>>>>> 8450abc4c47461f1601519d1d05674d6497dd7ed
