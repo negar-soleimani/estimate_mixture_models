@@ -147,8 +147,7 @@ for (v in 1:n_samples) {
   cat("\n========================\n")
   cat("Sample:", v, "\n")
   
-  y_1 <- balldropg(t, c(9.8, 46.45)) +
-    rnorm(n, 0, sqrt(0.01))
+  y_1 <- balldropg(t, c(9.8, 46.45)) + rnorm(n, 0, sqrt(0.01))
   
   y_obs[, v] <- y_1
   
@@ -378,4 +377,4 @@ for (i in 1:n_samples) {
 }
 
 dev.off()
->>>>>>> 8450abc4c47461f1601519d1d05674d6497dd7ed
+
