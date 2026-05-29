@@ -493,7 +493,6 @@ mcmc_step6 <- function(y, t, n_iter, init, sigma_proposals,
   } else {
     cat("Acceptance rate for psi_delta:", round(accept_psi / n_iter, 4), "\n")
   }
-  return(list(theta = chain_theta, delta = chain_delta, zeta = chain_zeta, loglik = loglik_chain, accept_rate_psi = accept_psi / n_iter))
   accept_rate_psi <- accept_psi / total_iter
   return(list(theta = chain_theta, delta = chain_delta, zeta = chain_zeta, loglik = loglik_chain, accept_rate_psi = accept_rate_psi))
 }
