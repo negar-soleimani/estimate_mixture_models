@@ -1,8 +1,5 @@
 # simulation: orthogonal_GP
-<<<<<<< HEAD
-=======
 #####
->>>>>>> 8450abc4c47461f1601519d1d05674d6497dd7ed
 set.seed(12345)
 Sigma_theta <- matrix(c(0.5,0,0,0.5), nrow = 2)
 # c(g, h0, sig2err, alpha, psidelta, k)
@@ -25,7 +22,7 @@ k            <- matrix(NA, n_iter, n_samples, byrow = FALSE)
 
 y_obs <- matrix(NA, length(t), n_samples, byrow = FALSE)
 for (v in 1:n_samples) {
-
+  
   Sigma_delta <- GP_covariance_star_complete(t, sigma_sq_err, k, psi_delta)
   delta <- as.vector(rmvnorm(1, rep(0, n), Sigma_delta))
   y_1 = balldropg(t,c(9.8, 46.45)) + rnorm(n, 0, sqrt(0.01)) + delta
@@ -129,9 +126,9 @@ accept_rate <- numeric(n_samples)
 
 y_obs <- matrix(NA, n, n_samples)
 for (v in 1:n_samples) {
-   Sigma_delta <- GP_covariance(t, sigma_sq_delta, sim_psi_delta)
+  Sigma_delta <- GP_covariance(t, sigma_sq_delta, sim_psi_delta)
   
-   delta <- as.vector(rmvnorm(1, rep(0, n), Sigma_delta))
+  delta <- as.vector(rmvnorm(1, rep(0, n), Sigma_delta))
   
   y_1 <- balldropg(t, c(9.8, 46.46)) + rnorm(n, 0, sqrt(sigma_sq_err)) + delta
   y_obs[, v] <- y_1
