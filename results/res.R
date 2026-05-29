@@ -907,7 +907,10 @@ library(ggplot2)
 library(gridExtra)
 library(patchwork)
 
-res_obj <- result_scenario_II_psi0.2
+res_obj <- result_scenario_II
+#View(result_scenario_II)
+#h0 <- result_scenario_II[["h0_chain"]]
+#plot(h0[,50], type = "l")
 
 ## pooled posterior density of alpha across all datasets
 
@@ -1133,7 +1136,7 @@ p_alpha_pool <- ggplot(df_alpha_pool, aes(x = alpha)) +
 
 ## zeta == 2 means model with discrepancy
 
-v <- 30
+v <- 45
 zeta_mat <- res_obj$zeta_list[[v]]
 delta_mat <- res_obj$delta_list[[v]]
 n <- ncol(delta_mat)
