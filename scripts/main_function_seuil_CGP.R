@@ -377,12 +377,12 @@ mcmc_step6 <- function(y, t, n_iter, init, sigma_proposals,
       Sigma_delta_prop <- GP_covariance(t, sigma_sq_delta_prop, psi_prop)
       log_prop_current <- log(dtruncnorm(psi_delta, a = 0.1, b = 0.5, mean = psi_prop, sd = sigma_proposals[5]))
       log_prop_prop <- log(dtruncnorm(psi_prop, a = 0.1, b = 0.5, mean = psi_delta, sd = sigma_proposals[5]))
-      log_prior_current <- dunif(psi_delta, min = 0.1, max = 0.5, log = TRUE)
-      log_prior_prop    <- dunif(psi_prop,  min = 0.1, max = 0.5, log = TRUE)
+      #log_prior_current <- dunif(psi_delta, min = 0.1, max = 0.5, log = TRUE)
+      #log_prior_prop    <- dunif(psi_prop,  min = 0.1, max = 0.5, log = TRUE)
       #log_prop_current <- log(dtruncnorm(psi_delta, a = 0, b = 1, mean = psi_prop, sd = sigma_proposals[5]))
       #log_prop_prop <- log(dtruncnorm(psi_prop, a = 0, b = 1, mean = psi_delta, sd = sigma_proposals[5]))
-      #log_prior_current <- dbeta(psi_delta, shape1 = 7, shape2 = 13, log = TRUE)
-      #log_prior_prop    <- dbeta(psi_prop,  shape1 = 7, shape2 = 13, log = TRUE)
+      log_prior_current <- dbeta(psi_delta, shape1 = 7, shape2 = 13, log = TRUE)
+      log_prior_prop    <- dbeta(psi_prop,  shape1 = 7, shape2 = 13, log = TRUE)
       log_like_current <- tryCatch(dmvnorm(delta, rep(0, n), Sigma_delta, log = TRUE), error = function(e) -Inf)
       log_like_prop <- tryCatch(dmvnorm(delta, rep(0, n), Sigma_delta_prop, log = TRUE), error = function(e) -Inf)
       
@@ -437,7 +437,7 @@ mcmc_step6 <- function(y, t, n_iter, init, sigma_proposals,
       alpha_k <- (n / 2) + 1
       beta_k  <- (1 / (2 * sigma_sq_err)) * quad_form_delta
       
-      F0 <- pgamma(0.005, shape = alpha_k, rate = beta_k)
+      F0 <- pgamma(0.02, shape = alpha_k, rate = beta_k)
       F1 <- pgamma(1, shape = alpha_k, rate = beta_k)
       
       if (F1 <= F0 || !is.finite(F1)) {
