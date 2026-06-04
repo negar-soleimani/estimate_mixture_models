@@ -1,7 +1,8 @@
 
 mcmc_step6 <- function(y, t, n_iter, init, sigma_proposals,
                        g_init=TRUE, h0_init= TRUE, sig2er_init = TRUE,
-                       alpha_init = TRUE, psi_init = TRUE, k_init = TRUE, Sigma_theta, n_burnin=1000) {
+                       alpha_init = TRUE, psi_init = TRUE, k_init = TRUE, Sigma_theta, n_burnin=1000,
+                       continue_chain = FALSE, last_delta = NULL) {
   # mcmc_parameters : c(theta(g, h0) = "TRUE", sigma_sq_err = "T", psi_delta = "T", k = "T", alpha = "T")
   
   # Total iterations = burn-in + desired samples
@@ -9,7 +10,20 @@ mcmc_step6 <- function(y, t, n_iter, init, sigma_proposals,
   n <- length(y)
   
   theta <- init
-  delta <- rep(0, length(y))
+  #delta <- rep(0, length(y))
+  names(theta) <- c("g", "h0", "sigma_sq_err", "alpha", "psi_delta", "k")
+  
+  if (continue_chain) {
+    if (is.null(last_delta)) {
+      stop("continue_chain = TRUE but last_delta is NULL.")
+    }
+    if (length(last_delta) != n) {
+      stop("last_delta has wrong length.")
+    }
+    delta <- as.numeric(last_delta)
+  } else {
+    delta <- rep(0, n)
+  }
   
   chain_theta <- matrix(NA, nrow = total_iter, ncol = length(init))
   colnames(chain_theta) <- c("g", "h0", "sigma_sq_err", "alpha", "psi_delta", "k")
@@ -229,8 +243,10 @@ mcmc_step6 <- function(y, t, n_iter, init, sigma_proposals,
     #Sigma_delta_prop <- Sigma_delta_prop + diag(1e-10, nrow(Sigma_delta_prop))
     log_prop_current <- log(dtruncnorm(psi_delta, a = 0.1, b = 0.5, mean = psi_prop,  sd = sigma_proposals[5]))
     log_prop_prop    <- log(dtruncnorm(psi_prop,  a = 0.1, b = 0.5, mean = psi_delta, sd = sigma_proposals[5]))
-    log_prior_current <- dunif(psi_delta, min = 0.1, max = 0.5, log = TRUE)
-    log_prior_prop    <- dunif(psi_prop,  min = 0.1, max = 0.5, log = TRUE)
+    #log_prior_current <- dunif(psi_delta, min = 0.1, max = 0.5, log = TRUE)
+    #log_prior_prop    <- dunif(psi_prop,  min = 0.1, max = 0.5, log = TRUE)
+    log_prior_current <- dbeta(psi_delta, shape1 = 7, shape2 = 13, log = TRUE)
+    log_prior_prop    <- dbeta(psi_prop,  shape1 = 7, shape2 = 13, log = TRUE)
     log_like_current <- tryCatch(dmvnorm(delta, rep(0, n), Sigma_delta_cur,  log = TRUE), error = function(e) -Inf)
     log_like_prop    <- tryCatch(dmvnorm(delta, rep(0, n), Sigma_delta_prop, log = TRUE), error = function(e) -Inf)
     
@@ -276,7 +292,7 @@ mcmc_step6 <- function(y, t, n_iter, init, sigma_proposals,
       alpha_k <- (n / 2) + 1
       beta_k  <- (1 / (2 * sigma_sq_err)) * quad_form_delta
       
-      F0 <- pgamma(0.005, shape = alpha_k, rate = beta_k)
+      F0 <- pgamma(0.02, shape = alpha_k, rate = beta_k)
       F1 <- pgamma(1, shape = alpha_k, rate = beta_k)
       
       if (F1 <= F0 || !is.finite(F1)) {
