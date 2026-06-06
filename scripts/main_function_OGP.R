@@ -3,8 +3,7 @@ mcmc_step6 <- function(y, t, n_iter, init, sigma_proposals,
                        g_init=TRUE, h0_init= TRUE, sig2er_init = TRUE,
                        alpha_init = TRUE, psi_init = TRUE, k_init = TRUE, Sigma_theta, n_burnin=1000,
                        continue_chain = FALSE, last_delta = NULL) {
-  # mcmc_parameters : c(theta(g, h0) = "TRUE", sigma_sq_err = "T", psi_delta = "T", k = "T", alpha = "T")
-  
+
   # Total iterations = burn-in + desired samples
   total_iter <- n_burnin + n_iter
   n <- length(y)
@@ -63,7 +62,9 @@ mcmc_step6 <- function(y, t, n_iter, init, sigma_proposals,
     # chain_zeta[iter, ] = zeta
     
     
-    # Method2 for calculate the probability of the zeta:(log_sum_exp: https://rpubs.com/FJRubio/LSE and https://en.wikipedia.org/wiki/LogSumExp)
+    # Method2 for calculate the probability of the zeta:(log_sum_exp: 
+    # https://rpubs.com/FJRubio/LSE and https://en.wikipedia.org/wiki/LogSumExp)
+    
     log_w1 <- log(alpha_param) + dnorm(y, mean1, sqrt(sigma_sq_err), log = TRUE)
     log_w2 <- log(1 - alpha_param) + dnorm(y, mean2, sqrt(sigma_sq_err), log = TRUE)
     log_max <- pmax(log_w1, log_w2)
@@ -107,7 +108,7 @@ mcmc_step6 <- function(y, t, n_iter, init, sigma_proposals,
     }
     
     #-------------------------------- Gibbs step for theta --------------------------------#
-    # new theta
+
     zeta_1_indices <- which(zeta == 1)
     zeta_2_indices <- which(zeta == 2)
     
@@ -132,8 +133,7 @@ mcmc_step6 <- function(y, t, n_iter, init, sigma_proposals,
       
       h0 <- rnorm(1, mu_post_h0, sd = sd_post_h0)
       g  <- g_fixed
-      #theta[1] <- g
-      #theta[2] <- h0
+
       
     } else if (!g_init && h0_init) {
       # CASE: h0 fixed at init[2], sample g alone from its conditional
@@ -152,16 +152,13 @@ mcmc_step6 <- function(y, t, n_iter, init, sigma_proposals,
       
       g  <- rnorm(1, mu_post_g, sd = sd_post_g)
       h0 <- h0_fixed
-      #theta[1] <- g
-      #theta[2] <- h0
       
     } else if (!g_init && !h0_init) {
       # CASE: both free — current bivariate Gibbs sampling
       
-      A <- (t(x1) %*% x1 + t(x2) %*% x2) #/ sigma_sq_err
-      B <- (t(x1) %*% y1 + t(x2) %*% y2 - t(x2) %*% d2) #/ sigma_sq_err
-      #Sigmapost_theta <- safe_solve(A) %*% B
-      #Mupost_theta    <- Sigmapost_theta %*% B
+      A <- (t(x1) %*% x1 + t(x2) %*% x2) 
+      B <- (t(x1) %*% y1 + t(x2) %*% y2 - t(x2) %*% d2) 
+
       
       A_inv <- safe_solve(A)
       
@@ -170,15 +167,11 @@ mcmc_step6 <- function(y, t, n_iter, init, sigma_proposals,
       
       theta_sample <- rmvnorm(1, mean = Mupost_theta, sigma = Sigmapost_theta)
       h0 <- theta_sample[1]; g <- theta_sample[2]
-      #theta[1] <- g
-      #theta[2] <- h0
       
     } else {
       # CASE: both fixed
       g  <- init[1]
       h0 <- init[2]
-      #theta[1] <- g
-      #theta[2] <- h0
     }
 
     #-------------------------------- Gibbs step for sigma_sq_err --------------------------------#   
@@ -220,11 +213,7 @@ mcmc_step6 <- function(y, t, n_iter, init, sigma_proposals,
     #sigma_sq_err <- 1/rgamma(1, shape = shape_err, rate = rate_err)
     #theta[3] <- sigma_sq_err
     sigma_sq_err <- rinvgamma(1, shape = shape_err, rate = rate_err)}
-    
-    #if (mcmc_parameters[2] == FALSE) {
-    #  sigma_sq_err <- init[3]
-    #  theta[3] <- sigma_sq_err
-    #}
+
 
     #-------------------------------- Gibbs step for psi_delta --------------------------------#   
 
@@ -258,10 +247,6 @@ mcmc_step6 <- function(y, t, n_iter, init, sigma_proposals,
       accept_psi <- accept_psi + 1
     }}
     
-    #if(mcmc_parameters[3] == FALSE){
-    #  psi_delta <- init[5]
-    #  theta[5] <- psi_delta
-    #}
 
     #-------------------------------- Gibbs step for k --------------------------------#  
     
@@ -311,9 +296,6 @@ mcmc_step6 <- function(y, t, n_iter, init, sigma_proposals,
     #theta[4] <- alpha_param
     }
     
-    #if(mcmc_parameters[5] == FALSE){
-    #  alpha_param <- init[4]
-    #}
     
     theta <- c(
       g = g,

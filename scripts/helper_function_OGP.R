@@ -203,6 +203,7 @@ H_matrix <- function(psi_delta) {
 
 # Orthogonality-corrected GP correlation matrix
 # K_star = R_se - h_mat %*% H^{-1} %*% t(h_mat)
+
 GP_correlation <- function(t, psi_delta) {
   R_se <- outer(t, t, function(ti, tj) exp(-abs(ti - tj) / psi_delta))
   
@@ -229,10 +230,6 @@ GP_covariance_star_complete <- function(t, sigma_sq_err, k, psi_delta) {
   (sigma_sq_err / k) * K_star
 }
 
-
-# ----------------------------------------------------------------------
-# Utilities (unchanged from the original helper file)
-# ----------------------------------------------------------------------
 
 symm <- function(M) 0.5 * (M + t(M))
 

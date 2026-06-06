@@ -247,7 +247,7 @@ mcmc_step6 <- function(y, t, n_iter, init, sigma_proposals,
       #theta[2] <- h0
     ##}
 # -------------------------------------------
-    # new theta
+
     zeta_1_indices <- which(zeta == 1)
     zeta_2_indices <- which(zeta == 2)
     
@@ -272,8 +272,7 @@ mcmc_step6 <- function(y, t, n_iter, init, sigma_proposals,
       
       h0 <- rnorm(1, mu_post_h0, sd = sd_post_h0)
       g  <- g_fixed
-      #theta[1] <- g
-      #theta[2] <- h0
+
       
     } else if (!g_init && h0_init) {
       # CASE: h0 fixed at init[2], sample g alone from its conditional
@@ -292,16 +291,13 @@ mcmc_step6 <- function(y, t, n_iter, init, sigma_proposals,
       
       g  <- rnorm(1, mu_post_g, sd = sd_post_g)
       h0 <- h0_fixed
-      #theta[1] <- g
-      #theta[2] <- h0
+
       
     } else if (!g_init && !h0_init) {
       # CASE: both free — current bivariate Gibbs sampling
 
       A <- (t(x1) %*% x1 + t(x2) %*% x2) #/ sigma_sq_err
       B <- (t(x1) %*% y1 + t(x2) %*% y2 - t(x2) %*% d2) #/ sigma_sq_err
-      #Sigmapost_theta <- safe_solve(A) %*% B
-      #Mupost_theta    <- Sigmapost_theta %*% B
       
       A_inv <- safe_solve(A)
       
@@ -310,15 +306,11 @@ mcmc_step6 <- function(y, t, n_iter, init, sigma_proposals,
       
       theta_sample <- rmvnorm(1, mean = Mupost_theta, sigma = Sigmapost_theta)
       h0 <- theta_sample[1]; g <- theta_sample[2]
-      #theta[1] <- g
-      #theta[2] <- h0
       
     } else {
       # CASE: both fixed
       g  <- init[1]
       h0 <- init[2]
-      #theta[1] <- g
-      #theta[2] <- h0
     }
 
     #-------------------------------- Gibbs step for sigma_sq_err(lambda^2) --------------------------------#   
