@@ -259,8 +259,8 @@ source("scripts/physics_model.R")
 source("scripts/helper_function_CGP.R")
 source("scripts/main_function_seuil_CGP.R")
 
-set.seed(12345)
-n_iter <- 10000
+#set.seed(12345)
+n_iter <- 20000
 burn_in <- 2000
 sigma_props <- c(NA, NA, NA, NA, 0.5, NA)
 
@@ -269,7 +269,7 @@ init <- c(9.8, 46.45, 0.01, 0.5, 0.5, 0.1)
 
 res <- mcmc_step6(
   y = y, t = t, n_iter = n_iter, init = init, sigma_proposals = sigma_props,
-  g_init = TRUE, 
+  g_init = FALSE, 
   h0_init = FALSE,
   sig2er_init = FALSE,
   alpha_init = FALSE,
@@ -284,28 +284,30 @@ res <- mcmc_step6(
 
 ###############################################################################
 rm(list = ls())
-source("data/prepare_data.R")        # provides y, t, n
+source("data/prepare_data.R")        
 source("scripts/physics_model.R")
 source("scripts/helper_function_CGP.R")
 source("scripts/main_function_seuil_CGP.R")
 
 library(coda)
 library(mvtnorm)
+library(ggplot2)
+library(gridExtra)
+library(patchwork)
 
 # =============================================================================
-#  GELMAN-RUBIN CONVERGENCE DIAGNOSTIC  --  Real data
+#  REAL-DATA ANALYSIS  --  Scenario (I): seuil = FALSE, g sampled
 #
-#  Same workflow as simulation_model0_CGP_gelman.R but on the real (y, t)
-#  loaded by prepare_data.R: one MCMC analysis, three parallel chains,
-#  run 10,000 iterations first, then check Gelman-Rubin, then extend in
-#  blocks of step_iter until R-hat < 1.1 for every monitored parameter or
-#  until max_iter is reached.
+#  seuil   = FALSE
+#  g_init  = FALSE      (g is sampled)
+#
+#  Convergence is checked on the parameters that actually move; constant
+#  parameters (whose R-hat is undefined) are excluded from pars_check.
 # =============================================================================
 
 # ---- Gelman-Rubin convergence check -----------------------------------------
 check_gelman <- function(chain_list,
-                         pars = c("g", "h0", "sigma_sq_err",
-                                  "alpha", "psi_delta", "k"),
+                         pars     = c("g", "h0", "sigma_sq_err", "alpha", "psi_delta", "k"),
                          rhat_lim = 1.1) {
   
   mcmc_list <- mcmc.list(
@@ -320,7 +322,14 @@ check_gelman <- function(chain_list,
   }
   
   rhat_upper <- gd$psrf[, "Upper C.I."]
-  ok <- all(is.finite(rhat_upper)) && all(rhat_upper < rhat_lim)
+  
+  is_constant <- !is.finite(rhat_upper)
+  if (any(is_constant)) {
+    cat("  Note: dropping from R-hat check (constant chains):",
+        paste(names(rhat_upper)[is_constant], collapse = ", "), "\n")
+  }
+  rhat_for_check <- rhat_upper[!is_constant]
+  ok <- length(rhat_for_check) > 0 && all(rhat_for_check < rhat_lim)
   
   list(ok = ok, rhat = rhat_upper)
 }
@@ -332,12 +341,11 @@ run_mcmc_gelman <- function(y, t,
                             Sigma_theta,
                             min_iter   = 10000,
                             step_iter  = 2000,
-                            max_iter   = 120000,
+                            max_iter   = 200000,
                             rhat_lim   = 1.1,
                             seuil      = TRUE,
                             s          = 0.3,
-                            pars_check = c("g", "h0", "sigma_sq_err",
-                                           "alpha", "psi_delta", "k")) {
+                            pars_check = c("g", "h0", "sigma_sq_err", "alpha", "psi_delta", "k")) {
   
   n_chains <- length(init_list)
   
@@ -376,7 +384,7 @@ run_mcmc_gelman <- function(y, t,
         n_iter          = block_iter,
         init            = current_init[[c]],
         sigma_proposals = sigma_props,
-        g_init      = TRUE,
+        g_init      = FALSE,
         h0_init     = FALSE,
         sig2er_init = FALSE,
         alpha_init  = FALSE,
@@ -426,7 +434,6 @@ run_mcmc_gelman <- function(y, t,
 }
 
 # ---- Over-dispersed starting points for the 3 chains ------------------------
-#  Same parameter ordering as in the simulation files:
 #  c(g, h0, sig2err, alpha, psidelta, k)
 make_inits <- function() {
   list(
@@ -436,74 +443,8 @@ make_inits <- function() {
   )
 }
 
-# ---- Trace + density PDF for the real-data run ------------------------------
-#  One page, 6 parameters x 2 columns (trace, density) = 6x2 grid.
-save_traceplots_pdf <- function(res, filename) {
-  
-  pdf(filename, width = 12, height = 14)
-  
-  param_names <- c("g", "h0", "sigma_sq_err", "alpha", "psi_delta", "k")
-  param_labels <- list(
-    g            = expression(g),
-    h0           = expression(h[0]),
-    sigma_sq_err = expression(lambda^2),
-    alpha        = expression(alpha),
-    psi_delta    = expression(gamma[delta]),
-    k            = expression(k)
-  )
-  
-  chain_mats <- res$theta_list
-  n_chains   <- length(chain_mats)
-  cols       <- c("steelblue", "darkorange", "forestgreen")
-  
-  op <- par(mfrow = c(6, 2),
-            mar   = c(3.2, 4, 2.0, 1),
-            mgp   = c(2.1, 0.7, 0),
-            oma   = c(0, 0, 3.0, 0))
-  
-  for (p in param_names) {
-    
-    n_iter_p   <- nrow(chain_mats[[1]])
-    vals_chain <- lapply(chain_mats, function(M) M[, p])
-    ylim_p     <- range(unlist(vals_chain), na.rm = TRUE)
-    
-    # ---- (a) trace plot ----
-    plot(NA, xlim = c(1, n_iter_p), ylim = ylim_p,
-         xlab = "iteration",
-         ylab = param_labels[[p]],
-         main = bquote("Trace: " * .(param_labels[[p]])))
-    
-    for (c in seq_len(n_chains)) {
-      lines(vals_chain[[c]], col = cols[c], lwd = 0.5)
-    }
-    
-    # ---- (b) density plot ----
-    dens_list <- lapply(vals_chain, density)
-    xlim_d <- range(sapply(dens_list, function(d) range(d$x)))
-    ylim_d <- range(sapply(dens_list, function(d) range(d$y)))
-    
-    plot(NA, xlim = xlim_d, ylim = ylim_d,
-         xlab = param_labels[[p]],
-         ylab = "Density",
-         main = bquote("Density: " * .(param_labels[[p]])))
-    
-    for (c in seq_len(n_chains)) {
-      lines(dens_list[[c]], col = cols[c], lwd = 1.4)
-    }
-  }
-  
-  mtext(paste0("Real data  |  iterations = ", res$n_iter_used,
-               "  |  R-hat max = ",
-               round(max(res$rhat, na.rm = TRUE), 3),
-               "  |  converged = ", res$converged),
-        outer = TRUE, cex = 1.1, font = 2)
-  
-  par(op)
-  dev.off()
-}
-
 # =============================================================================
-#  RUN THE REAL-DATA MCMC
+#  RUN THE MCMC
 # =============================================================================
 
 set.seed(12345)
@@ -521,69 +462,35 @@ res <- run_mcmc_gelman(
   Sigma_theta = Sigma_theta,
   min_iter    = 10000,
   step_iter   = 2000,
-  max_iter    = 120000,
+  max_iter    = 200000,
   rhat_lim    = 1.1,
   seuil       = TRUE,
   s           = 0.3,
-  pars_check  = c("g", "h0", "sigma_sq_err",
-                  "alpha", "psi_delta", "k")
+  pars_check  = c("g", "h0", "sigma_sq_err", "alpha", "psi_delta", "k")
 )
 
 cat("\n========================\n")
-cat("Real-data MCMC finished.\n")
+cat("Scenario (I): seuil = FALSE, g sampled finished.\n")
 cat("Total iterations per chain:", res$n_iter_used, "\n")
 cat("Converged                  :", res$converged, "\n")
 cat("R-hat (upper C.I.):\n")
 print(round(res$rhat, 4))
 
-# ---- Save chains and trace+density PDF --------------------------------------
-out_dir <- "/Users/negarsoleimani/Documents/phd/paper1/github/real_data"
-if (!dir.exists(out_dir)) dir.create(out_dir, recursive = TRUE)
-
-result_real_data <- res
-save(result_real_data,
-     file = file.path(out_dir, "result_real_data.RData"))
-
-save_traceplots_pdf(res,
-                    filename = file.path(out_dir, "traceplots_real_data.pdf"))
-
-message("Done. Files written to: ", out_dir)
-
-
-
-
-###################### plot ############################
-
-
-
 # =============================================================================
-# Posterior plots for the real-data analysis (Gelman-Rubin version).
-#
-# Input: object `res` returned by run_mcmc_gelman() in real_data_CGP_gelman.R
-#   - res$theta_list[[c]] : (n_iter x 6) matrix, columns
-#       g, h0, sigma_sq_err, alpha, psi_delta, k          (c = 1..3 chains)
-#   - res$delta_list[[c]] : (n_iter x n) matrix
-#   - res$zeta_list[[c]]  : (n_iter x n) matrix
-#
-# We pool the three chains (row-bind) to recover the same flat matrices
-# the original single-chain script used. Then every plotting block below is
-# UNCHANGED from your original code.
+#  POOL THE THREE CHAINS FOR POSTERIOR SUMMARIES
 # =============================================================================
 
-library(ggplot2)
-library(gridExtra)
-library(patchwork)
+burn_per_chain <- 2000
 
-# Uncomment if running from a fresh R session:
-# load("/Users/negarsoleimani/Documents/phd/paper1/github/real_data/result_real_data.RData")
-# res <- result_real_data
-
-# =============================================================================
-#  POOL THE THREE CHAINS  (the only new block)
-# =============================================================================
-theta_mat <- do.call(rbind, res$theta_list)   # (3 * n_iter) x 6
-delta_mat <- do.call(rbind, res$delta_list)   # (3 * n_iter) x n
-zeta_mat  <- do.call(rbind, res$zeta_list)    # (3 * n_iter) x n
+theta_mat <- do.call(rbind, lapply(res$theta_list, function(M) {
+  M[-(1:burn_per_chain), , drop = FALSE]
+}))
+delta_mat <- do.call(rbind, lapply(res$delta_list, function(M) {
+  M[-(1:burn_per_chain), , drop = FALSE]
+}))
+zeta_mat  <- do.call(rbind, lapply(res$zeta_list, function(M) {
+  M[-(1:burn_per_chain), , drop = FALSE]
+}))
 
 g     <- theta_mat[, "g"]
 h0    <- theta_mat[, "h0"]
@@ -592,56 +499,136 @@ alpha <- theta_mat[, "alpha"]
 psi   <- theta_mat[, "psi_delta"]
 k     <- theta_mat[, "k"]
 
-n <- ncol(delta_mat)
-
 # =============================================================================
-#  EVERYTHING BELOW IS YOUR ORIGINAL CODE, UNCHANGED
+#  TRACE PLOTS (three chains overlaid)
 # =============================================================================
 
-## ---------- Trace plots ----------
-par(mfrow = c(2, 3))
-plot(g,     type = "l", main = "trace: g",  xlab = "iter", ylab = "g"); abline(h = 9.8, lty = 2)
-plot(h0,    type = "l", main = "trace: h0", xlab = "iter", ylab = "h0")
-plot(sigma, type = "l", main = expression("trace: " * lambda^2),
-     xlab = "iter", ylab = expression(lambda^2))
-plot(alpha, type = "l", main = expression("trace: " * alpha),
-     xlab = "iter", ylab = expression(alpha))
-plot(psi,   type = "l", main = expression("trace: " * psi[delta]),
-     xlab = "iter", ylab = expression(psi[delta]))
-plot(k,     type = "l", main = "trace: k",  xlab = "iter", ylab = "k")
+plot_trace_chains <- function(param, label, true_val = NULL) {
+  chains <- lapply(res$theta_list, function(M) M[, param])
+  n_it   <- length(chains[[1]])
+  ylim   <- range(unlist(chains))
+  cols   <- c("steelblue", "darkorange", "forestgreen")
+  plot(NA, xlim = c(1, n_it), ylim = ylim,
+       xlab = "iter", ylab = label,
+       main = bquote("trace: " * .(label)))
+  for (c in seq_along(chains)) lines(chains[[c]], col = cols[c], lwd = 0.4)
+  if (!is.null(true_val)) abline(h = true_val, lty = 2)
+}
 
-# ratio <- sigma / k
-# plot(ratio, type = "l")
-# boxplot(delta_mat)
+par(
+  mfrow = c(2, 3),
+  mar   = c(4, 5, 2, 1),
+  
+  # axis-title size (equivalent to axis.title)
+  cex.lab = 1.0,
+  
+  # axis-number size (equivalent to axis.text)
+  cex.axis = 1.2,
+  
+  # plot title size
+  cex.main = 1.0
+)
+par(mfrow = c(2, 3), mar = c(3, 4, 2, 1))
+plot_trace_chains("g",            "g",                 true_val = 9.8)
+plot_trace_chains("h0",           "h0")
+plot_trace_chains("sigma_sq_err", expression(lambda^2))
+plot_trace_chains("alpha",        expression(alpha))
+plot_trace_chains("psi_delta",    expression(psi[delta]))
+plot_trace_chains("k",            "k")
 
-n_iter_post <- nrow(theta_mat)
+library(patchwork)
+# =============================================================================
+#  POSTERIOR DENSITY OF ALPHA
+# =============================================================================
 
 df_alpha <- data.frame(alpha = alpha)
-p_alpha <- ggplot(df_alpha, aes(x = alpha)) +
-  geom_density(fill = "#4CCDC9", color = "lightseagreen",
-               alpha = 0.6, linewidth = 1) +
-  labs(x = expression(alpha), y = "Density",
-       title = "Posterior density of alpha (real data, Scenario IV)") +
-  theme_minimal(base_size = 13) +
-  theme(plot.title = element_text(hjust = 0.5))
 
-## ---------- p_hat_i = P(zeta_i == 1 | Y) ----------
+p_alpha <- ggplot(df_alpha, aes(x = alpha)) +
+  geom_density(
+    fill = "#4CCDC9",
+    color = "lightseagreen",
+    alpha = 0.6,
+    linewidth = 1.2
+  ) +
+  labs(
+    title = NULL,
+    x = expression(alpha),
+    y = "Density"
+  ) +
+  theme_minimal(base_size = 20) +
+  theme(
+    
+    # =========================
+    # AXIS TITLES (x and y)
+    # =========================
+    axis.title.x = element_text(size = 15),
+    axis.title.y = element_text(size = 12),
+    
+    # =========================
+    # AXIS TEXT (tick numbers)
+    # =========================
+    axis.text.x  = element_text(size = 10),
+    axis.text.y  = element_text(size = 12),
+    
+    # =========================
+    # CLEAN TITLE
+    # =========================
+    plot.title = element_blank()
+  )
+# =============================================================================
+#  POINTWISE INCLUSION PROBABILITIES
+# =============================================================================
+
 p_hat <- colMeans(zeta_mat == 2)
-df_p  <- data.frame(i = 1:n, x = t, p_hat = p_hat)
+
+df_p <- data.frame(
+  i     = 1:n,
+  x     = t,
+  p_hat = p_hat
+)
 
 p_zeta <- ggplot(df_p, aes(x = i, y = p_hat)) +
   geom_col(fill = "lightseagreen") +
-  ylim(0, 1) +
-  labs(x = "Index i",
-       y = expression(hat(p)[i] == P(zeta[i] == 1 ~ "|" ~ Y)),
-       title = "Pointwise inclusion probabilities (Scenario IV)") +
-  theme_minimal(base_size = 12) +
-  theme(plot.title = element_text(hjust = 0.5))
+  coord_cartesian(ylim = c(0, 1)) +
+  labs(
+    title = NULL,
+    x = "Index i",
+    y = expression(hat(p)[i])
+  ) +
+  theme_minimal(base_size = 20) +
+  theme(
+    
+    # =========================
+    # AXIS TITLES (x and y)
+    # =========================
+    axis.title.x = element_text(size = 15),
+    axis.title.y = element_text(size = 12),
+    
+    # =========================
+    # AXIS TEXT (tick numbers)
+    # =========================
+    axis.text.x  = element_text(size = 10),
+    axis.text.y  = element_text(size = 12),
+    
+    # =========================
+    # CLEAN TITLE
+    # =========================
+    plot.title = element_blank()
+  )
+# =============================================================================
+#  POSTERIOR SUMMARY OF delta(x_i)
+# =============================================================================
 
-## ---------- delta(x_i) ----------
 delta_mean <- colMeans(delta_mat)
-boxplot(delta_mat)
-delta_ci   <- t(apply(delta_mat, 2, quantile, probs = c(0.025, 0.975)))
+
+delta_ci <- t(
+  apply(
+    delta_mat,
+    2,
+    quantile,
+    probs = c(0.025, 0.975)
+  )
+)
 
 df_delta <- data.frame(
   i      = 1:n,
@@ -652,32 +639,100 @@ df_delta <- data.frame(
 )
 
 p_delta <- ggplot(df_delta, aes(x = i, y = d_mean)) +
-  geom_ribbon(aes(ymin = d_low, ymax = d_high),
-              fill = "lightseagreen", alpha = 0.25) +
-  geom_line(color = "lightseagreen", linewidth = 0.9) +
-  geom_hline(yintercept = 0, linetype = "dashed") +
-  labs(x = "Index i", y = expression(delta(x[i])),
-       title = expression("Posterior summary of " *
-                            delta(x[i]) ~ "(Scenario IV)")) +
-  theme_minimal(base_size = 12) +
-  theme(plot.title = element_text(hjust = 0.5))
+  geom_ribbon(
+    aes(ymin = d_low, ymax = d_high),
+    fill = "lightseagreen",
+    alpha = 0.25
+  ) +
+  geom_line(
+    color = "lightseagreen",
+    linewidth = 1.1
+  ) +
+  geom_hline(
+    yintercept = 0,
+    linetype = "dashed"
+  ) +
+  labs(
+    title = NULL,
+    x = "Index i",
+    y = expression(delta(x[i]))
+  ) +
+  theme_minimal(base_size = 20) +
+  theme(
+    
+    # =========================
+    # AXIS TITLES (x and y)
+    # =========================
+    axis.title.x = element_text(size = 15),
+    axis.title.y = element_text(size = 12),
+    
+    # =========================
+    # AXIS TEXT (tick numbers)
+    # =========================
+    axis.text.x  = element_text(size = 10),
+    axis.text.y  = element_text(size = 12),
+    
+    # =========================
+    # CLEAN TITLE
+    # =========================
+    plot.title = element_blank()
+  )
 
-## ---------- Per-parameter boxplots ----------
+
+# =============================================================================
+#  PER-PARAMETER BOXPLOTS  +  PATCHWORK COMPOSITES
+# =============================================================================
+
 make_box <- function(x, ylab, ref = NULL) {
+  
   df <- data.frame(val = x)
+  
   p <- ggplot(df, aes(x = 1, y = val)) +
-    geom_boxplot(fill = "lightseagreen", width = 0.25, outlier.size = 1) +
-    labs(x = NULL, y = ylab) +
-    theme_minimal(base_size = 11) +
+    geom_boxplot(
+      fill = "lightseagreen",
+      width = 0.25,
+      outlier.size = 1.5
+    ) +
+    labs(
+      x = NULL,
+      y = ylab
+    ) +
+    theme_minimal(base_size = 20) +
     theme(
+      
+      # =========================
+      # AXIS TITLES (x and y)
+      # =========================
+      axis.title.x = element_text(size = 15),
+      axis.title.y = element_text(size = 12),
+      
+      # =========================
+      # AXIS TEXT (tick numbers)
+      # =========================
       axis.text.x  = element_blank(),
+      axis.text.y  = element_text(size = 12),
+      
       axis.ticks.x = element_blank(),
-      plot.margin  = margin(3, 6, 3, 6)
+      
+      # =========================
+      # CLEAN TITLE
+      # =========================
+      plot.title = element_blank(),
+      
+      # spacing
+      plot.margin = margin(3, 6, 3, 6)
     )
+  
   if (!is.null(ref)) {
-    p <- p + geom_hline(yintercept = ref, linetype = "dashed",
-                        color = "orange", linewidth = 0.7)
+    p <- p +
+      geom_hline(
+        yintercept = ref,
+        linetype = "dashed",
+        color = "orange",
+        linewidth = 0.8
+      )
   }
+  
   p
 }
 
@@ -687,21 +742,19 @@ p_sig   <- make_box(sigma, ylab = expression(lambda^2))
 p_a_box <- make_box(alpha, ylab = expression(alpha))
 p_psi   <- make_box(psi,   ylab = expression(gamma[delta]))
 p_k     <- make_box(k,     ylab = "k")
-
 left_grid <- (p_g   | p_h0) /
   (p_sig | p_a_box) /
   (p_psi | p_k)
 
-right_col <- p_alpha / p_delta + plot_layout(heights = c(1, 1.25))
+right_col_1 <- p_alpha / p_delta + plot_layout(heights = c(1, 1.25))
+fig_all     <- left_grid | right_col_1
+fig_all     <- fig_all + plot_layout(widths = c(1.05, 1.35))
 
-fig_all  <- left_grid | right_col
-fig_all  <- fig_all + plot_layout(widths = c(1.05, 1.35))
-
-right_col <- p_alpha / p_delta / p_zeta +
+right_col_2 <- p_alpha / p_delta / p_zeta +
   patchwork::plot_layout(heights = c(1, 1.25, 1))
-
-fig_all2 <- left_grid | right_col
-fig_all2 <- fig_all2 + patchwork::plot_layout(widths = c(1.05, 1.45))
+fig_all2    <- left_grid | right_col_2
+fig_all2    <- fig_all2 + patchwork::plot_layout(widths = c(1.05, 1.45))
 
 fig_all2
+
 
