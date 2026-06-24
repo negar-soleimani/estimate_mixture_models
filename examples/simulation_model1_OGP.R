@@ -39,7 +39,7 @@ accept_rate <- numeric(n_samples)
 # 
 y_obs <- matrix(NA, n, n_samples)
 for (v in 1:n_samples) {
-  Sigma_delta <- GP_covariance(t, sigma_sq_delta, sim_psi_delta)
+  #Sigma_delta <- GP_covariance(t, sigma_sq_delta, sim_psi_delta)
   
   delta <- as.vector(rmvnorm(1, rep(0, n), Sigma_delta))
   
