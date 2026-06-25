@@ -1,31 +1,31 @@
-
-rm(list = ls())
-source("data/prepare_data.R")
-source("scripts/physics_model.R")
-source("scripts/helper_function_CGP.R")
-source("scripts/main_function_seuil_CGP.R")
-
-#set.seed(12345)
-n_iter <- 20000
-burn_in <- 2000
-sigma_props <- c(NA, NA, NA, NA, 0.5, NA)
-
-# init = c(g, h0, sig2err, alpha, psidelta, k)
-init <- c(9.8, 46.45, 0.01, 0.5, 0.5, 0.1)
-
-res <- mcmc_step6(
-  y = y, t = t, n_iter = n_iter, init = init, sigma_proposals = sigma_props,
-  g_init = FALSE, 
-  h0_init = FALSE,
-  sig2er_init = FALSE,
-  alpha_init = FALSE,
-  psi_init = FALSE,
-  k_init = FALSE,
-  Sigma_theta = matrix(c(0.5, 0, 0, 0.5), 2),
-  n_burnin = burn_in,
-  seuil = TRUE,  
-  s = 0.3       
-)
+# 
+# rm(list = ls())
+# source("data/prepare_data.R")
+# source("scripts/physics_model.R")
+# source("scripts/helper_function_CGP.R")
+# source("scripts/main_function_seuil_CGP.R")
+# 
+# #set.seed(12345)
+# n_iter <- 20000
+# burn_in <- 2000
+# sigma_props <- c(NA, NA, NA, NA, 0.5, NA)
+# 
+# # init = c(g, h0, sig2err, alpha, psidelta, k)
+# init <- c(9.8, 46.45, 0.01, 0.5, 0.5, 0.1)
+# 
+# res <- mcmc_step6(
+#   y = y, t = t, n_iter = n_iter, init = init, sigma_proposals = sigma_props,
+#   g_init = FALSE, 
+#   h0_init = FALSE,
+#   sig2er_init = FALSE,
+#   alpha_init = FALSE,
+#   psi_init = FALSE,
+#   k_init = FALSE,
+#   Sigma_theta = matrix(c(0.5, 0, 0, 0.5), 2),
+#   n_burnin = burn_in,
+#   seuil = TRUE,  
+#   s = 0.3       
+# )
 
 
 ###############################################################################
@@ -89,7 +89,7 @@ run_mcmc_gelman <- function(y, t,
                             step_iter  = 2000,
                             max_iter   = 200000,
                             rhat_lim   = 1.1,
-                            seuil      = TRUE,
+                            seuil      = FALSE,
                             s          = 0.3,
                             pars_check = c("g", "h0", "sigma_sq_err", "alpha", "psi_delta", "k")) {
   
@@ -210,7 +210,7 @@ res <- run_mcmc_gelman(
   step_iter   = 2000,
   max_iter    = 200000,
   rhat_lim    = 1.1,
-  seuil       = TRUE,
+  seuil       = FALSE,
   s           = 0.3,
   pars_check  = c("g", "h0", "sigma_sq_err", "alpha", "psi_delta", "k")
 )
