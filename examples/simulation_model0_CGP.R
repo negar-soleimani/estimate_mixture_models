@@ -47,7 +47,7 @@ burn_in         <- 2000
 n_iter          <- 10000
 # FALSE= fixed parameter
 # mcmc parameter (g,h), sig2err, psidelta, k, alpha, freeze delta-zeta
-# mcmc_parameters <- c(TRUE, TRUE, TRUE, TRUE, TRUE, FALSE)
+#mcmc_parameters <- c(TRUE, TRUE, TRUE, TRUE, TRUE, FALSE)
 # 
 g            <- matrix(NA, n_iter, n_samples, byrow = FALSE)
 h0           <- matrix(NA, n_iter, n_samples, byrow = FALSE)
@@ -65,9 +65,9 @@ for (v in 1:n_samples) {
   y_1 = balldropg(t,c(9.8, 46.45)) + rnorm(n, 0, sqrt(0.01))
   y_obs[,v] <- y_1
 
-  #results <- mcmc_step6(y_1, t, n_iter, init, sigma_proposals, g_init=FALSE, h0_init= FALSE, sig2er_init = FALSE,
-  #                      alpha_init = FALSE, psi_init = FALSE, k_init = FALSE, Sigma_theta, n_burnin = burn_in, a_psi, b_psi, seuil = FALSE, s = 0.3)
-  results <- mcmc_step6(y_1, t, n_iter, init, sigma_proposals, mcmc_parameters, Sigma_theta, n_burnin=2000)
+  results <- mcmc_step6(y_1, t, n_iter, init, sigma_proposals, g_init=FALSE, h0_init= FALSE, sig2er_init = FALSE,
+                        alpha_init = FALSE, psi_init = FALSE, k_init = FALSE, Sigma_theta, n_burnin = burn_in, seuil = FALSE, s = 0.3)
+  #results <- mcmc_step6(y_1, t, n_iter, init, sigma_proposals, mcmc_parameters, Sigma_theta, n_burnin=2000)
   g[,v] = results$theta[,1]
   h0[,v]=results$theta[,2]
   sigma_sq_err[,v]=results$theta[,3]
@@ -80,17 +80,6 @@ for (v in 1:n_samples) {
   accept_rate[v]   <- results$accept_rate_psi
 }
 
-#result_m0_sh2_classic_classic_ex <- list(g, h0, sigma_sq_err, alpha, psi_delta, k, y_obs = y_obs, delta_list, zeta_list, loglik_mat, accept_rate)
+result_m0_sh2_classic_classic_ex <- list(g, h0, sigma_sq_err, alpha, psi_delta, k, y_obs = y_obs, delta_list, zeta_list, loglik_mat, accept_rate)
 
-#result_m0_sh2_classic_classic_200 <- list(g, h0, sigma_sq_err, alpha, psi_delta, k, y_obs = y_obs, delta_list, zeta_list, loglik_mat, accept_rate)
-#save(result_m0_sh2_classic_classic_200,file = "/Users/negar/Documents/phd/Result/Model1/Classic/result_m0_sh2_classic_classic_200.RData")
-
-# result_m0_sh2_classic_classic_100 <- list(g, h0, sigma_sq_err, alpha, psi_delta, k, y_obs = y_obs, delta_list, zeta_list, loglik_mat, accept_rate)
-# save(result_m0_sh2_classic_classic_100,file = "/Users/negar/Documents/phd/Result/Model1/Classic/result_m0_sh2_classic_classic_100.RData")
-
-#result_m0_sh2_classic_classic <- list(g, h0, sigma_sq_err, alpha, psi_delta, k, y_obs = y_obs, delta_list, zeta_list, loglik_mat, accept_rate)
-#save(result_m0_sh2_classic_classic,file = "/Users/negar/Documents/phd/Result/Model1/Classic/result_m0_sh2_classic_classic.RData")
-# y_obs_m1_sh2_ex <- y_obs
-# load("/Users/negarsoleimani/Documents/phd/paper1/Simulation/Model_1/final_results/result_m0_sh2_classic_classic.RData")
-#View(result_m0_sh2_classic_classic_100)
 
