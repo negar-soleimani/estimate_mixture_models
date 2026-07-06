@@ -51,16 +51,7 @@ mcmc_step6 <- function(y, t, n_iter, init, sigma_proposals,
     mean1 <- f_theta
     mean2 <- f_theta + delta
     
-    #-------------------------------- probability of the zeta --------------------------------# 
-    
-    # ##s <- 0.3
-    # prob_zeta <- 1 / (1 + (alpha_param * dnorm(y, mean1, sqrt(sigma_sq_err))) /
-    #                     ((1 - alpha_param) * dnorm(y, mean2, sqrt(sigma_sq_err))))
-    # ##*(abs(delta) > s)
-    # zeta <- 1 + (runif(length(y)) < prob_zeta)
-    # 
-    # chain_zeta[iter, ] = zeta
-    
+    #-------------------------------- probability of the zeta --------------------------------#
     
     # Method2 for calculate the probability of the zeta:(log_sum_exp: 
     # https://rpubs.com/FJRubio/LSE and https://en.wikipedia.org/wiki/LogSumExp)
@@ -76,11 +67,6 @@ mcmc_step6 <- function(y, t, n_iter, init, sigma_proposals,
     chain_zeta[iter, ] = zeta
     
     #-------------------------------- log_likelihood --------------------------------#   
-
-    #log_likelihood <- sum(log(ifelse(zeta == 1,
-    #                                 alpha_param * dnorm(y, mean1, sqrt(sigma_sq_err)),
-    #                                 (1 - alpha_param) * dnorm(y, mean2, sqrt(sigma_sq_err)))))
-    #loglik_chain[iter] <- log_likelihood
     
     log_likelihood <- sum(ifelse(
       zeta == 1,
@@ -249,16 +235,6 @@ mcmc_step6 <- function(y, t, n_iter, init, sigma_proposals,
     
 
     #-------------------------------- Gibbs step for k --------------------------------#  
-    
-    # Kpd <- chol_adapt(K_star_psi, jitter0 = 1e-10, jitter_max = 1e-2)
-    # inv_Kstar_psi <- inv_from_chol(Kpd$chol)
-    # 
-    # quad_form_delta <- as.numeric(t(delta) %*% inv_Kstar_psi %*% delta)
-    # 
-    # quad_form_delta <- max(quad_form_delta, 0)
-    # 
-    # inv_Kstar <- tryCatch(chol2inv(chol(K_star_psi)), 
-    #                       error = function(e) NULL)
     
     K_star_psi <- GP_correlation(t, psi_delta)
     inv_Kstar_psi <- tryCatch(chol2inv(chol(K_star_psi)), error = function(e) NULL)
