@@ -482,7 +482,7 @@ make_box <- function(x, ylab, ref = NULL) {
   p
 }
 
-p_g     <- make_box(g,     ylab = "g")
+p_g     <- make_box(g,     ylab = expression(g[e]))
 p_h0    <- make_box(h0,    ylab = "h0")
 p_sig   <- make_box(sigma, ylab = expression(lambda^2))
 p_a_box <- make_box(alpha, ylab = expression(alpha))
