@@ -136,7 +136,7 @@ Or use the full pipeline with Gelman-Rubin convergence monitoring (see below).
 
 | Parameter | Symbol | Role |
 |---|---|---|
-| `g` | $g$ | Gravitational acceleration (calibration) |
+| `g` | $g_e$ | Gravitational acceleration (calibration) |
 | `h0` | $h_0$ | Initial height (calibration) |
 | `sigma_sq_err` | $\lambda^2$ | Measurement noise variance |
 | `alpha` | $\alpha$ | Mixture weight — probability of $\mathcal{M}_0$ |
@@ -193,7 +193,7 @@ Each MCMC run returns a list with:
 |---|---|---|
 | `theta` | `n_iter × 6` | Posterior draws of $(g, h_0, \lambda^2, \alpha, \gamma_\delta, k)$ |
 | `delta` | `n_iter × n` | Posterior draws of $\delta(x_1), \ldots, \delta(x_n)$ |
-| `zeta` | `n_iter × n` | Posterior draws of $\zeta_1, \ldots, \zeta_n \in \{1, 2\}$ |
+| `zeta` | `n_iter × n` | Posterior draws of $\zeta_1, \ldots, \zeta_n \in \{0, 1\}$ |
 | `loglik` | `n_iter` | Log-likelihood at each iteration |
 | `accept_rate_psi` | scalar | Metropolis acceptance rate for $\gamma_\delta$ |
 
