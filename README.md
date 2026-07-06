@@ -225,10 +225,10 @@ gelman.diag(mcmc_list)
 
 ## Notes on Identifiability
 
-When $g$ is estimated jointly with $\delta(\cdot)$, a confounding issue arises: a shift in $g$ can be partially absorbed by the discrepancy function, and vice versa. Two strategies are implemented to mitigate this:
+When $g_e$ is estimated jointly with $\delta(X)$, a confounding issue arises: a shift in $g_e$ can be partially absorbed by the discrepancy function, and vice versa. Two strategies are implemented to mitigate this:
 
 1. **Fix $g$ at its nominal value** (`g_init = TRUE`) — this is the default in the main real-data analysis.
-2. **Use the OGP prior** (`helper_function_OGP.R`, `main_function_OGP.R`) — the orthogonality constraint $\langle \delta, g(\cdot)\boldsymbol{\theta} \rangle = 0$ prevents the discrepancy from absorbing the linear component of the calibration parameters.
+2. **Use the OGP prior** (`helper_function_OGP.R`, `main_function_OGP.R`) — the orthogonality constraint $\langle \delta, g(x)\boldsymbol{\theta} \rangle = 0$ prevents the discrepancy from absorbing the linear component of the calibration parameters.
 
 Note: experiments on real data show that both strategies yield similar posterior conclusions (see supplementary material, Section S.7).
 
