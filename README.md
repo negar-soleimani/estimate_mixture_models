@@ -12,7 +12,7 @@ This repository provides an R implementation of a **Bayesian mixture model** for
 The model is:
 $$y_i = g(x_i)\boldsymbol{\theta} + \zeta_i\,\delta(x_i) + \varepsilon_i, \qquad \varepsilon_i \sim \mathcal{N}(0, \lambda^2)$$
 
-where $\zeta_i \in \{0, 1\}$ is a latent allocation variable drawn from a Bernoulli with parameter $1 - \alpha$.
+where $\zeta_i \in \{0, 1\}$ is a latent allocation variable.
 
 - When $\alpha \to 1$: the model collapses to $\mathcal{M}_0$ (no discrepancy needed).
 - When $\alpha \to 0$: the model collapses to $\mathcal{M}_1$ (discrepancy is present everywhere).
@@ -34,7 +34,7 @@ The inference is carried out with a **Metropolis-within-Gibbs** MCMC sampler. Al
 
 The model is applied to a **ball-drop experiment**: a ball is dropped from a height $h_0$ and its trajectory is recorded. The physical code is:
 
-$$f(x_i, \boldsymbol{\theta}) = h_0 - \frac{1}{2}\,g\,t_i^2$$
+$$f(x_i, \boldsymbol{\theta}) = h_0 - \frac{1}{2}\,g_e\,t_i^2$$
 
 where $\boldsymbol{\theta} = (h_0, g)^\top$ are the calibration parameters (initial height and gravitational acceleration). The discrepancy $\delta(x_i)$ captures systematic departures from this idealized free-fall model (e.g., air drag).
 
