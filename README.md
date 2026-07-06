@@ -36,7 +36,7 @@ The model is applied to a **ball-drop experiment**: a ball is dropped from a hei
 
 $$f(x_i, \boldsymbol{\theta}) = h_0 - \frac{1}{2}\,g_e\,t_i^2$$
 
-where $\boldsymbol{\theta} = (h_0, g)^\top$ are the calibration parameters (initial height and gravitational acceleration). The discrepancy $\delta(x_i)$ captures systematic departures from this idealized free-fall model (e.g., air drag).
+where $\boldsymbol{\theta} = (h_0, g_e)^\top$ are the calibration parameters (initial height and gravitational acceleration). The discrepancy $\delta(x_i)$ captures systematic departures from this idealized free-fall model (e.g., air drag).
 
 The dataset contains two drops for each of **11 different balls**:
 
@@ -110,10 +110,13 @@ install.packages(c(
 ### 2 — Running a simulation study
 
 ```r
-# Simulation under M₁ with classical GP
-source("examples/simulation_model1_CGP.R")
+# Simulation under M_0 with classical GP
+source("examples/simulation_model0_CGP.R")
 
-# Simulation under M₁ with orthogonal GP
+# Simulation under M_1 with classical GP
+source("examples/simulation_model1_CGP_seuil.R")
+
+# Simulation under M1 with orthogonal GP
 source("examples/simulation_model1_OGP.R")
 ```
 
