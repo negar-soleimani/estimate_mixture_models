@@ -2,7 +2,7 @@
 ## ------------------------------------ Model0 ------------------------------------ ##
 
 # =========================================================
-# Figure 1, (main = template2.tex), page 14
+# Figure 1, (main = template2.tex), page 11
 # Simulation under M_0 (50 datasets, n = 45, Blue Basketball)
 # Priors: delta ~ GP(0, Sigma), gamma_delta ~ U(0.1,1), k ~ U(0,1)
 # Shared params (theta, lambda^2): Jeffreys prior
@@ -103,7 +103,7 @@ par(
 
 boxplot(
   g_sh2,
-  ylab = "g",
+  ylab = expression(g[e]),
   col  = "lightseagreen",
   main = ""
 )
@@ -209,7 +209,7 @@ axis(
 )
 
 # =========================================================
-# Figure S.1, (supplementarymaterial.tex), page 10
+# Figure S.1, (supplementarymaterial.tex), page 25
 # Posterior predictive vs simulated data (classical GP)
 # Left: full data comparison
 # Right: zoom on first 5 observations
@@ -252,7 +252,7 @@ legend(x=30, y=45, legend=c("Simulated data", "Predictions",
 
 
 # =========================================================
-# Table 1, (main = template2.tex), page 16
+# Table S.1, (supplementarymaterial.tex), page 26
 # Empirical coverage, CI length, and absolute bias
 # Parameters: g, h0, lambda^2
 # Based on 50 simulated datasets
@@ -442,7 +442,7 @@ summary_table
 
 
 # =========================================================
-# Figure S.2, (supplementarymaterial.tex), page 20
+# Figure S.2, (supplementarymaterial.tex), page 27
 # 95% credible intervals across 50 datasets (classical GP, m0)
 # Parameters: g, h0, lambda^2
 # Dots: posterior medians | Segments: CI
@@ -585,7 +585,7 @@ boxplot(
 ## ------------------------------ Model1 (sans seuil) ------------------------------------ ##
 
 # =========================================================
-# Figure 3, (main = template2.tex), page 17
+# Figure 2, (main = template2.tex), page 15
 # Simulation under M1 (classical GP discrepancy)
 # gamma_delta* in {0.01, 0.1, ..., 0.9}, 50 datasets each
 # Boxplots of posterior means (g, h0, lambda^2, alpha, gamma_delta, k)
@@ -737,7 +737,7 @@ boxplot(colMeans(k1), colMeans(k2), colMeans(k3), colMeans(k4), colMeans(k5),
 abline(h = 0.1, col = "orange", lwd = 2)
 
 # =========================================================
-# Figure S.5, (supplementarymaterial.tex), page 25
+# Figure S.7, (supplementarymaterial.tex), page 33
 # Simulation under M1 (orthogonal GP discrepancy)
 # gamma_delta* in {0.01, 0.1, ..., 0.9}, 50 datasets each
 # Boxplots of posterior means (g, h0, lambda^2, alpha, gamma_delta, k)
@@ -889,7 +889,7 @@ abline(h = 0.1, col = "orange", lwd = 2)
 
 
 # =========================================================
-# Figure 4, (template2.tex), page 20
+# Figure 3, (template2.tex), page 17
 # Simulation under M_alpha (classical GP discrepancy)
 # scenario_II
 # Bayesian inference without thresholding and g fixed
@@ -1102,7 +1102,7 @@ right_col2 <- p_delta / p_zeta0 +
   patchwork::plot_layout(heights = c(1, 1))
 
 # =========================================================
-# Figure S.3, (supplementarymaterial.tex), page 22
+# Figure S.6 (left), (supplementarymaterial.tex), page 32
 # Simulation under M_alpha (classical GP discrepancy)
 # scenario_I
 # Bayesian inference without thresholding and g estimated
@@ -1226,16 +1226,75 @@ p_zeta0 <- ggplot(df_p0, aes(x = i, y = p0)) +
     plot.title = element_blank(),
     plot.margin = margin(3, 6, 3, 6)
   )
+library(ggplot2)
+library(patchwork)
 
-right_col2 <- p_alpha_pool / p_delta / p_zeta +
-  patchwork::plot_layout(heights = c(1, 1.25, 1)) 
+g <- res_obj[["g_chain"]]
+h0 <- res_obj[["h0_chain"]]
+sigma <- res_obj[["sigma_chain"]]
+alpha <- res_obj[["alpha_chain"]]
+psi <- res_obj[["psi_chain"]]
+k <- res_obj[["k_chain"]]
 
+make_box <- function(x, ylab, ref = NULL) {
+  
+  df <- data.frame(
+    val = as.vector(x)   
+  )
+  
+  p <- ggplot(df, aes(x = "", y = val)) +
+    geom_boxplot(
+      fill = "lightseagreen",
+      width = 0.85,
+      outlier.size = 1
+    ) +
+    labs(x = NULL, y = ylab) +
+    theme_minimal(base_size = 20) +
+    theme(
+      axis.text.x  = element_blank(),
+      axis.ticks.x = element_blank(),
+      axis.title.x = element_blank(),
+      plot.margin  = margin(3, 6, 3, 6)
+    )
+  
+  if (!is.null(ref)) {
+    p <- p +
+      geom_hline(
+        yintercept = ref,
+        linetype = "dashed",
+        color = "orange",
+        linewidth = 0.7
+      )
+  }
+  
+  p
+}
+p_g     <- make_box(g,     ylab = "g")                 
+p_h0    <- make_box(h0,    ylab = "h0")
+p_sig   <- make_box(sigma, ylab = expression(lambda^2))
+p_a_box <- make_box(alpha, ylab = expression(alpha))
+p_psi   <- make_box(psi,   ylab = expression(gamma[delta]))
+p_k     <- make_box(k,     ylab = "k") 
 
-print(right_col2)
+library(patchwork)
+
+left_col <- (p_g | p_h0) /
+  (p_sig | p_a_box) /
+  (p_psi | p_k)
+
+right_col <- (p_alpha_pool /
+                p_delta /
+                p_zeta) +
+  plot_layout(heights = c(1, 1.25, 1))
+
+final_plot <- left_col | right_col
+
+final_plot +
+  plot_layout(widths = c(1.05, 1.45))
 
 
 # =========================================================
-# Figure S.4, (supplementarymaterial.tex), page 23
+# Figure S.6 (right), (supplementarymaterial.tex), page 32
 # Simulation under M_alpha (classical GP discrepancy)
 # scenario_III
 # Bayesian inference with thresholding and g estimated
@@ -1347,7 +1406,7 @@ right_col2 <- p_delta / p_zeta0 +
 ## ----------------------------- Real Data ------------------------------- ##
 
 # =========================================================
-# Figure S.7, (supplementarymaterial.tex), page 29
+# Figure S.9 (left), (supplementarymaterial.tex), page 36
 # Real data (classical GP discrepancy)
 # scenario_I
 # Bayesian inference without thresholding and g estimated
@@ -1450,6 +1509,7 @@ make_box <- function(x, ylab, ref = NULL) {
   }
   p
 }
+
 
 p_g     <- make_box(g,     ylab = "g")                 
 p_h0    <- make_box(h0,    ylab = "h0")
