@@ -44,6 +44,16 @@ The dataset contains two drops for each of **11 different balls**:
 | Yellow Whiffle Ball | 11 |
 
 ---
+## Key Parameters
+
+| Parameter | Symbol | Role |
+|---|---|---|
+| `g` | $g_e$ | Gravitational acceleration (calibration) |
+| `h0` | $h_0$ | Initial height (calibration) |
+| `sigma_sq_err` | $\lambda^2$ | Measurement noise variance |
+| `alpha` | $\alpha$ | Mixture weight — probability of $\mathcal{M}_0$ |
+| `psi_delta` | $\gamma_\delta$ | GP length-scale for $\delta(\cdot)$ |
+| `k` | $k$ | GP signal-to-noise ratio ($\sigma^2_\delta = \lambda^2 / k$) |
 
 ## Getting Started
 
@@ -53,13 +63,13 @@ Install the following R packages:
 
 ```r
 install.packages(c(
-  "mvtnorm",    # multivariate normal sampling
-  "invgamma",   # inverse-gamma sampling
-  "truncnorm",  # truncated-normal proposals
-  "readxl",     # Excel data import
-  "ggplot2",    # plots
-  "patchwork",  # composite figures
-  "coda"        # MCMC diagnostics
+  "mvtnorm",    
+  "invgamma",   
+  "truncnorm",  
+  "readxl",     
+  "ggplot2",    
+  "patchwork",  
+  "coda"      
 ))
 ```
 
@@ -87,17 +97,6 @@ source("examples/real_data.R")
 Or use the full pipeline with Gelman-Rubin convergence monitoring (see below).
 
 ---
-
-## Key Parameters
-
-| Parameter | Symbol | Role |
-|---|---|---|
-| `g` | $g_e$ | Gravitational acceleration (calibration) |
-| `h0` | $h_0$ | Initial height (calibration) |
-| `sigma_sq_err` | $\lambda^2$ | Measurement noise variance |
-| `alpha` | $\alpha$ | Mixture weight — probability of $\mathcal{M}_0$ |
-| `psi_delta` | $\gamma_\delta$ | GP length-scale for $\delta(\cdot)$ |
-| `k` | $k$ | GP signal-to-noise ratio ($\sigma^2_\delta = \lambda^2 / k$) |
 
 ### Initialisation vector
 
