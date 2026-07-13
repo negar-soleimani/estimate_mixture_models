@@ -153,27 +153,13 @@ P(\zeta_i=1\mid \delta,\alpha,s)=(1-\alpha)\tau_i(s),
 $$
 
 $$
-P(\zeta_i=0\mid \delta,\alpha,s)=1-\tau_i(s)+\alpha\,\tau_i(s).
+P(\zeta_i=0\mid \delta,\alpha,s)=1-\tau_i(s)+\alpha\\tau_i(s).
 $$
 
 Hence,
 
 - if $|\delta(x_i)|\le s$, then $\zeta_i=0$ deterministically (the no-discrepancy model is selected);
 - if $|\delta(x_i)|>s$, the standard Bayesian mixture allocation is recovered.
----
-
-## Outputs
-
-Each MCMC run returns a list with:
-
-| Element | Dimensions | Description |
-|---|---|---|
-| `theta` | `n_iter × 6` | Posterior draws of $(g, h_0, \lambda^2, \alpha, \gamma_\delta, k)$ |
-| `delta` | `n_iter × n` | Posterior draws of $\delta(x_1), \ldots, \delta(x_n)$ |
-| `zeta` | `n_iter × n` | Posterior draws of $\zeta_1, \ldots, \zeta_n \in \{0, 1\}$ |
-| `loglik` | `n_iter` | Log-likelihood at each iteration |
-| `accept_rate_psi` | scalar | Metropolis acceptance rate for $\gamma_\delta$ |
-
 ---
 
 ## Diagnostics
@@ -190,24 +176,5 @@ mcmc_list <- mcmc.list(
 )
 gelman.diag(mcmc_list)
 ```
-
-### Key plots to inspect
-
-- **Trace plots** — check mixing for all parameters
-- **Posterior of $\alpha$** — concentrated near 1: $\mathcal{M}_0$ preferred; near 0: $\mathcal{M}_1$ preferred
-- **$\delta(x_i)$ posterior mean** — identifies where discrepancy is present
-- **Pointwise inclusion probabilities $\hat{p}_i$** — local allocation diagnostic
-
----
-
-## Notes on Identifiability
-
-When $g_e$ is estimated jointly with $\delta(X)$, a confounding issue arises: a shift in $g_e$ can be partially absorbed by the discrepancy function, and vice versa. Two strategies are implemented to mitigate this:
-
-1. **Fix $g$ at its nominal value** (`g_init = TRUE`) — this is the default in the main real-data analysis.
-2. **Use the OGP prior** (`helper_function_OGP.R`, `main_function_OGP.R`) — the orthogonality constraint $\langle \delta, g(x)\boldsymbol{\theta} \rangle = 0$ prevents the discrepancy from absorbing the linear component of the calibration parameters.
-
-Note: experiments on real data show that both strategies yield similar posterior conclusions (see supplementary material, Section S.7).
-
 ---
 
