@@ -45,39 +45,6 @@ The dataset contains two drops for each of **11 different balls**:
 
 ---
 
-## Repository Structure
-
-```
-estimate_mixture_models/
-│
-├── data/
-│   ├── Ball_drops_data.xlsx      # Real experimental data (11 balls, 2 drops each)
-│   └── prepare_data.R            # Load and normalise data for one ball/drop
-│
-├── scripts/
-│   ├── physics_model.R           # Physical model f(x, θ) = h0 - 0.5*g*t²
-│   ├── helper_function_CGP.R     # GP covariance kernel (classical)
-│   ├── helper_function_OGP.R     # GP covariance kernel (orthogonal)
-│   ├── main_function_seuil_CGP.R # MCMC sampler — CGP with optional thresholding
-│   └── main_function_OGP.R       # MCMC sampler — OGP
-│
-├── examples/
-│   ├── simulation_model0_CGP.R   # Simulation study under M₀ (CGP)
-│   ├── simulation_model0_OGP.R   # Simulation study under M₀ (OGP)
-│   ├── simulation_model1_CGP.R   # Simulation study under M₁ (CGP)
-│   ├── simulation_model1_CGP_seuil.R  # Simulation study — CGP with thresholding
-│   ├── simulation_model1_OGP.R   # Simulation study under M₁ (OGP)
-│   └── real_data.R               # Real-data analysis (single ball, single drop)
-│
-└── results/
-    ├── real_data_seuil_gfix/     # Results — real data, g fixed, with thresholding
-    │   └── figures/              # Posterior plots for each ball and drop
-    └── real_data_joint_seuil_gfix/  # Results — joint analysis (two drops)
-        └── figures/
-```
-
----
-
 ## Getting Started
 
 ### 1 — Prerequisites
