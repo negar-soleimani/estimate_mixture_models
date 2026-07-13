@@ -138,14 +138,28 @@ res <- mcmc_step6(
 
 ## Thresholding Mechanism
 
-An optional **threshold-based allocation** replaces the standard Bernoulli allocation by:
+### Threshold-based allocation
 
-$$P(\zeta_i = 1 \mid \delta, \alpha, s) = (1 - \alpha)\,\mathbf{1}\{|\delta(x_i)| > s\}$$
+To avoid activating the discrepancy model in regions where the estimated discrepancy is negligible, we introduce the threshold indicator
 
-When $|\delta(x_i)| \leq s$, observation $i$ is deterministically assigned to $\mathcal{M}_0$. This provides a **local diagnostic**: the pointwise inclusion probabilities $\hat{p}_i$ highlight where the discrepancy is practically significant.
+$$
+\tau_i(s)=\mathbf{1}\{|\delta(x_i)|>s\},
+$$
 
-Activate with `seuil = TRUE` and choose `s` on the order of magnitude of the measurement noise.
+and define the allocation probabilities as
 
+$$
+P(\zeta_i=1\mid \delta,\alpha,s)=(1-\alpha)\tau_i(s),
+$$
+
+$$
+P(\zeta_i=0\mid \delta,\alpha,s)=1-\tau_i(s)+\alpha\,\tau_i(s).
+$$
+
+Hence,
+
+- if $|\delta(x_i)|\le s$, then $\zeta_i=0$ deterministically (the no-discrepancy model is selected);
+- if $|\delta(x_i)|>s$, the standard Bayesian mixture allocation is recovered.
 ---
 
 ## Outputs
