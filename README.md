@@ -52,7 +52,7 @@ The dataset contains two drops for each of **11 different balls**:
 | `h0` | $h_0$ | Initial height (calibration) |
 | `sigma_sq_err` | $\lambda^2$ | Measurement noise variance |
 | `alpha` | $\alpha$ | Mixture weight — probability of $\mathcal{M}_0$ |
-| `psi_delta` | $\gamma_\delta$ | GP length-scale for $\delta(\cdot)$ |
+| `psi_delta` | $\gamma_\delta$ | GP length-scale for $\delta(X)$ |
 | `k` | $k$ | GP signal-to-noise ratio ($\sigma^2_\delta = \lambda^2 / k$) |
 
 ## Getting Started
@@ -80,10 +80,17 @@ install.packages(c(
 source("examples/simulation_model0_CGP.R")
 
 # Simulation under M_1 with classical GP
-source("examples/simulation_model1_CGP_seuil.R")
+source("examples/simulation_model1_CGP.R")
 
 # Simulation under M1 with orthogonal GP
 source("examples/simulation_model1_OGP.R")
+
+# Simulation under M_1 with classical GP (four scenarios)
+# ------ Scenario (I):  seuil == FALSE, g == FALSE -------------#
+# ------ Scenario (II):  g == TRUE, seuil == FALSE -------------#
+# ------ Scenario (III): g == FALSE, seuil == TRUE -------------#
+# ------ Scenario (IIII): seuil == TRUE, g == TRUE -------------#
+source("examples/simulation_model1_seuil_CGP.R")
 ```
 
 ### 3 — Running the real-data analysis
