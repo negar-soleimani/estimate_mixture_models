@@ -6,7 +6,7 @@
 This repository provides an R implementation of a **Bayesian mixture model** for calibrating computer codes in the presence of model discrepancy. The core idea is to let the data decide — via a mixture weight $\alpha$ — whether a discrepancy term $\delta(x)$ is needed to explain the gap between the physical code $f(x, \boldsymbol{\theta})$ and the field observations $y$.
 
 The model is:
-$$y_i = g(x_i)\boldsymbol{\theta} + \zeta_i\,\delta(x_i) + \varepsilon_i, \qquad \varepsilon_i \sim \mathcal{N}(0, \lambda^2)$$
+$$y_i = g(x_i)\boldsymbol{\theta} + \zeta_i\delta(x_i) + \varepsilon_i, \qquad \varepsilon_i \sim \mathcal{N}(0, \lambda^2)$$
 
 where $\zeta_i \in \{0, 1\}$ is a latent allocation variable.
 
