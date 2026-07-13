@@ -14,13 +14,7 @@ where $\zeta_i \in \{0, 1\}$ is a latent allocation variable.
 - When $\alpha \to 0$: the model collapses to $\mathcal{M}_1$ (discrepancy).
 - The pointwise inclusion probabilities $\hat{p}_i = P(\zeta_i = 1 \mid Y)$ provide a **local diagnostic**.
 
-The discrepancy $\delta(\cdot)$ is modelled with a **Gaussian process (GP)** prior. Two variants are supported:
-
-| Prior | Description |
-|---|---|
-| **CGP** — Classical GP | Standard exponential kernel |
-| **OGP** — Orthogonal GP | Kernel projected to be orthogonal to $g(x)\boldsymbol{\theta}$, reducing confounding |
-
+The discrepancy $\delta(X)$ is modelled with a **Gaussian process (GP)** prior.
 The inference is carried out with a **Metropolis-within-Gibbs** MCMC sampler. All full conditionals are derived in closed form wherever possible (see the paper's supplementary material).
 
 ---
