@@ -1,8 +1,4 @@
 # Bayesian Mixture Model for Computer Code Calibration
-
-> **Code accompanying the paper:**  
-> *"A Mixture Model Approach for Discrepancy Detection in Computer Code Calibration"*
-
 ---
 
 ## Overview
