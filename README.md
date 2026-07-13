@@ -23,9 +23,9 @@ The inference is carried out with a **Metropolis-within-Gibbs** MCMC sampler. Al
 
 The model is applied to a **ball-drop experiment**: a ball is dropped from a height $h_0$ and its trajectory is recorded. The physical code is:
 
-$$f(x_i, \boldsymbol{\theta}) = h_0 - \frac{1}{2}\,g_e\,t_i^2$$
+$$f(x_i, \boldsymbol{\theta}) = h_0 - \frac{1}{2}g_et_i^2$$
 
-where $\boldsymbol{\theta} = (h_0, g_e)^\top$ are the calibration parameters (initial height and gravitational acceleration). The discrepancy $\delta(x_i)$ captures systematic departures from this idealized free-fall model (e.g., air drag).
+where $\boldsymbol{\theta} = (h_0, g_e)^\top$ are the calibration parameters (initial height and gravitational acceleration).
 
 The dataset contains two drops for each of **11 different balls**:
 
