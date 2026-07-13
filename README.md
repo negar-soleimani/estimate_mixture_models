@@ -10,9 +10,8 @@ $$y_i = g(x_i)\boldsymbol{\theta} + \zeta_i\delta(x_i) + \varepsilon_i, \qquad \
 
 where $\zeta_i \in \{0, 1\}$ is a latent allocation variable.
 
-- When $\alpha \to 1$: the model collapses to $\mathcal{M}_0$ (no discrepancy needed).
-- When $\alpha \to 0$: the model collapses to $\mathcal{M}_1$ (discrepancy is present everywhere).
-- The posterior of $\alpha$ quantifies the global evidence for discrepancy.
+- When $\alpha \to 1$: the model collapses to $\mathcal{M}_0$ (no discrepancy).
+- When $\alpha \to 0$: the model collapses to $\mathcal{M}_1$ (discrepancy).
 - The pointwise inclusion probabilities $\hat{p}_i = P(\zeta_i = 1 \mid Y)$ provide a **local diagnostic**.
 
 The discrepancy $\delta(\cdot)$ is modelled with a **Gaussian process (GP)** prior. Two variants are supported:
