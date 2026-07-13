@@ -86,10 +86,11 @@ source("examples/simulation_model1_CGP.R")
 source("examples/simulation_model1_OGP.R")
 
 # Simulation under M_1 with classical GP (four scenarios)
-# ------ Scenario (I):  seuil == FALSE, g == FALSE -------------#
-# ------ Scenario (II):  g == TRUE, seuil == FALSE -------------#
-# ------ Scenario (III): g == FALSE, seuil == TRUE -------------#
-# ------ Scenario (IIII): seuil == TRUE, g == TRUE -------------#
+# discrepancy is ~0 for first ndis points, then active afterwards
+# Scenario (I):   seuil == FALSE, g == FALSE
+# Scenario (II):  g == TRUE, seuil == FALSE 
+# Scenario (III): g == FALSE, seuil == TRUE 
+# Scenario (IV):  seuil == TRUE, g == TRUE
 source("examples/simulation_model1_seuil_CGP.R")
 ```
 
